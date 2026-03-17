@@ -29,7 +29,7 @@ export const t = (az: string, ru: string, en: string) => ({ az, ru, en })
 export const translations = {
   catalog: t('Katalog', 'Каталог', 'Catalog'),
   cart: t('Sebet', 'Корзина', 'Cart'),
-  account: t('Kabт', 'Account'),
+  account: t('Kabinet', 'Кабинет', 'Account'),
   signin: t('Giris', 'Войти', 'Sign In'),
   signout: t('Cixis', 'Выйти', 'Sign Out'),
   addToCart: t('Sebete ele', 'В корзину', 'Add to Cart'),
