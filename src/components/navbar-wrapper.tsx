@@ -1,8 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import CatalogClient from '@/components/catalog-client'
+import Navbar from './navbar'
 
-export default async function Home() {
+export default async function NavbarWrapper() {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,11 +14,6 @@ export default async function Home() {
       },
     }
   )
-
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  return <CatalogClient products={products || []} />
+  const { data: { user } } = await supabase.auth.getUser()
+  return <Navbar userEmail={user?.email} />
 }

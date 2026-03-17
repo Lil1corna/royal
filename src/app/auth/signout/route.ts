@@ -1,8 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import CatalogClient from '@/components/catalog-client'
+import { NextResponse } from 'next/server'
 
-export default async function Home() {
+export async function POST() {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,15 +10,14 @@ export default async function Home() {
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
-        setAll: () => {},
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          )
+        },
       },
     }
   )
-
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  return <CatalogClient products={products || []} />
+  await supabase.auth.signOut()
+  return NextResponse.redirect('http://localhost:3000/')
 }
