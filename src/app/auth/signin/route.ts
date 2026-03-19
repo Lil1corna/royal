@@ -20,7 +20,7 @@ export async function GET() {
   )
   const { data } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'http://localhost:3000/auth/callback' },
+    options: { redirectTo: 'https://royal-zeta.vercel.app/auth/callback' }
   })
   return NextResponse.redirect(data.url!)
 }
