@@ -44,7 +44,7 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
                 {userEmail.split('@')[0]}
               </a>
               <form action="/auth/signout" method="post">
-                <button className="border rounded-lg px-3 py-1.5 te-sm hover:bg-gray-100">
+                <button className="border rounded-lg px-3 py-1.5 text-sm hover:bg-gray-100">
                   {tr.signout[lang]}
                 </button>
               </form>

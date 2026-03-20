@@ -45,7 +45,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
                   </div>
                 )}
                 {p.discount_pct > 0 && p.in_stock && (
-                  <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-py-1 rounded-full">
+                  <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                     -{p.discount_pct}%
                   </div>
                 )}
