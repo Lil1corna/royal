@@ -43,7 +43,10 @@ export default async function OrdersPage() {
 
       <div className="flex flex-col gap-4">
         {orders?.map((order) => (
-          <div key={order.id} className={`border rounded-xl p-6 ${order.status === 'new' ? 'border-orange-300 bg-orange-50' : ''}`}>
+          <div
+            key={order.id}
+            className={`card-soft p-6 ${order.status === 'new' ? 'ring-1 ring-amber-200 bg-amber-50/40' : ''}`}
+          >
             <div className="flex justify-between items-start mb-4">
               <div>
                 <div className="flex items-center gap-3 mb-1">

@@ -44,22 +44,22 @@ export default async function UsersPage() {
           Yeni admin <span className="arrow">→</span>
         </a>
       </div>
-      <table className="w-full border-collapse">
+      <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-neutral-200 bg-white">
         <thead>
-          <tr className="bg-gray-100">
-            <th className="text-left p-3 border">Email</th>
-            <th className="text-left p-3 border">Ad</th>
-            <th className="text-left p-3 border">Rol</th>
-            <th className="text-left p-3 border">Tarix</th>
-            <th className="text-left p-3 border">Deyis</th>
+          <tr className="bg-neutral-50">
+            <th className="text-left p-3 border-b border-neutral-200">Email</th>
+            <th className="text-left p-3 border-b border-neutral-200">Ad</th>
+            <th className="text-left p-3 border-b border-neutral-200">Rol</th>
+            <th className="text-left p-3 border-b border-neutral-200">Tarix</th>
+            <th className="text-left p-3 border-b border-neutral-200">Deyis</th>
           </tr>
         </thead>
         <tbody>
           {staff?.map((u) => (
-            <tr key={u.id} className="hover:bg-gray-50">
-              <td className="p-3 border">{u.email}</td>
-              <td className="p-3 border">{u.name || '-'}</td>
-              <td className="p-3 border">
+            <tr key={u.id} className="hover:bg-neutral-50">
+              <td className="p-3 border-b border-neutral-100">{u.email}</td>
+              <td className="p-3 border-b border-neutral-100">{u.name || '-'}</td>
+              <td className="p-3 border-b border-neutral-100">
                 <span className={`px-2 py-1 rounded-full text-sm ${
                   u.role === 'super_admin' ? 'bg-purple-100 text-purple-700' :
                   u.role === 'manager' ? 'bg-blue-100 text-blue-700' :
@@ -68,10 +68,10 @@ export default async function UsersPage() {
                   {u.role}
                 </span>
               </td>
-              <td className="p-3 border text-gray-500 text-sm">
+              <td className="p-3 border-b border-neutral-100 text-gray-500 text-sm">
                 {new Date(u.created_at).toLocaleDateString()}
               </td>
-              <td className="p-3 border">
+              <td className="p-3 border-b border-neutral-100">
                 <a href={'/admin/users/' + u.id} className="text-blue-600 hover:underline">
                   Edit
                 </a>

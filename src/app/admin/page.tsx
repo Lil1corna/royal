@@ -44,7 +44,7 @@ export default async function AdminPage() {
         <h1 className="text-3xl font-bold">Admin Panel</h1>
         <div className="flex gap-3">
           <a href="/admin/orders"
-            className="relative bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600">
+            className="relative btn-admin btn-icon-arrow px-6 py-2">
             Sifarisler <span className="arrow">→</span>
             {newOrders && newOrders.length > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
@@ -62,30 +62,30 @@ export default async function AdminPage() {
           </a>
         </div>
       </div>
-      <table className="w-full border-collapse">
+      <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-neutral-200 bg-white">
         <thead>
-          <tr className="bg-gray-100">
-            <th className="text-left p-3 border">Mehsul</th>
-            <th className="text-left p-3 border">Kateqoriya</th>
-            <th className="text-left p-3 border">Qiymet</th>
-            <th className="text-left p-3 border">Endirim</th>
-            <th className="text-left p-3 border">Stok</th>
-            <th className="text-left p-3 border">Emeliyyat</th>
+          <tr className="bg-neutral-50">
+            <th className="text-left p-3 border-b border-neutral-200">Mehsul</th>
+            <th className="text-left p-3 border-b border-neutral-200">Kateqoriya</th>
+            <th className="text-left p-3 border-b border-neutral-200">Qiymet</th>
+            <th className="text-left p-3 border-b border-neutral-200">Endirim</th>
+            <th className="text-left p-3 border-b border-neutral-200">Stok</th>
+            <th className="text-left p-3 border-b border-neutral-200">Emeliyyat</th>
           </tr>
         </thead>
         <tbody>
           {products?.map((p) => (
-            <tr key={p.id} className="hover:bg-gray-50">
-              <td className="p-3 border font-medium">{p.name_ru}</td>
-              <td className="p-3 border text-gray-500">{p.category}</td>
-              <td className="p-3 border">{p.price} AZN</td>
-              <td className="p-3 border">{p.discount_pct > 0 ? p.discount_pct + '%' : '-'}</td>
-              <td className="p-3 border">
+            <tr key={p.id} className="hover:bg-neutral-50">
+              <td className="p-3 border-b border-neutral-100 font-medium">{p.name_ru}</td>
+              <td className="p-3 border-b border-neutral-100 text-gray-500">{p.category}</td>
+              <td className="p-3 border-b border-neutral-100">{p.price} AZN</td>
+              <td className="p-3 border-b border-neutral-100">{p.discount_pct > 0 ? p.discount_pct + '%' : '-'}</td>
+              <td className="p-3 border-b border-neutral-100">
                 <span className={p.in_stock ? 'text-green-600' : 'text-red-600'}>
                   {p.in_stock ? 'Var' : 'Yoxdur'}
                 </span>
               </td>
-              <td className="p-3 border">
+              <td className="p-3 border-b border-neutral-100">
                 <a href={'/admin/products/' + p.id} className="text-blue-600 hover:underline">
                   Edit
                 </a>
