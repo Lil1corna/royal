@@ -110,40 +110,50 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Ad
   }, [initialOrders])
 
   useEffect(() => {
-    const channel = supabase
-      .channel('admin-orders-all')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
-        async (payload) => {
-          if (payload.eventType === 'UPDATE' && payload.new) {
-            const row = payload.new as AdminOrder
-            setOrders((prev) =>
-              prev.map((o) =>
-                o.id === row.id ? { ...o, ...row, order_items: o.order_items } : o
-              )
-            )
-          }
-          if (payload.eventType === 'INSERT' && payload.new) {
-            const row = payload.new as AdminOrder
-            const { data: full } = await supabase
-              .from('orders')
-              .select('*, order_items(*, products(name_ru))')
-              .eq('id', row.id)
-              .single()
-            if (full) {
-              setOrders((prev) => {
-                if (prev.some((o) => o.id === full.id)) return prev
-                return [full as AdminOrder, ...prev]
-              })
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    try {
+      channel = supabase
+        .channel('admin-orders-all')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'orders' },
+          async (payload) => {
+            try {
+              if (payload.eventType === 'UPDATE' && payload.new) {
+                const row = payload.new as AdminOrder
+                setOrders((prev) =>
+                  prev.map((o) =>
+                    o.id === row.id ? { ...o, ...row, order_items: o.order_items } : o
+                  )
+                )
+              }
+              if (payload.eventType === 'INSERT' && payload.new) {
+                const row = payload.new as AdminOrder
+                const { data: full } = await supabase
+                  .from('orders')
+                  .select('*, order_items(*, products(name_ru))')
+                  .eq('id', row.id)
+                  .single()
+                if (full) {
+                  setOrders((prev) => {
+                    if (prev.some((o) => o.id === full.id)) return prev
+                    return [full as AdminOrder, ...prev]
+                  })
+                }
+              }
+            } catch {
+              // ignore
             }
           }
-        }
-      )
-      .subscribe()
-
+        )
+        .subscribe((status, err) => {
+          if (err) console.warn('[Realtime] admin orders:', err.message)
+        })
+    } catch (e) {
+      console.warn('[Realtime] admin subscribe failed:', e)
+    }
     return () => {
-      void supabase.removeChannel(channel)
+      if (channel) void supabase.removeChannel(channel)
     }
   }, [supabase])
 

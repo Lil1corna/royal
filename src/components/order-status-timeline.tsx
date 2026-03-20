@@ -15,7 +15,7 @@ function stepIndex(status: OrderStatus): number {
 export default function OrderStatusTimeline({ status }: { status: string }) {
   const { lang } = useLang()
   const tr = translations
-  const s = status as OrderStatus
+  const s = (status || 'new') as OrderStatus
   const cancelled = s === 'cancelled'
   const currentIdx = cancelled ? -1 : stepIndex(s)
 

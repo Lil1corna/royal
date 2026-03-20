@@ -43,45 +43,55 @@ export default function AccountOrdersSection({
   }, [initialOrders])
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`orders-user-${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders',
-          filter: `user_id=eq.${userId}`,
-        },
-        async (payload) => {
-          if (payload.eventType === 'UPDATE' && payload.new) {
-            const row = payload.new as AccountOrder
-            setOrders((prev) =>
-              prev.map((o) =>
-                o.id === row.id ? { ...o, ...row, order_items: o.order_items } : o
-              )
-            )
-          }
-          if (payload.eventType === 'INSERT' && payload.new) {
-            const row = payload.new as AccountOrder
-            const { data: full } = await supabase
-              .from('orders')
-              .select('*, order_items(*, products(name_ru, image_urls))')
-              .eq('id', row.id)
-              .single()
-            if (full) {
-              setOrders((prev) => {
-                if (prev.some((o) => o.id === full.id)) return prev
-                return [full as AccountOrder, ...prev]
-              })
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    try {
+      channel = supabase
+        .channel(`orders-user-${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'orders',
+            filter: `user_id=eq.${userId}`,
+          },
+          async (payload) => {
+            try {
+              if (payload.eventType === 'UPDATE' && payload.new) {
+                const row = payload.new as AccountOrder
+                setOrders((prev) =>
+                  prev.map((o) =>
+                    o.id === row.id ? { ...o, ...row, order_items: o.order_items } : o
+                  )
+                )
+              }
+              if (payload.eventType === 'INSERT' && payload.new) {
+                const row = payload.new as AccountOrder
+                const { data: full } = await supabase
+                  .from('orders')
+                  .select('*, order_items(*, products(name_ru, image_urls))')
+                  .eq('id', row.id)
+                  .single()
+                if (full) {
+                  setOrders((prev) => {
+                    if (prev.some((o) => o.id === full.id)) return prev
+                    return [full as AccountOrder, ...prev]
+                  })
+                }
+              }
+            } catch {
+              // ignore realtime callback errors
             }
           }
-        }
-      )
-      .subscribe()
-
+        )
+        .subscribe((status, err) => {
+          if (err) console.warn('[Realtime] orders subscription:', err.message)
+        })
+    } catch (e) {
+      console.warn('[Realtime] failed to subscribe:', e)
+    }
     return () => {
-      void supabase.removeChannel(channel)
+      if (channel) void supabase.removeChannel(channel)
     }
   }, [supabase, userId])
 
@@ -100,12 +110,12 @@ export default function AccountOrdersSection({
   return (
     <div className="flex flex-col gap-4">
       {orders.map((order) => (
-        <div key={order.id} className="border rounded-xl p-6 card-soft">
+        <div key={order.id || 'unknown'} className="border rounded-xl p-6 card-soft">
           <div className="flex justify-between items-start mb-2">
             <div>
               <div className="flex items-center gap-3 mb-1 flex-wrap">
                 <span className="font-mono text-sm text-gray-400">
-                  #{order.id.slice(0, 8)}
+                  #{order.id?.slice(0, 8) ?? '…'}
                 </span>
                 <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
                   {tr.liveStatus[lang]}
@@ -130,7 +140,7 @@ export default function AccountOrdersSection({
             </div>
           </div>
 
-          <OrderStatusTimeline status={order.status} />
+          <OrderStatusTimeline status={order.status || 'new'} />
 
           <div className="flex flex-wrap gap-3 mb-3 mt-4">
             {order.order_items?.map((item) => (
