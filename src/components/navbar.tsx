@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
 import { useLang, translations } from '@/context/lang'
 import { useCart } from '@/context/cart'
+import { useWishlist } from '@/context/wishlist'
 import { useRouter } from 'next/navigation'
 
 type Lang = 'az' | 'ru' | 'en'
@@ -10,6 +11,7 @@ type Lang = 'az' | 'ru' | 'en'
 function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?: () => void }) {
   const { lang, setLang } = useLang()
   const { count } = useCart()
+  const { count: wishCount } = useWishlist()
   const router = useRouter()
   const tr = translations
 
@@ -30,6 +32,25 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
           </button>
         ))}
       </div>
+      <a
+        href="/wishlist"
+        onClick={() => onClose?.()}
+        className="relative w-9 h-9 border rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5"
+        title={tr.wishlist[lang]}
+      >
+        ♡
+        {wishCount > 0 && (
+          <motion.span
+            key={wishCount}
+            initial={{ scale: 0.7, opacity: 0.8 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.16 }}
+            className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-xs min-w-4 h-4 px-0.5 rounded-full flex items-center justify-center"
+          >
+            {wishCount}
+          </motion.span>
+        )}
+      </a>
       <button onClick={handleCart}
         className="relative w-9 h-9 border rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all duration-200 hover:-translate-y-0.5">
         🛒

@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { useLang, translations } from '@/context/lang'
+import RecentlyViewed from '@/components/recently-viewed'
 
 const ITEMS_PER_PAGE = 12
 
@@ -48,6 +49,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-8">
+      <RecentlyViewed />
       <h1 className="text-3xl font-bold mb-6 dark:text-white">{tr.catalog[lang]}</h1>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-8">

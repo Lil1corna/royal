@@ -1,12 +1,18 @@
 'use client'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useCart } from '@/context/cart'
 import { useLang, translations } from '@/context/lang'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
+import {
+  calcShippingFee,
+  deliveryModeLabel,
+  FREE_SHIPPING_THRESHOLD,
+  type DeliveryMode,
+} from '@/lib/delivery'
 
 const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
 
@@ -36,10 +42,18 @@ export default function CartPage() {
   const [lng, setLng] = useState<number | null>(null)
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('courier')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  const subtotal = total
+  const shippingFee = useMemo(
+    () => calcShippingFee(subtotal, deliveryMode),
+    [subtotal, deliveryMode]
+  )
+  const grandTotal = subtotal + shippingFee
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ type, message })
@@ -59,17 +73,48 @@ export default function CartPage() {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    const { data: order, error } = await supabase
-      .from('orders')
-      .insert([{
-        user_id: user?.id || null,
-        total_price: total,
-        status: 'new',
-        address,
-        notes: `Tel: ${phoneNormalized}${notes ? ' | ' + notes : ''}${lat ? ` | Koordinat: ${lat},${lng}` : ''}`,
-      }])
-      .select()
-      .single()
+    const notesBase = `Tel: ${phoneNormalized}${notes ? ' | ' + notes : ''}${lat ? ` | Koordinat: ${lat},${lng}` : ''}`
+    const deliveryMeta =
+      lang === 'ru'
+        ? ` | Доставка: ${deliveryMode === 'pickup' ? 'самовывоз' : 'курьер'}, доставка ${shippingFee} AZN, товары ${subtotal} AZN`
+        : lang === 'en'
+          ? ` | Delivery: ${deliveryMode}, shipping ${shippingFee} AZN, items ${subtotal} AZN`
+          : ` | Catdirilma: ${deliveryMode}, catdirilma ${shippingFee} AZN, mehsul ${subtotal} AZN`
+
+    const fullRow = {
+      user_id: user?.id || null,
+      total_price: grandTotal,
+      subtotal,
+      shipping_fee: shippingFee,
+      delivery_mode: deliveryMode,
+      status: 'new' as const,
+      address,
+      notes: notesBase + deliveryMeta,
+    }
+
+    let order = null
+    let error = null
+    const first = await supabase.from('orders').insert([fullRow]).select().single()
+    if (first.error) {
+      const fallback = await supabase
+        .from('orders')
+        .insert([
+          {
+            user_id: fullRow.user_id,
+            total_price: grandTotal,
+            status: 'new',
+            address,
+            notes: notesBase + deliveryMeta,
+          },
+        ])
+        .select()
+        .single()
+      order = fallback.data
+      error = fallback.error
+    } else {
+      order = first.data
+      error = first.error
+    }
 
     if (error) {
       showToast('error', tr.error[lang] + ': ' + error.message)
@@ -134,14 +179,66 @@ export default function CartPage() {
               </motion.div>
             ))}
           </div>
-          <div className="border-t pt-4 flex justify-between items-center">
-            <span className="font-medium">{tr.total[lang]}:</span>
-            <span className="text-2xl font-bold">{total} AZN</span>
+          <div className="border-t pt-4 flex flex-col gap-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">{tr.subtotal[lang]}</span>
+              <span className="font-medium">{subtotal} AZN</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">{tr.shippingFee[lang]}</span>
+              <span className="font-medium">
+                {shippingFee === 0 ? (
+                  <span className="text-emerald-600">{lang === 'ru' ? 'Бесплатно' : lang === 'en' ? 'Free' : 'Pulsuz'}</span>
+                ) : (
+                  `${shippingFee} AZN`
+                )}
+              </span>
+            </div>
+            <p className="text-xs text-gray-400">
+              {lang === 'ru'
+                ? `Бесплатная доставка от ${FREE_SHIPPING_THRESHOLD} AZN (курьер)`
+                : lang === 'en'
+                  ? `Free courier shipping from ${FREE_SHIPPING_THRESHOLD} AZN`
+                  : `Kuryer catdırılması ${FREE_SHIPPING_THRESHOLD} AZN-dan pulsuz`}
+            </p>
+            <div className="flex justify-between items-center pt-2 border-t border-dashed">
+              <span className="font-semibold">{tr.total[lang]}</span>
+              <span className="text-2xl font-bold">{grandTotal} AZN</span>
+            </div>
           </div>
         </div>
 
         <form onSubmit={handleOrder} className="flex flex-col gap-4">
           <h2 className="text-xl font-bold">{tr.orderForm[lang]}</h2>
+          <div>
+            <p className="text-sm font-medium mb-2">{tr.deliveryMethod[lang]}</p>
+            <div className="flex flex-col gap-2">
+              {(['courier', 'pickup'] as DeliveryMode[]).map((mode) => (
+                <label
+                  key={mode}
+                  className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
+                    deliveryMode === mode ? 'border-amber-500 bg-amber-50/50 ring-1 ring-amber-200' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="delivery"
+                    className="accent-amber-600"
+                    checked={deliveryMode === mode}
+                    onChange={() => setDeliveryMode(mode)}
+                  />
+                  <div>
+                    <div className="font-medium">{deliveryModeLabel(mode, lang)}</div>
+                    {mode === 'pickup' && (
+                      <div className="text-xs text-gray-500">
+                        {lang === 'ru' ? 'Без стоимости доставки' : lang === 'en' ? 'No shipping fee' : 'Catdırılma haqqı yoxdur'}
+                      </div>
+                    )}
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium mb-1">{tr.phone[lang]}</label>
             <input
@@ -180,7 +277,7 @@ export default function CartPage() {
             type="submit" disabled={loading || !address}
             className="btn-primary py-3 rounded-xl text-lg"
           >
-            {loading ? tr.submitting[lang] : `${tr.submitOrder[lang]} — ${total} AZN`}
+            {loading ? tr.submitting[lang] : `${tr.submitOrder[lang]} — ${grandTotal} AZN`}
           </motion.button>
         </form>
       </div>

@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useCart } from '@/context/cart'
+import { useWishlist } from '@/context/wishlist'
 import { useRouter } from 'next/navigation'
 import { useLang, translations } from '@/context/lang'
 
@@ -21,8 +22,10 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
   productImage: string | null
 }) {
   const { add } = useCart()
+  const { has, toggle } = useWishlist()
   const { lang } = useLang()
   const tr = translations
+  const inWishlist = has(productId)
   const router = useRouter()
   const [selected, setSelected] = useState<Size | null>(
     sizes.length > 0 ? sizes[0] : null
@@ -90,6 +93,18 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
         transition={{ duration: 0.2 }}
         className="flex flex-col gap-3"
       >
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.98 }}
+          onClick={() => toggle(productId)}
+          className={`w-full py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
+            inWishlist
+              ? 'border-amber-500 bg-amber-50 text-amber-900'
+              : 'border-neutral-200 hover:border-amber-300 text-neutral-700'
+          }`}
+        >
+          {inWishlist ? tr.removeFromWishlist[lang] : tr.addToWishlist[lang]}
+        </motion.button>
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={handleAdd}
