@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useCart } from '@/context/cart'
 import { useRouter } from 'next/navigation'
+import { useLang, translations } from '@/context/lang'
 
 type Size = {
   id: string
@@ -19,6 +20,8 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
   productImage: string | null
 }) {
   const { add } = useCart()
+  const { lang } = useLang()
+  const tr = translations
   const router = useRouter()
   const [selected, setSelected] = useState<Size | null>(
     sizes.length > 0 ? sizes[0] : null
@@ -61,7 +64,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
 
       {sizes.length > 0 && (
         <div className="mb-6">
-          <p className="font-medium mb-3">Olcu secin:</p>
+          <p className="font-medium mb-3">{tr.selectSizeLabel[lang]}</p>
           <div className="flex flex-wrap gap-2">
             {sizes.map((s) => (
               <button key={s.id} disabled={!s.in_stock} onClick={() => setSelected(s)}
@@ -85,11 +88,11 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
           className={`w-full py-3 rounded-xl text-lg transition-all ${
             added ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-gray-800'
           }`}>
-          {added ? 'Sebete elave edildi!' : 'Sebete ele'}
+          {added ? tr.addToCartSuccess[lang] : tr.addToCart[lang]}
         </button>
         <button onClick={() => { handleAdd(); router.push('/cart') }}
           className="w-full py-3 rounded-xl text-lg border-2 border-black hover:bg-gray-50">
-          Birbaşa sifaris et
+          {tr.orderNow[lang]}
         </button>
       </div>
     </div>

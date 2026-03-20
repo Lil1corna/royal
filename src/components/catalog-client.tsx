@@ -1,5 +1,8 @@
 'use client'
+import { useState } from 'react'
 import { useLang, translations } from '@/context/lang'
+
+const ITEMS_PER_PAGE = 12
 
 type Product = {
   id: string
@@ -13,15 +16,58 @@ type Product = {
   image_urls: string[]
 }
 
+const CATEGORY_KEYS = ['ortopedik', 'berk', 'yumshaq', 'topper', 'ushaq', 'yastig'] as const
+
 export default function CatalogClient({ products }: { products: Product[] }) {
   const { lang } = useLang()
   const tr = translations
+  const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState<string>('')
+  const [page, setPage] = useState(1)
+
+  const searchLower = search.trim().toLowerCase()
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch = !searchLower || [p.name_az, p.name_ru, p.name_en].some(
+      (n) => n?.toLowerCase().includes(searchLower)
+    )
+    const matchesCategory = !categoryFilter || p.category === categoryFilter
+    return matchesSearch && matchesCategory
+  })
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+  const paginatedProducts = filteredProducts.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  )
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-8">
-      <h1 className="text-3xl font-bold mb-8 dark:text-white">{tr.catalog[lang]}</h1>
-      <div className="grid grid-cols-3 gap-6">
-        {products.map((p) => {
+      <h1 className="text-3xl font-bold mb-6 dark:text-white">{tr.catalog[lang]}</h1>
+
+      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <input
+          type="search"
+          placeholder={tr.searchPlaceholder[lang]}
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+          className="flex-1 border rounded-lg px-4 py-2"
+        />
+        <select
+          value={categoryFilter}
+          onChange={(e) => { setCategoryFilter(e.target.value); setPage(1) }}
+          className="border rounded-lg px-4 py-2 min-w-[160px]"
+        >
+          <option value="">{tr.allCategories[lang]}</option>
+          {CATEGORY_KEYS.map((key) => (
+            <option key={key} value={key}>
+              {tr.categories[key]?.[lang] || key}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {paginatedProducts.map((p) => {
           const name = lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
           const cat = tr.categories[p.category]?.[lang] || p.category
           const discountedPrice = p.discount_pct > 0
@@ -68,6 +114,28 @@ export default function CatalogClient({ products }: { products: Product[] }) {
           )
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-8">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            className="border rounded-lg px-4 py-2 disabled:opacity-50 hover:bg-gray-50"
+          >
+            {tr.prevPage[lang]}
+          </button>
+          <span className="flex items-center px-4">
+            {page} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+            className="border rounded-lg px-4 py-2 disabled:opacity-50 hover:bg-gray-50"
+          >
+            {tr.nextPage[lang]}
+          </button>
+        </div>
+      )}
     </main>
   )
 }

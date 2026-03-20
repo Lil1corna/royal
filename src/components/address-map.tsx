@@ -1,11 +1,14 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import { useLang, translations } from '@/context/lang'
 
 type Props = {
   onSelect: (address: string, lat: number, lng: number) => void
 }
 
 export default function AddressMap({ onSelect }: Props) {
+  const { lang } = useLang()
+  const tr = translations
   const mapRef = useRef<any>(null)
   const markerRef = useRef<any>(null)
   const mapDivRef = useRef<HTMLDivElement>(null)
@@ -74,13 +77,13 @@ export default function AddressMap({ onSelect }: Props) {
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
         <input className="flex-1 border rounded-lg p-2 text-sm"
-          placeholder="Kuce, ev nomresi axtar..."
+          placeholder={tr.mapSearch[lang]}
           value={search}
           onChange={e => setSearch(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSearch()} />
         <button type="button" onClick={handleSearch}
           className="bg-black text-white px-4 rounded-lg text-sm whitespace-nowrap">
-          {loading ? '...' : 'Axtar'}
+          {loading ? '...' : tr.mapSearchBtn[lang]}
         </button>
       </div>
       {suggestions.length > 0 && (
@@ -100,7 +103,7 @@ export default function AddressMap({ onSelect }: Props) {
           <span>{selected}</span>
         </div>
       ) : (
-        <p className="text-xs text-gray-400">Xeritada klikleyin ve ya adres axtar</p>
+        <p className="text-xs text-gray-400">{tr.mapHint[lang]}</p>
       )}
     </div>
   )

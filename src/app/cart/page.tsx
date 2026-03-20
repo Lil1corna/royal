@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useCart } from '@/context/cart'
+import { useLang, translations } from '@/context/lang'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
@@ -9,6 +10,8 @@ const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: fals
 
 export default function CartPage() {
   const { items, remove, clear, total, count } = useCart()
+  const { lang } = useLang()
+  const tr = translations
   const [address, setAddress] = useState('')
   const [lat, setLat] = useState<number | null>(null)
   const [lng, setLng] = useState<number | null>(null)
@@ -21,7 +24,7 @@ export default function CartPage() {
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault()
     if (items.length === 0) return
-    if (!address) { alert('Unvani secin'); return }
+    if (!address) { alert(tr.selectAddress[lang]); return }
     setLoading(true)
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -39,7 +42,7 @@ export default function CartPage() {
       .single()
 
     if (error) {
-      alert('Xeta: ' + error.message)
+      alert(tr.error[lang] + ': ' + error.message)
       setLoading(false)
       return
     }
@@ -62,8 +65,8 @@ export default function CartPage() {
     return (
       <main className="p-8 max-w-2xl mx-auto text-center">
         <div className="text-6xl mb-4">🛒</div>
-        <h1 className="text-2xl font-bold mb-2">Sebet boshdur</h1>
-        <a href="/" className="text-blue-600 hover:underline">Kataloga qayit</a>
+        <h1 className="text-2xl font-bold mb-2">{tr.cartEmpty[lang]}</h1>
+        <a href="/" className="text-blue-600 hover:underline">{tr.backToCatalog[lang]}</a>
       </main>
     )
   }
@@ -71,10 +74,10 @@ export default function CartPage() {
   return (
     <main className="p-8 max-w-5xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/" className="text-gray-500 hover:text-black">Geri</a>
-        <h1 className="text-3xl font-bold">Sebet</h1>
+        <a href="/" className="text-gray-500 hover:text-black">{tr.back[lang]}</a>
+        <h1 className="text-3xl font-bold">{tr.cart[lang]}</h1>
       </div>
-      <div className="grid grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div>
           <div className="flex flex-col gap-3 mb-6">
             {items.map((item, i) => (
@@ -86,7 +89,7 @@ export default function CartPage() {
                   <div className="font-semibold">{item.name}</div>
                   {item.size && <div className="text-sm text-gray-500">{item.size}</div>}
                   <div className="font-bold mt-1">{item.price * item.quantity} AZN</div>
-                  <div className="text-sm text-gray-400">{item.quantity} eded</div>
+                  <div className="text-sm text-gray-400">{item.quantity} {tr.pieces[lang]}</div>
                 </div>
                 <button onClick={() => remove(item.id, item.size)}
                   className="text-red-400 hover:text-red-600">X</button>
@@ -94,23 +97,23 @@ export default function CartPage() {
             ))}
           </div>
           <div className="border-t pt-4 flex justify-between items-center">
-            <span className="font-medium">Cem:</span>
+            <span className="font-medium">{tr.total[lang]}:</span>
             <span className="text-2xl font-bold">{total} AZN</span>
           </div>
         </div>
 
         <form onSubmit={handleOrder} className="flex flex-col gap-4">
-          <h2 className="text-xl font-bold">Sifaris</h2>
+          <h2 className="text-xl font-bold">{tr.orderForm[lang]}</h2>
           <div>
-            <label className="block text-sm font-medium mb-1">Telefon</label>
+            <label className="block text-sm font-medium mb-1">{tr.phone[lang]}</label>
             <input type="tel" className="w-full border rounded-lg p-2"
               placeholder="+994 XX XXX XX XX"
               value={phone} onChange={e => setPhone(e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">
-              Catdirilma unvani
-              {address && <span className="text-green-600 ml-2 text-xs">✓ Secildi</span>}
+              {tr.deliveryAddress[lang]}
+              {address && <span className="text-green-600 ml-2 text-xs">✓ {tr.addressSelected[lang]}</span>}
             </label>
             <AddressMap onSelect={(addr, la, ln) => {
               setAddress(addr)
@@ -124,14 +127,14 @@ export default function CartPage() {
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Qeyd</label>
+            <label className="block text-sm font-medium mb-1">{tr.notes[lang]}</label>
             <textarea className="w-full border rounded-lg p-2 h-20 resize-none"
-              placeholder="Elave melumat..."
+              placeholder={tr.extraInfo[lang] + '...'}
               value={notes} onChange={e => setNotes(e.target.value)} />
           </div>
           <button type="submit" disabled={loading || !address}
             className="bg-black text-white py-3 rounded-xl text-lg hover:bg-gray-800 disabled:opacity-50">
-            {loading ? 'Gondərilir...' : `Sifaris et — ${total} AZN`}
+            {loading ? tr.submitting[lang] : `${tr.submitOrder[lang]} — ${total} AZN`}
           </button>
         </form>
       </div>
