@@ -18,9 +18,15 @@ export async function GET() {
       },
     }
   )
+
+  const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL
+    ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+    : 'http://localhost:3000/auth/callback'
+
   const { data } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: 'https://royal-zeta.vercel.app/auth/callback' }
+    options: { redirectTo: redirectUrl },
   })
+
   return NextResponse.redirect(data.url!)
 }
