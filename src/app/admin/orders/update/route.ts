@@ -23,7 +23,12 @@ export async function POST(request: NextRequest) {
     }
   )
 
-  await supabase.from('orders').update({ status }).eq('id', id)
-
-  return NextResponse.redirect(new URL('/admin/orders', request.url))
+  const { error } = await supabase.from('orders').update({ status }).eq('id', id)
+  const redirectUrl = new URL('/admin/orders', request.url)
+  if (error) {
+    redirectUrl.searchParams.set('toast', 'error')
+  } else {
+    redirectUrl.searchParams.set('toast', 'success')
+  }
+  return NextResponse.redirect(redirectUrl)
 }

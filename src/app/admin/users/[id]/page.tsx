@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter, useParams } from 'next/navigation'
+import ToastMessage, { type ToastState } from '@/components/toast-message'
 
 export default function EditUser() {
   const router = useRouter()
@@ -10,6 +11,12 @@ export default function EditUser() {
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [role, setRole] = useState('customer')
+  const [toast, setToast] = useState<ToastState | null>(null)
+
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ type, message })
+    setTimeout(() => setToast(null), 2500)
+  }
 
   useEffect(() => {
     const load = async () => {
@@ -33,8 +40,9 @@ export default function EditUser() {
       .update({ role })
       .eq('id', params.id)
     if (error) {
-      alert('Xeta: ' + error.message)
+      showToast('error', 'Xeta: ' + error.message)
     } else {
+      showToast('success', 'Rol yenilendi')
       router.push('/admin/users')
     }
     setLoading(false)
@@ -48,6 +56,7 @@ export default function EditUser() {
         <a href="/admin/users" className="text-gray-500 hover:text-black">Geri</a>
         <h1 className="text-3xl font-bold">Rol Deyis</h1>
       </div>
+      <ToastMessage toast={toast} className="mb-4" />
       <div className="border rounded-lg p-6 flex flex-col gap-4">
         <div>
           <div className="text-sm text-gray-500">Email</div>

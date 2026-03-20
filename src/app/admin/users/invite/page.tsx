@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import ToastMessage, { type ToastState } from '@/components/toast-message'
 
 export default function InviteUser() {
   const router = useRouter()
@@ -10,6 +11,12 @@ export default function InviteUser() {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('manager')
   const [done, setDone] = useState(false)
+  const [toast, setToast] = useState<ToastState | null>(null)
+
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ type, message })
+    setTimeout(() => setToast(null), 2500)
+  }
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,8 +34,9 @@ export default function InviteUser() {
         .update({ role })
         .eq('email', email)
       if (error) {
-        alert('Xeta: ' + error.message)
+        showToast('error', 'Xeta: ' + error.message)
       } else {
+        showToast('success', 'Ugurla yenilendi')
         setDone(true)
       }
     } else {
@@ -36,8 +44,9 @@ export default function InviteUser() {
         .from('users')
         .insert([{ email, role, name: email }])
       if (error) {
-        alert('Xeta: ' + error.message)
+        showToast('error', 'Xeta: ' + error.message)
       } else {
+        showToast('success', 'Ugurla elave edildi')
         setDone(true)
       }
     }
@@ -66,6 +75,7 @@ export default function InviteUser() {
         <a href="/admin/users" className="text-gray-500 hover:text-black">Geri</a>
         <h1 className="text-3xl font-bold">Yeni Admin</h1>
       </div>
+      <ToastMessage toast={toast} className="mb-4" />
       <form onSubmit={handleInvite} className="border rounded-lg p-6 flex flex-col gap-4">
         <div>
           <label className="block text-sm font-medium mb-2">Gmail</label>

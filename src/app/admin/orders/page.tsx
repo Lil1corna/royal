@@ -2,7 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-export default async function OrdersPage() {
+export default async function OrdersPage(props: { searchParams: Promise<{ toast?: string }> }) {
+  const searchParams = await props.searchParams
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,6 +41,16 @@ export default async function OrdersPage() {
           {orders?.filter(o => o.status === 'new').length} yeni
         </span>
       </div>
+      {searchParams.toast === 'success' && (
+        <div className="mb-5 rounded-lg px-3 py-2 text-sm bg-green-50 text-green-700 border border-green-200">
+          Status ugurla yenilendi.
+        </div>
+      )}
+      {searchParams.toast === 'error' && (
+        <div className="mb-5 rounded-lg px-3 py-2 text-sm bg-red-50 text-red-700 border border-red-200">
+          Status yenilenmedi. Yeniden cehd edin.
+        </div>
+      )}
 
       <div className="flex flex-col gap-4">
         {orders?.map((order) => (

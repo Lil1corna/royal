@@ -6,8 +6,26 @@ import { useLang, translations } from '@/context/lang'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import ToastMessage, { type ToastState } from '@/components/toast-message'
 
 const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
+
+function normalizeAzPhone(raw: string): string | null {
+  const value = raw.trim()
+  if (!value) return null
+
+  if (value.startsWith('+')) {
+    const compact = '+' + value.slice(1).replace(/\D/g, '')
+    if (/^\+994\d{9}$/.test(compact)) return compact
+    return null
+  }
+
+  const digits = value.replace(/\D/g, '')
+  if (/^994\d{9}$/.test(digits)) return `+${digits}`
+  if (/^0\d{9}$/.test(digits)) return `+994${digits.slice(1)}`
+  if (/^\d{9}$/.test(digits)) return `+994${digits}`
+  return null
+}
 
 export default function CartPage() {
   const { items, remove, clear, total, count } = useCart()
@@ -19,13 +37,24 @@ export default function CartPage() {
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<ToastState | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  const showToast = (type: 'success' | 'error', message: string) => {
+    setToast({ type, message })
+    setTimeout(() => setToast(null), 2600)
+  }
 
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault()
     if (items.length === 0) return
-    if (!address) { alert(tr.selectAddress[lang]); return }
+    if (!address) { showToast('error', tr.selectAddress[lang]); return }
+    const phoneNormalized = normalizeAzPhone(phone)
+    if (!phoneNormalized) {
+      showToast('error', tr.invalidPhone[lang])
+      return
+    }
     setLoading(true)
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -37,13 +66,13 @@ export default function CartPage() {
         total_price: total,
         status: 'new',
         address,
-        notes: `Tel: ${phone}${notes ? ' | ' + notes : ''}${lat ? ` | Koordinat: ${lat},${lng}` : ''}`,
+        notes: `Tel: ${phoneNormalized}${notes ? ' | ' + notes : ''}${lat ? ` | Koordinat: ${lat},${lng}` : ''}`,
       }])
       .select()
       .single()
 
     if (error) {
-      alert(tr.error[lang] + ': ' + error.message)
+      showToast('error', tr.error[lang] + ': ' + error.message)
       setLoading(false)
       return
     }
@@ -57,6 +86,7 @@ export default function CartPage() {
       }))
     )
 
+    showToast('success', tr.orderSuccess[lang])
     clear()
     router.push('/order-success')
     setLoading(false)
@@ -78,6 +108,7 @@ export default function CartPage() {
         <a href="/" className="text-gray-500 hover:text-black">{tr.back[lang]}</a>
         <h1 className="text-3xl font-bold">{tr.cart[lang]}</h1>
       </div>
+      <ToastMessage toast={toast} className="mb-5" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div>
           <div className="flex flex-col gap-3 mb-6">
@@ -113,9 +144,14 @@ export default function CartPage() {
           <h2 className="text-xl font-bold">{tr.orderForm[lang]}</h2>
           <div>
             <label className="block text-sm font-medium mb-1">{tr.phone[lang]}</label>
-            <input type="tel" className="w-full border rounded-lg p-2"
+            <input
+              type="tel"
+              className="w-full border rounded-lg p-2"
               placeholder="+994 XX XXX XX XX"
-              value={phone} onChange={e => setPhone(e.target.value)} required />
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              required
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">
