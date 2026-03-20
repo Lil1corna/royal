@@ -1,8 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,13 +19,13 @@ export async function GET() {
     }
   )
 
-  const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL
-    ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-    : 'http://localhost:3000/auth/callback'
+  const host = request.headers.get('host') || 'localhost:3000'
+  const protocol = host.includes('localhost') ? 'http' : 'https'
+  const redirectTo = `${protocol}://${host}/auth/callback`
 
   const { data } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: redirectUrl },
+    options: { redirectTo },
   })
 
   return NextResponse.redirect(data.url!)
