@@ -1,4 +1,5 @@
 'use client'
+import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useCart } from '@/context/cart'
 import { useRouter } from 'next/navigation'
@@ -83,18 +84,29 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
-        <button onClick={handleAdd}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        className="flex flex-col gap-3"
+      >
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          onClick={handleAdd}
           className={`w-full py-3 rounded-xl text-lg transition-all ${
-            added ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-gray-800'
-          }`}>
+            added ? 'bg-green-500 text-white' : 'btn-primary'
+          }`}
+        >
           {added ? tr.addToCartSuccess[lang] : tr.addToCart[lang]}
-        </button>
-        <button onClick={() => { handleAdd(); router.push('/cart') }}
-          className="w-full py-3 rounded-xl text-lg border-2 border-black hover:bg-gray-50">
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          onClick={() => { handleAdd(); router.push('/cart') }}
+          className="w-full py-3 rounded-xl text-lg btn-secondary border-2 border-black"
+        >
           {tr.orderNow[lang]}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
     </div>
   )
 }

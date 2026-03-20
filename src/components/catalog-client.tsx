@@ -1,5 +1,7 @@
 'use client'
-import { useState } from 'react'
+import Image from 'next/image'
+import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
 import { useLang, translations } from '@/context/lang'
 
 const ITEMS_PER_PAGE = 12
@@ -26,19 +28,23 @@ export default function CatalogClient({ products }: { products: Product[] }) {
   const [page, setPage] = useState(1)
 
   const searchLower = search.trim().toLowerCase()
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch = !searchLower || [p.name_az, p.name_ru, p.name_en].some(
-      (n) => n?.toLowerCase().includes(searchLower)
-    )
-    const matchesCategory = !categoryFilter || p.category === categoryFilter
-    return matchesSearch && matchesCategory
-  })
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchesSearch = !searchLower || [p.name_az, p.name_ru, p.name_en].some(
+        (n) => n?.toLowerCase().includes(searchLower)
+      )
+      const matchesCategory = !categoryFilter || p.category === categoryFilter
+      return matchesSearch && matchesCategory
+    })
+  }, [products, searchLower, categoryFilter])
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
-  const paginatedProducts = filteredProducts.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
-  )
+  const paginatedProducts = useMemo(() => {
+    return filteredProducts.slice(
+      (page - 1) * ITEMS_PER_PAGE,
+      page * ITEMS_PER_PAGE
+    )
+  }, [filteredProducts, page])
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-8">
@@ -67,7 +73,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {paginatedProducts.map((p) => {
+        {paginatedProducts.map((p, index) => {
           const name = lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
           const cat = tr.categories[p.category]?.[lang] || p.category
           const discountedPrice = p.discount_pct > 0
@@ -75,11 +81,26 @@ export default function CatalogClient({ products }: { products: Product[] }) {
             : null
 
           return (
-            <a key={p.id} href={'/product/' + p.id}
-              className={['border rounded-xl overflow-hidden hover:shadow-lg transition-shadow dark:border-gray-800', !p.in_stock ? 'opacity-60' : ''].join(' ')}>
+            <motion.a
+              key={p.id}
+              href={'/product/' + p.id}
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.2, delay: index * 0.03 }}
+              whileHover={{ y: -2 }}
+              className={['border rounded-xl overflow-hidden hover:shadow-lg transition-shadow dark:border-gray-800', !p.in_stock ? 'opacity-60' : ''].join(' ')}
+            >
               <div className="relative aspect-video bg-gray-100 dark:bg-gray-900">
                 {p.image_urls && p.image_urls.length > 0 ? (
-                  <img src={p.image_urls[0]} alt={name} className="w-full h-full object-cover" />
+                  <Image
+                    src={p.image_urls[0]}
+                    alt={name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
+                    unoptimized
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-300 text-5xl">
                     🛏
@@ -110,7 +131,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
                   )}
                 </div>
               </div>
-            </a>
+            </motion.a>
           )
         })}
       </div>

@@ -40,8 +40,8 @@ export default async function UsersPage() {
           <h1 className="text-3xl font-bold">Staff</h1>
         </div>
         <a href="/admin/users/invite"
-          className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800">
-          Yeni admin
+          className="btn-primary btn-icon-arrow px-6 py-2">
+          Yeni admin <span className="arrow">→</span>
         </a>
       </div>
       <table className="w-full border-collapse">

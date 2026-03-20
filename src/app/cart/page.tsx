@@ -1,4 +1,5 @@
 'use client'
+import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useCart } from '@/context/cart'
 import { useLang, translations } from '@/context/lang'
@@ -81,7 +82,13 @@ export default function CartPage() {
         <div>
           <div className="flex flex-col gap-3 mb-6">
             {items.map((item, i) => (
-              <div key={i} className="flex gap-4 border rounded-xl p-4">
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.16, delay: i * 0.03 }}
+                className="flex gap-4 border rounded-xl p-4 card-soft"
+              >
                 {item.image && (
                   <img src={item.image} className="w-20 h-20 object-cover rounded-lg" />
                 )}
@@ -93,7 +100,7 @@ export default function CartPage() {
                 </div>
                 <button onClick={() => remove(item.id, item.size)}
                   className="text-red-400 hover:text-red-600">X</button>
-              </div>
+              </motion.div>
             ))}
           </div>
           <div className="border-t pt-4 flex justify-between items-center">
@@ -132,10 +139,13 @@ export default function CartPage() {
               placeholder={tr.extraInfo[lang] + '...'}
               value={notes} onChange={e => setNotes(e.target.value)} />
           </div>
-          <button type="submit" disabled={loading || !address}
-            className="bg-black text-white py-3 rounded-xl text-lg hover:bg-gray-800 disabled:opacity-50">
+          <motion.button
+            whileTap={{ scale: 0.985 }}
+            type="submit" disabled={loading || !address}
+            className="btn-primary py-3 rounded-xl text-lg"
+          >
             {loading ? tr.submitting[lang] : `${tr.submitOrder[lang]} — ${total} AZN`}
-          </button>
+          </motion.button>
         </form>
       </div>
     </main>

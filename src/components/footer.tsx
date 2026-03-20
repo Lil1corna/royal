@@ -1,4 +1,5 @@
 'use client'
+import { motion } from 'framer-motion'
 import { useLang, translations } from '@/context/lang'
 import Link from 'next/link'
 
@@ -7,7 +8,13 @@ export default function Footer() {
   const tr = translations
 
   return (
-    <footer className="border-t bg-gray-50 mt-auto">
+    <motion.footer
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.25 }}
+      className="border-t bg-gray-50 mt-auto"
+    >
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
@@ -37,6 +44,6 @@ export default function Footer() {
           © {new Date().getFullYear()} RoyalAz. Bütün hüquqlar qorunur.
         </div>
       </div>
-    </footer>
+    </motion.footer>
   )
 }

@@ -45,7 +45,7 @@ export default async function AdminPage() {
         <div className="flex gap-3">
           <a href="/admin/orders"
             className="relative bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600">
-            Sifarisler
+            Sifarisler <span className="arrow">→</span>
             {newOrders && newOrders.length > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                 {newOrders.length}
@@ -53,12 +53,12 @@ export default async function AdminPage() {
             )}
           </a>
           <a href="/admin/users"
-            className="bg-gray-200 text-black px-6 py-2 rounded-lg hover:bg-gray-300">
-            Staff
+            className="btn-secondary btn-icon-arrow px-6 py-2">
+            Staff <span className="arrow">→</span>
           </a>
           <a href="/admin/products/new"
-            className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800">
-            Yeni mehsul
+            className="btn-primary btn-icon-arrow px-6 py-2">
+            Yeni mehsul <span className="arrow">→</span>
           </a>
         </div>
       </div>

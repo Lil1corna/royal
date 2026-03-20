@@ -19,12 +19,12 @@ export default function Error({
       <div className="flex gap-4">
         <button
           onClick={reset}
-          className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800"
+          className="btn-primary btn-icon-arrow px-6 py-2"
         >
-          {tr.tryAgain[lang]}
+          {tr.tryAgain[lang]} <span className="arrow">→</span>
         </button>
-        <a href="/" className="border px-6 py-2 rounded-lg hover:bg-gray-100">
-          {tr.backToCatalog[lang]}
+        <a href="/" className="btn-secondary btn-icon-arrow px-6 py-2">
+          {tr.backToCatalog[lang]} <span className="arrow">→</span>
         </a>
       </div>
     </main>

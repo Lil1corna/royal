@@ -114,8 +114,8 @@ function OrderActions({ orderId, currentStatus }: { orderId: string, currentStat
         <form action="/admin/orders/update" method="post">
           <input type="hidden" name="id" value={orderId} />
           <input type="hidden" name="status" value={n.status} />
-          <button className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800">
-            {n.label}
+          <button className="btn-admin btn-icon-arrow px-4 py-2">
+            {n.label} <span className="arrow">→</span>
           </button>
         </form>
       )}

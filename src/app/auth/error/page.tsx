@@ -12,11 +12,11 @@ function AuthErrorContent() {
       <h1 className="text-2xl font-bold mb-2">Giris ugursuz oldu</h1>
       <p className="text-gray-500 mb-6 text-center max-w-md">{message}</p>
       <div className="flex gap-4">
-        <a href="/auth/signin" className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800">
-          Yeniden cəhd et
+        <a href="/auth/signin" className="btn-primary btn-icon-arrow px-6 py-2">
+          Yeniden cəhd et <span className="arrow">→</span>
         </a>
-        <a href="/" className="border px-6 py-2 rounded-lg hover:bg-gray-100">
-          Ana səhifə
+        <a href="/" className="btn-secondary btn-icon-arrow px-6 py-2">
+          Ana səhifə <span className="arrow">→</span>
         </a>
       </div>
     </main>
