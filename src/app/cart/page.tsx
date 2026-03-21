@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useCart } from '@/context/cart'
 import { useLang, translations } from '@/context/lang'
 import { createClient } from '@/lib/supabase'
@@ -13,6 +13,7 @@ import {
   FREE_SHIPPING_THRESHOLD,
   type DeliveryMode,
 } from '@/lib/delivery'
+import { buildProfileAddressLine, metaCoord } from '@/lib/profile-address'
 
 const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
 
@@ -45,8 +46,33 @@ export default function CartPage() {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('courier')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
+  /** Сохранённый в профиле адрес (если есть) */
+  const [profileSaved, setProfileSaved] = useState<{
+    line: string
+    lat: number | null
+    lng: number | null
+  } | null>(null)
+  /** saved = из профиля, map = выбрать на карте заново */
+  const [addressMode, setAddressMode] = useState<'saved' | 'map'>('map')
+  const [mapResetKey, setMapResetKey] = useState(0)
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      const m = user?.user_metadata as Record<string, unknown> | undefined
+      if (!m) return
+      const line = buildProfileAddressLine(m)
+      if (!line) return
+      const la = metaCoord(m.shipping_lat)
+      const ln = metaCoord(m.shipping_lng)
+      setProfileSaved({ line, lat: la, lng: ln })
+      setAddressMode('saved')
+      setAddress(line)
+      setLat(la)
+      setLng(ln)
+    })
+  }, [supabase])
 
   const subtotal = total
   const shippingFee = useMemo(
@@ -63,7 +89,10 @@ export default function CartPage() {
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault()
     if (items.length === 0) return
-    if (!address) { showToast('error', tr.selectAddress[lang]); return }
+    if (deliveryMode === 'courier' && !address.trim()) {
+      showToast('error', tr.selectAddress[lang])
+      return
+    }
     const phoneNormalized = normalizeAzPhone(phone)
     if (!phoneNormalized) {
       showToast('error', tr.invalidPhone[lang])
@@ -73,7 +102,21 @@ export default function CartPage() {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    const notesBase = `Tel: ${phoneNormalized}${notes ? ' | ' + notes : ''}${lat ? ` | Koordinat: ${lat},${lng}` : ''}`
+    const orderAddress =
+      deliveryMode === 'pickup'
+        ? lang === 'ru'
+          ? 'Самовывоз'
+          : lang === 'en'
+            ? 'Store pickup'
+            : 'Özün götür'
+        : address.trim()
+
+    const coordPart =
+      deliveryMode === 'courier' && lat != null && lng != null
+        ? ` | Koordinat: ${lat},${lng}`
+        : ''
+
+    const notesBase = `Tel: ${phoneNormalized}${notes ? ' | ' + notes : ''}${coordPart}`
     const deliveryMeta =
       lang === 'ru'
         ? ` | Доставка: ${deliveryMode === 'pickup' ? 'самовывоз' : 'курьер'}, доставка ${shippingFee} AZN, товары ${subtotal} AZN`
@@ -88,7 +131,7 @@ export default function CartPage() {
       shipping_fee: shippingFee,
       delivery_mode: deliveryMode,
       status: 'new' as const,
-      address,
+      address: orderAddress,
       notes: notesBase + deliveryMeta,
     }
 
@@ -103,7 +146,7 @@ export default function CartPage() {
             user_id: fullRow.user_id,
             total_price: grandTotal,
             status: 'new',
-            address,
+            address: orderAddress,
             notes: notesBase + deliveryMeta,
           },
         ])
@@ -250,22 +293,105 @@ export default function CartPage() {
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {tr.deliveryAddress[lang]}
-              {address && <span className="text-green-600 ml-2 text-xs">✓ {tr.addressSelected[lang]}</span>}
-            </label>
-            <AddressMap onSelect={(addr, la, ln) => {
-              setAddress(addr)
-              setLat(la)
-              setLng(ln)
-            }} />
-            {address && (
-              <div className="mt-2 p-2 bg-gray-50 rounded-lg text-sm text-gray-600">
-                {address}
-              </div>
-            )}
-          </div>
+          {deliveryMode === 'courier' && (
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                {tr.deliveryAddress[lang]}
+                {address.trim() && (
+                  <span className="text-green-600 ml-2 text-xs">
+                    ✓ {tr.addressSelected[lang]}
+                  </span>
+                )}
+              </label>
+
+              {profileSaved && (
+                <div className="flex flex-col gap-2 mb-4">
+                  <label
+                    className={`flex items-start gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
+                      addressMode === 'saved'
+                        ? 'border-amber-500 bg-amber-50/40 ring-1 ring-amber-200'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="addrMode"
+                      className="mt-1 accent-amber-600"
+                      checked={addressMode === 'saved'}
+                      onChange={() => {
+                        setAddressMode('saved')
+                        setAddress(profileSaved.line)
+                        setLat(profileSaved.lat)
+                        setLng(profileSaved.lng)
+                      }}
+                    />
+                    <div>
+                      <div className="font-medium">{tr.addressFromProfile[lang]}</div>
+                      <div className="text-sm text-gray-600 mt-1">{profileSaved.line}</div>
+                      {profileSaved.lat != null && profileSaved.lng != null && (
+                        <div className="text-xs text-emerald-700 mt-1">
+                          GPS ·{' '}
+                          <a
+                            className="underline"
+                            href={`https://www.google.com/maps?q=${profileSaved.lat},${profileSaved.lng}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Google Maps
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                  <label
+                    className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
+                      addressMode === 'map'
+                        ? 'border-amber-500 bg-amber-50/40 ring-1 ring-amber-200'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="addrMode"
+                      className="accent-amber-600"
+                      checked={addressMode === 'map'}
+                      onChange={() => {
+                        setAddressMode('map')
+                        setAddress('')
+                        setLat(null)
+                        setLng(null)
+                        setMapResetKey((k) => k + 1)
+                      }}
+                    />
+                    <span className="font-medium">{tr.addressPickOnMap[lang]}</span>
+                  </label>
+                </div>
+              )}
+
+              {(!profileSaved || addressMode === 'map') && (
+                <AddressMap
+                  key={profileSaved ? mapResetKey : 'guest-map'}
+                  onSelect={(addr, la, ln) => {
+                    setAddress(addr)
+                    setLat(la)
+                    setLng(ln)
+                  }}
+                />
+              )}
+
+              {profileSaved && addressMode === 'saved' && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm text-gray-700 border">
+                  {profileSaved.line}
+                </div>
+              )}
+            </div>
+          )}
+
+          {deliveryMode === 'pickup' && (
+            <p className="text-sm text-gray-600 bg-gray-50 border rounded-xl p-3">
+              {tr.pickupNoAddressNeeded[lang]}
+            </p>
+          )}
           <div>
             <label className="block text-sm font-medium mb-1">{tr.notes[lang]}</label>
             <textarea className="w-full border rounded-lg p-2 h-20 resize-none"
@@ -274,7 +400,8 @@ export default function CartPage() {
           </div>
           <motion.button
             whileTap={{ scale: 0.985 }}
-            type="submit" disabled={loading || !address}
+            type="submit"
+            disabled={loading || (deliveryMode === 'courier' && !address.trim())}
             className="btn-primary py-3 rounded-xl text-lg"
           >
             {loading ? tr.submitting[lang] : `${tr.submitOrder[lang]} — ${grandTotal} AZN`}

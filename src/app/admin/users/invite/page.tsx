@@ -1,12 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
 
 export default function InviteUser() {
-  const router = useRouter()
-  const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('manager')
@@ -21,34 +17,18 @@ export default function InviteUser() {
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    const res = await fetch('/api/admin/users/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, role }),
+    })
+    const data = (await res.json()) as { ok?: boolean; error?: string }
 
-    const existing = await supabase
-      .from('users')
-      .select('id, role')
-      .eq('email', email)
-      .single()
-
-    if (existing.data) {
-      const { error } = await supabase
-        .from('users')
-        .update({ role })
-        .eq('email', email)
-      if (error) {
-        showToast('error', 'Xeta: ' + error.message)
-      } else {
-        showToast('success', 'Ugurla yenilendi')
-        setDone(true)
-      }
+    if (!res.ok || !data.ok) {
+      showToast('error', 'Xeta: ' + (data.error || 'Invite gonderilmedi'))
     } else {
-      const { error } = await supabase
-        .from('users')
-        .insert([{ email, role, name: email }])
-      if (error) {
-        showToast('error', 'Xeta: ' + error.message)
-      } else {
-        showToast('success', 'Ugurla elave edildi')
-        setDone(true)
-      }
+      showToast('success', 'Davet mektubu gonderildi')
+      setDone(true)
     }
     setLoading(false)
   }
@@ -57,10 +37,10 @@ export default function InviteUser() {
     return (
       <main className="p-8 max-w-md mx-auto text-center">
         <div className="text-5xl mb-4">✓</div>
-        <h2 className="text-2xl font-bold mb-2">Elave edildi!</h2>
+        <h2 className="text-2xl font-bold mb-2">Davet gonderildi!</h2>
         <p className="text-gray-500 mb-6">{email} — {role}</p>
         <p className="text-sm text-gray-400 mb-6">
-          Bu shexs Google ile giris etdikde avtomatik olaraq rolu teyin edilecek.
+          Shexse email gelecek. Ilk girisden sonra rol avtomatik teyin olunacaq.
         </p>
         <a href="/admin/users" className="bg-black text-white px-6 py-2 rounded-lg">
           Geri qayit
@@ -103,7 +83,7 @@ export default function InviteUser() {
         </button>
       </form>
       <p className="text-sm text-gray-400 mt-4 text-center">
-        Bu shexs Google ile giris etdikde avtomatik olaraq rolu teyin edilecek.
+        Supabase Auth invite email gonderir. Ilk girisde rol avtomatik verilir.
       </p>
     </main>
   )

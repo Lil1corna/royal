@@ -1,9 +1,12 @@
 'use client'
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useLang, translations } from '@/context/lang'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
+
+const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
 
 function formatAzPhone(raw: string): string {
   const digits = raw.replace(/\D/g, '').replace(/^994/, '')
@@ -34,6 +37,9 @@ export default function AccountSettings({
   initialName,
   initialPhone,
   initialAddress,
+  initialAddressExtra,
+  initialShippingLat,
+  initialShippingLng,
   initialAvatarUrl,
 }: {
   userId: string
@@ -41,6 +47,9 @@ export default function AccountSettings({
   initialName: string
   initialPhone: string
   initialAddress: string
+  initialAddressExtra: string
+  initialShippingLat: number | null
+  initialShippingLng: number | null
   initialAvatarUrl: string
 }) {
   const { lang } = useLang()
@@ -50,15 +59,38 @@ export default function AccountSettings({
   const [name, setName] = useState(initialName)
   const [phone, setPhone] = useState(formatAzPhone(initialPhone || ''))
   const [address, setAddress] = useState(initialAddress)
+  const [shippingLat, setShippingLat] = useState<number | null>(initialShippingLat)
+  const [shippingLng, setShippingLng] = useState<number | null>(initialShippingLng)
+  const [addressExtra, setAddressExtra] = useState(initialAddressExtra)
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
   const [avatarChecking, setAvatarChecking] = useState(false)
   const [avatarReachable, setAvatarReachable] = useState<boolean | null>(null)
+  const [mapKey, setMapKey] = useState(0)
 
   const previewAvatar = avatarUrl.trim()
   const avatarValid = /^https?:\/\/.+/i.test(previewAvatar)
+
+  useEffect(() => {
+    setName(initialName)
+    setPhone(formatAzPhone(initialPhone || ''))
+    setAddress(initialAddress)
+    setAddressExtra(initialAddressExtra)
+    setShippingLat(initialShippingLat)
+    setShippingLng(initialShippingLng)
+    setAvatarUrl(initialAvatarUrl)
+    setMapKey((k) => k + 1)
+  }, [
+    initialName,
+    initialPhone,
+    initialAddress,
+    initialAddressExtra,
+    initialShippingLat,
+    initialShippingLng,
+    initialAvatarUrl,
+  ])
 
   useEffect(() => {
     if (!previewAvatar || !avatarValid) {
@@ -82,6 +114,8 @@ export default function AccountSettings({
     setTimeout(() => setToast(null), 2800)
   }
 
+  const fullAddressLine = [address.trim(), addressExtra.trim()].filter(Boolean).join(', ')
+
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
     const phoneNormalized = normalizeAzPhone(phone)
@@ -89,11 +123,21 @@ export default function AccountSettings({
       showToast('error', tr.invalidPhone[lang])
       return
     }
+    if (!address.trim()) {
+      showToast(
+        'error',
+        lang === 'ru'
+          ? 'Выберите адрес на карте (клик или поиск)'
+          : lang === 'en'
+            ? 'Pick your address on the map'
+            : 'Xəritədə ünvan seçin'
+      )
+      return
+    }
     if (previewAvatar && !avatarValid) {
       showToast('error', tr.invalidAvatarUrl[lang])
       return
     }
-    // Не блокируем сохранение, если превью не загрузилось (CORS, hotlink) — ссылка всё равно может работать в профиле
 
     setSaving(true)
     setSaved(false)
@@ -106,7 +150,10 @@ export default function AccountSettings({
     const metaRes = await supabase.auth.updateUser({
       data: {
         phone: phoneNormalized,
-        shipping_address: address.trim() || null,
+        shipping_address: address.trim(),
+        shipping_address_extra: addressExtra.trim() || null,
+        shipping_lat: shippingLat,
+        shipping_lng: shippingLng,
         avatar_url: avatarUrl.trim() || null,
       },
     })
@@ -152,12 +199,42 @@ export default function AccountSettings({
         />
 
         <label className="block text-sm font-medium mb-2">{tr.shippingAddress[lang]}</label>
+        <p className="text-xs text-gray-500 mb-3">{tr.addressProfileHint[lang]}</p>
+
+        <AddressMap
+          key={mapKey}
+          initialLat={initialShippingLat}
+          initialLng={initialShippingLng}
+          initialAddress={initialAddress}
+          onSelect={(addr, la, ln) => {
+            setAddress(addr)
+            setShippingLat(la)
+            setShippingLng(ln)
+          }}
+        />
+
+        <label className="block text-sm font-medium mt-4 mb-1">{tr.addressDetailHint[lang]}</label>
         <input
           className="w-full border rounded-lg p-2 mb-4"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          maxLength={180}
+          value={addressExtra}
+          onChange={(e) => setAddressExtra(e.target.value)}
+          maxLength={80}
+          placeholder={tr.addressDetailHint[lang]}
         />
+
+        {fullAddressLine && (
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700 border">
+            <span className="text-xs text-gray-500 block mb-1">
+              {lang === 'ru' ? 'Сохранится:' : lang === 'en' ? 'Will save:' : 'Yadda saxlanacaq:'}
+            </span>
+            {fullAddressLine}
+            {shippingLat != null && shippingLng != null && (
+              <span className="block text-xs text-emerald-700 mt-1">
+                GPS: {shippingLat.toFixed(5)}, {shippingLng.toFixed(5)}
+              </span>
+            )}
+          </div>
+        )}
 
         <label className="block text-sm font-medium mb-2">{tr.avatarUrl[lang]}</label>
         <p className="text-xs text-gray-500 mb-2">

@@ -114,6 +114,31 @@ export const translations = {
   wishlistEmpty: t('Secilmisler boshdur', 'Избранное пусто', 'Wishlist is empty'),
   openWishlist: t('Secilmislere bax', 'Открыть избранное', 'Open wishlist'),
   loading: t('Yuklenir...', 'Загрузка...', 'Loading...'),
+  addressFromProfile: t(
+    'Profilimdəki ünvan',
+    'Адрес из профиля',
+    'Saved profile address'
+  ),
+  addressPickOnMap: t(
+    'Xəritədə yeni ünvan seç',
+    'Указать другой адрес на карте',
+    'Choose a different address on the map'
+  ),
+  addressProfileHint: t(
+    'Ünvanı xəritədə seçin — koordinatlar saxlanılır, sifarişdə istifadə edə bilərsiniz.',
+    'Выберите адрес на карте — координаты сохранятся для заказов.',
+    'Pick your address on the map — coordinates are saved for checkout.',
+  ),
+  addressDetailHint: t(
+    'Mərtəbə, mənzil (istəyə görə)',
+    'Этаж, квартира (необязательно)',
+    'Floor, apt. (optional)'
+  ),
+  pickupNoAddressNeeded: t(
+    'Özün götürmə üçün çatdırılma ünvanı lazım deyil',
+    'Для самовывоза адрес доставки не нужен',
+    'Pickup — no delivery address needed',
+  ),
   categories: {
     ortopedik: t('Ortopedik', 'Ортопедический', 'Orthopedic'),
     berk: t('Berk', 'Жёсткий', 'Firm'),

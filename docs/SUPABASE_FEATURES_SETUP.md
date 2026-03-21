@@ -1,4 +1,4 @@
-# Настройка: доставка, Realtime, безопасность
+# Настройка: доставка, Realtime, безопасность, invite
 
 ## 1. Колонки доставки в `orders`
 
@@ -31,3 +31,20 @@
 
 - Ошибки корневого уровня логируются в `global-error.tsx` через `captureException`.
 - При необходимости подключите **Sentry** (`@sentry/nextjs`) и вызывайте `Sentry.captureException` там же.
+
+## 5. Invite админов до первого входа
+
+Чтобы супер-админ мог отправлять приглашения людям, которые еще не заходили на сайт:
+
+1. В Supabase → **SQL Editor** выполните миграцию:
+   - `supabase/migrations/20260321033000_pending_staff_invites.sql`
+2. В `.env.local` и в Vercel добавьте:
+   - `SUPABASE_SERVICE_ROLE_KEY=...`
+3. В Supabase настройте отправку почты:
+   - **Authentication → SMTP Settings**
+   - **Authentication → Email Templates → Invite user**
+
+Поток работы:
+- супер-админ отправляет invite из `/admin/users/invite`,
+- Supabase отправляет email-приглашение,
+- после первого входа через `/auth/callback` пользователю автоматически назначается роль из `pending_staff_invites`.
