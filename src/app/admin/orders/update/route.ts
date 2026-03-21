@@ -4,6 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ORDER_STATUSES, isOrderStatus } from '@/lib/order-status'
 import { rateLimitAllow } from '@/lib/rate-limit'
 import { captureException } from '@/lib/monitoring'
+import {
+  notifyDeliveryWebhook,
+  parseMapsLinkFromNotes,
+  parsePhoneFromNotes,
+} from '@/lib/notify-delivery'
 
 const ALLOWED_UPDATE_STATUSES = new Set<string>(ORDER_STATUSES)
 
@@ -60,12 +65,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(redirectUrl)
     }
 
+    const { data: orderRow } = await supabase
+      .from('orders')
+      .select('id, address, notes, total_price')
+      .eq('id', id)
+      .single()
+
     const { error } = await supabase.from('orders').update({ status }).eq('id', id)
     if (error) {
       captureException(error, { route: 'admin/orders/update', orderId: id })
       redirectUrl.searchParams.set('toast', 'error')
     } else {
       redirectUrl.searchParams.set('toast', 'success')
+      if (status === 'in_delivery' && orderRow) {
+        void notifyDeliveryWebhook({
+          event: 'order_in_delivery',
+          order_id: orderRow.id,
+          address: orderRow.address ?? '',
+          notes: orderRow.notes,
+          total_price: Number(orderRow.total_price),
+          maps_link: parseMapsLinkFromNotes(orderRow.notes),
+          customer_phone: parsePhoneFromNotes(orderRow.notes),
+        })
+      }
     }
     return NextResponse.redirect(redirectUrl)
   } catch (e) {

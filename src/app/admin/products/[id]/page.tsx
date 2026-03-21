@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter, useParams } from 'next/navigation'
 
@@ -7,6 +7,7 @@ export default function EditProduct() {
   const router = useRouter()
   const params = useParams()
   const supabase = createClient()
+  const productId = params.id as string
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
     name_az: '', name_ru: '', name_en: '',
@@ -15,46 +16,115 @@ export default function EditProduct() {
     discount_pct: '0',
     in_stock: true,
   })
+  /** Уже сохранённые URL из Storage или внешние */
+  const [existingUrls, setExistingUrls] = useState<string[]>([])
+  /** Новые файлы для загрузки */
+  const [newFiles, setNewFiles] = useState<File[]>([])
+  const [newPreviews, setNewPreviews] = useState<string[]>([])
+
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single()
+    if (data) {
+      setForm({
+        name_az: data.name_az,
+        name_ru: data.name_ru,
+        name_en: data.name_en,
+        category: data.category,
+        price: data.price.toString(),
+        discount_pct: data.discount_pct.toString(),
+        in_stock: data.in_stock,
+      })
+      const urls = Array.isArray(data.image_urls) ? data.image_urls.filter(Boolean) : []
+      setExistingUrls(urls)
+    }
+  }, [supabase, productId])
 
   useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', params.id)
-        .single()
-      if (data) {
-        setForm({
-          name_az: data.name_az,
-          name_ru: data.name_ru,
-          name_en: data.name_en,
-          category: data.category,
-          price: data.price.toString(),
-          discount_pct: data.discount_pct.toString(),
-          in_stock: data.in_stock,
-        })
+    void load()
+  }, [load])
+
+  const removeExisting = (index: number) => {
+    setExistingUrls((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const moveExisting = (i: number, dir: 'left' | 'right') => {
+    const j = dir === 'left' ? i - 1 : i + 1
+    if (j < 0 || j >= existingUrls.length) return
+    const next = [...existingUrls]
+    ;[next[i], next[j]] = [next[j], next[i]]
+    setExistingUrls(next)
+  }
+
+  const handleNewFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    setNewFiles((prev) => [...prev, ...files])
+    setNewPreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))])
+    e.target.value = ''
+  }
+
+  const removeNew = (index: number) => {
+    URL.revokeObjectURL(newPreviews[index])
+    setNewFiles((prev) => prev.filter((_, i) => i !== index))
+    setNewPreviews((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const moveNew = (i: number, dir: 'left' | 'right') => {
+    const j = dir === 'left' ? i - 1 : i + 1
+    if (j < 0 || j >= newFiles.length) return
+    const nf = [...newFiles]
+    const np = [...newPreviews]
+    ;[nf[i], nf[j]] = [nf[j], nf[i]]
+    ;[np[i], np[j]] = [np[j], np[i]]
+    setNewFiles(nf)
+    setNewPreviews(np)
+  }
+
+  const uploadNewFiles = async (): Promise<string[]> => {
+    const uploaded: string[] = []
+    for (const file of newFiles) {
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `${productId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error } = await supabase.storage.from('products').upload(path, file)
+      if (!error) {
+        const { data } = supabase.storage.from('products').getPublicUrl(path)
+        uploaded.push(data.publicUrl)
       }
     }
-    load()
-  }, [params.id])
+    return uploaded
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    const { error } = await supabase
-      .from('products')
-      .update({
-        ...form,
-        price: parseFloat(form.price),
-        discount_pct: parseFloat(form.discount_pct),
-      })
-      .eq('id', params.id)
-    if (error) {
-      alert('Xeta: ' + error.message)
-    } else {
-      router.push('/admin')
+    try {
+      const uploadedUrls = await uploadNewFiles()
+      const image_urls = [...existingUrls, ...uploadedUrls]
+
+      const { error } = await supabase
+        .from('products')
+        .update({
+          ...form,
+          price: parseFloat(form.price),
+          discount_pct: parseFloat(form.discount_pct),
+          image_urls,
+        })
+        .eq('id', productId)
+
+      newPreviews.forEach((url) => URL.revokeObjectURL(url))
+
+      if (error) {
+        alert('Xeta: ' + error.message)
+      } else {
+        router.push('/admin')
+      }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const handleDelete = async () => {
@@ -62,7 +132,7 @@ export default function EditProduct() {
     const { error } = await supabase
       .from('products')
       .delete()
-      .eq('id', params.id)
+      .eq('id', productId)
     if (error) {
       alert('Xeta: ' + error.message)
     } else {
@@ -125,6 +195,66 @@ export default function EditProduct() {
           <input type="checkbox" id="in_stock" checked={form.in_stock}
             onChange={e => setForm({...form, in_stock: e.target.checked})} />
           <label htmlFor="in_stock" className="font-medium">Stokda var</label>
+        </div>
+
+        <div className="border rounded-xl p-4 bg-gray-50/80">
+          <label className="block font-medium mb-2">Sekiller</label>
+          <p className="text-xs text-gray-500 mb-3">
+            Movcud sekilleri silə və ya sırasını dəyişə bilərsiniz. Yeni şəkil əlavə etmək üçün fayl seçin.
+          </p>
+
+          {existingUrls.length > 0 && (
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">Movcud ({existingUrls.length})</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {existingUrls.map((src, i) => (
+                  <div key={`${src}-${i}`} className="relative group border rounded-lg overflow-hidden bg-white">
+                    <img src={src} alt="" className="w-full aspect-square object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
+                      <button type="button" onClick={() => moveExisting(i, 'left')}
+                        className="bg-white text-black w-8 h-8 rounded-full text-sm" disabled={i === 0}>{'<'}</button>
+                      <button type="button" onClick={() => removeExisting(i)}
+                        className="bg-red-500 text-white w-8 h-8 rounded-full text-sm">X</button>
+                      <button type="button" onClick={() => moveExisting(i, 'right')}
+                        className="bg-white text-black w-8 h-8 rounded-full text-sm" disabled={i === existingUrls.length - 1}>{'>'}</button>
+                    </div>
+                    {i === 0 && (
+                      <span className="absolute top-1 left-1 bg-black text-white text-[10px] px-1 rounded">Ana</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleNewFiles}
+            className="w-full border rounded-lg p-2 mb-3 bg-white"
+          />
+
+          {newPreviews.length > 0 && (
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Yeni (Saxla düyməsindən sonra yüklənəcək)</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {newPreviews.map((src, i) => (
+                  <div key={src} className="relative group border rounded-lg overflow-hidden bg-white">
+                    <img src={src} alt="" className="w-full aspect-square object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
+                      <button type="button" onClick={() => moveNew(i, 'left')}
+                        className="bg-white text-black w-8 h-8 rounded-full text-sm" disabled={i === 0}>{'<'}</button>
+                      <button type="button" onClick={() => removeNew(i)}
+                        className="bg-red-500 text-white w-8 h-8 rounded-full text-sm">X</button>
+                      <button type="button" onClick={() => moveNew(i, 'right')}
+                        className="bg-white text-black w-8 h-8 rounded-full text-sm" disabled={i === newPreviews.length - 1}>{'>'}</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-4 mt-4">

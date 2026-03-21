@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useLang, translations } from '@/context/lang'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
@@ -44,16 +45,14 @@ export default function AccountSettings({
 }) {
   const { lang } = useLang()
   const tr = translations
+  const router = useRouter()
   const supabase = createClient()
   const [name, setName] = useState(initialName)
   const [phone, setPhone] = useState(formatAzPhone(initialPhone || ''))
   const [address, setAddress] = useState(initialAddress)
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl)
-  const [newEmail, setNewEmail] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [mailSending, setMailSending] = useState(false)
-  const [mailSent, setMailSent] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
   const [avatarChecking, setAvatarChecking] = useState(false)
   const [avatarReachable, setAvatarReachable] = useState<boolean | null>(null)
@@ -74,6 +73,7 @@ export default function AccountSettings({
     }
     img.onload = () => done(true)
     img.onerror = () => done(false)
+    img.referrerPolicy = 'no-referrer'
     img.src = previewAvatar
   }, [previewAvatar, avatarValid])
 
@@ -93,10 +93,7 @@ export default function AccountSettings({
       showToast('error', tr.invalidAvatarUrl[lang])
       return
     }
-    if (previewAvatar && avatarReachable === false) {
-      showToast('error', tr.avatarNotReachable[lang])
-      return
-    }
+    // Не блокируем сохранение, если превью не загрузилось (CORS, hotlink) — ссылка всё равно может работать в профиле
 
     setSaving(true)
     setSaved(false)
@@ -118,37 +115,24 @@ export default function AccountSettings({
     if (!error && !metaRes.error) {
       setSaved(true)
       showToast('success', tr.saved[lang])
+      router.refresh()
       setTimeout(() => setSaved(false), 2000)
     } else {
       showToast('error', error?.message || metaRes.error?.message || tr.error[lang])
     }
   }
 
-  const sendConfirm = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const email = newEmail.trim()
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showToast('error', tr.invalidEmail[lang])
-      return
-    }
-    setMailSending(true)
-    setMailSent(false)
-    const { error } = await supabase.auth.updateUser({ email })
-    setMailSending(false)
-    if (error) {
-      showToast('error', error.message)
-      return
-    }
-    setMailSent(true)
-    showToast('success', tr.confirmationSent[lang])
-    setTimeout(() => setMailSent(false), 2500)
-    setNewEmail('')
-  }
-
   return (
     <div className="card-soft p-5 mb-8">
       <ToastMessage toast={toast} className="mb-4" />
       <h2 className="text-lg font-semibold mb-4">{tr.accountSettings[lang]}</h2>
+      <p className="text-sm text-gray-500 mb-4">
+        {lang === 'ru'
+          ? `Email: ${currentEmail} (смена email отключена)`
+          : lang === 'en'
+            ? `Email: ${currentEmail} (email change is disabled)`
+            : `Email: ${currentEmail} (email dəyişmə söndürülüb)`}
+      </p>
       <form onSubmit={save}>
         <label className="block text-sm font-medium mb-2">{tr.displayName[lang]}</label>
         <input
@@ -176,6 +160,13 @@ export default function AccountSettings({
         />
 
         <label className="block text-sm font-medium mb-2">{tr.avatarUrl[lang]}</label>
+        <p className="text-xs text-gray-500 mb-2">
+          {lang === 'ru'
+            ? 'Прямая ссылка на картинку (https). Если превью не грузится из‑за защиты сайта — сохранение всё равно возможно.'
+            : lang === 'en'
+              ? 'Direct image URL (https). Save still works if preview fails due to the host blocking hotlinking.'
+              : 'Birbaşa şəkil linki (https). Bəzi saytlar önizləməni bloklaya bilər — saxlama işləyir.'}
+        </p>
         <input
           className="w-full border rounded-lg p-2 mb-4"
           value={avatarUrl}
@@ -184,7 +175,12 @@ export default function AccountSettings({
         />
         <div className="mb-4">
           {avatarValid ? (
-            <img src={previewAvatar} alt="avatar preview" className="w-16 h-16 rounded-full object-cover border" />
+            <img
+              src={previewAvatar}
+              alt="avatar preview"
+              className="w-16 h-16 rounded-full object-cover border"
+              referrerPolicy="no-referrer"
+            />
           ) : (
             <div className="w-16 h-16 rounded-full bg-gray-100 border flex items-center justify-center text-gray-400 text-xs">
               preview
@@ -192,7 +188,15 @@ export default function AccountSettings({
           )}
           {previewAvatar && avatarValid && (
             <div className="text-xs mt-2 text-gray-500">
-              {avatarChecking ? 'Checking avatar...' : avatarReachable === false ? tr.avatarNotReachable[lang] : ''}
+              {avatarChecking
+                ? lang === 'ru'
+                  ? 'Проверка…'
+                  : lang === 'en'
+                    ? 'Checking…'
+                    : 'Yoxlanır…'
+                : avatarReachable === false
+                  ? tr.avatarNotReachable[lang]
+                  : ''}
             </div>
           )}
           <button
@@ -208,22 +212,6 @@ export default function AccountSettings({
           {saving ? tr.saving[lang] : tr.saveChanges[lang]}
         </button>
         {saved && <span className="ml-3 text-sm text-green-600">{tr.saved[lang]}</span>}
-      </form>
-
-      <form onSubmit={sendConfirm} className="mt-6 pt-6 border-t">
-        <h3 className="text-base font-semibold mb-2">{tr.updateEmail[lang]}</h3>
-        <p className="text-xs text-gray-500 mb-2">{currentEmail}</p>
-        <input
-          className="w-full border rounded-lg p-2 mb-3"
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-          placeholder={tr.newEmail[lang]}
-          type="email"
-        />
-        <button className="btn-secondary" disabled={mailSending}>
-          {mailSending ? tr.saving[lang] : tr.sendConfirmation[lang]}
-        </button>
-        {mailSent && <span className="ml-3 text-sm text-green-600">{tr.confirmationSent[lang]}</span>}
       </form>
     </div>
   )
