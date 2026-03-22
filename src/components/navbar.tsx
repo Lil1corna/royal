@@ -22,7 +22,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
   }
 
   const pill =
-    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 border border-transparent hover:border-amber-200/60 hover:bg-amber-50/80 hover:shadow-sm text-neutral-800'
+    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 border border-neutral-200/90 bg-white text-neutral-900 hover:border-amber-300 hover:bg-amber-50 hover:shadow-sm'
 
   return (
     <>
@@ -31,7 +31,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
         {tr.catalog[lang]}
       </Link>
 
-      <div className="flex rounded-full border border-neutral-200/80 bg-white/60 p-0.5 shadow-inner text-xs font-semibold">
+      <div className="flex rounded-full border border-neutral-300 bg-neutral-100 p-0.5 shadow-inner text-xs font-semibold">
         {(['az', 'ru', 'en'] as Lang[]).map((l) => (
           <button
             key={l}
@@ -40,7 +40,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
             className={`px-3 py-1.5 rounded-full transition-all duration-200 ${
               lang === l
                 ? 'bg-gradient-to-br from-neutral-900 to-neutral-800 text-white shadow-md'
-                : 'text-neutral-600 hover:bg-neutral-100'
+                : 'text-neutral-800 hover:bg-white'
             }`}
           >
             {l.toUpperCase()}
@@ -51,7 +51,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
       <Link
         href="/wishlist"
         onClick={() => onClose?.()}
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-neutral-200/90 bg-white/70 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md hover:shadow-amber-100"
+        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-900 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-md"
         title={tr.wishlist[lang]}
       >
         <motion.span
@@ -135,7 +135,7 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
       initial={{ y: -12, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="sticky top-0 z-50 border-b border-white/30 bg-white/75 backdrop-blur-xl shadow-[0_8px_32px_rgba(15,23,42,0.06)]"
+      className="sticky top-0 z-50 border-b border-neutral-200/90 bg-white/95 text-neutral-900 backdrop-blur-xl shadow-[0_4px_24px_rgba(15,23,42,0.08)]"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[4.25rem] flex items-center justify-between gap-3">
         <Link href="/" className="group flex items-center gap-1 shrink-0">
@@ -162,7 +162,7 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
         <motion.button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="lg:hidden flex h-11 w-11 items-center justify-center rounded-xl border border-neutral-200 bg-white/80 shadow-sm"
+          className="lg:hidden flex h-11 w-11 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-900 shadow-sm"
           aria-label="Menu"
           whileTap={{ scale: 0.95 }}
         >
@@ -184,15 +184,15 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
               transition={{ duration: 0.2 }}
             />
             <motion.div
-              className="lg:hidden fixed top-0 right-0 w-[min(100%,20rem)] h-full bg-white/95 backdrop-blur-xl border-l border-amber-100 shadow-2xl z-50 p-5 flex flex-col gap-5"
+              className="lg:hidden fixed top-0 right-0 w-[min(100%,20rem)] h-full bg-white text-neutral-900 backdrop-blur-xl border-l border-neutral-200 shadow-2xl z-50 p-5 flex flex-col gap-5"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
             >
               <div className="flex justify-between items-center">
-                <span className="font-bold text-lg">
-                  Royal<span className="text-amber-500">Az</span>
+                <span className="font-bold text-lg text-neutral-900">
+                  Royal<span className="text-amber-600">Az</span>
                 </span>
                 <button
                   type="button"

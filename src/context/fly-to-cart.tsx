@@ -17,6 +17,9 @@ type FlyState = {
   url: string | null
 }
 
+const W = 56
+const H = 56
+
 const Ctx = createContext<{ triggerFly: (el: HTMLElement, imageUrl?: string | null) => void }>({
   triggerFly: () => {},
 })
@@ -32,16 +35,14 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
       const target = document.getElementById('nav-cart-fly-target')
       if (!target) return
       const to = target.getBoundingClientRect()
-      const w = 44
-      const h = 44
       setFly({
-        x1: from.left + from.width / 2 - w / 2,
-        y1: from.top + from.height / 2 - h / 2,
-        x2: to.left + to.width / 2 - w / 2,
-        y2: to.top + to.height / 2 - h / 2,
+        x1: from.left + from.width / 2 - W / 2,
+        y1: from.top + from.height / 2 - H / 2,
+        x2: to.left + to.width / 2 - W / 2,
+        y2: to.top + to.height / 2 - H / 2,
         url: imageUrl || null,
       })
-      window.setTimeout(() => setFly(null), 1050)
+      window.setTimeout(() => setFly(null), 1000)
     },
     [reduceMotion]
   )
@@ -53,49 +54,67 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
         {fly && (
           <motion.div
             key={`${fly.x1}-${fly.y1}`}
-            className="fixed z-[300] pointer-events-none rounded-xl overflow-hidden shadow-xl border-2 border-amber-400/90 bg-white"
-            style={{ width: 44, height: 44 }}
-            initial={{ x: fly.x1, y: fly.y1, scale: 1, rotate: -6, opacity: 1 }}
+            className="fixed z-[300] pointer-events-none rounded-2xl overflow-hidden"
+            style={{
+              width: W,
+              height: H,
+              boxShadow:
+                '0 0 0 3px rgba(17,24,39,0.95), 0 0 0 5px rgba(245,158,11,0.95), 0 18px 48px rgba(0,0,0,0.45), 0 0 32px rgba(245,158,11,0.35)',
+            }}
+            initial={{
+              x: fly.x1,
+              y: fly.y1,
+              scale: 1,
+              rotate: -8,
+              opacity: 1,
+              filter: 'brightness(1.05)',
+            }}
             animate={{
-              /* дуга + замедление к концу + лёгкий «отскок» к иконке */
               x: [
                 fly.x1,
-                (fly.x1 + fly.x2) / 2 + 36,
-                fly.x2 - 6,
-                fly.x2 + 5,
+                (fly.x1 + fly.x2) / 2 + 42,
+                fly.x2 - 8,
+                fly.x2 + 6,
                 fly.x2,
               ],
               y: [
                 fly.y1,
-                Math.min(fly.y1, fly.y2) - 120,
-                fly.y2 - 10,
-                fly.y2 + 4,
+                Math.min(fly.y1, fly.y2) - 128,
+                fly.y2 - 12,
+                fly.y2 + 6,
                 fly.y2,
               ],
-              scale: [1, 1.14, 0.5, 0.38, 0.32],
-              rotate: [-6, 10, 2, -3, 0],
-              opacity: [1, 1, 0.95, 1, 0.88],
+              scale: [1, 1.18, 0.72, 0.58, 0.5],
+              rotate: [-8, 12, 4, -4, 0],
+              opacity: [1, 1, 1, 1, 0.15],
+              filter: ['brightness(1.08)', 'brightness(1.12)', 'brightness(1)', 'brightness(1)', 'brightness(0.95)'],
             }}
-            exit={{ opacity: 0, scale: 0.2, transition: { duration: 0.12 } }}
+            exit={{ opacity: 0, scale: 0.35, transition: { duration: 0.12 } }}
             transition={{
-              duration: 0.92,
-              times: [0, 0.35, 0.72, 0.88, 1],
+              duration: 0.88,
+              times: [0, 0.34, 0.7, 0.86, 1],
               ease: [
                 [0.22, 1, 0.36, 1],
                 [0.45, 0, 0.55, 1],
-                [0.34, 1.3, 0.64, 1],
+                [0.34, 1.35, 0.64, 1],
                 [0.22, 1, 0.36, 1],
               ],
             }}
           >
-            {fly.url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={fly.url} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white text-lg font-bold">
-                +
-              </div>
-            )}
+            <div className="h-full w-full bg-neutral-900 p-0.5">
+              {fly.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={fly.url}
+                  alt=""
+                  className="h-full w-full rounded-[10px] object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-gradient-to-br from-amber-400 to-amber-600 text-2xl font-bold text-white">
+                  +
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -64,7 +64,7 @@ function ParallaxProductCard({
       <Link
         href={'/product/' + p.id}
         className={[
-          'group block border border-neutral-200/90 rounded-2xl overflow-hidden bg-white/90 shadow-sm hover:shadow-xl hover:shadow-amber-100/40 hover:border-amber-200/70 transition-shadow duration-500 dark:border-gray-800 dark:bg-gray-950',
+          'group block border border-neutral-300 rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl hover:border-amber-300/80 transition-shadow duration-500 dark:border-gray-700 dark:bg-gray-950',
           !p.in_stock ? 'opacity-60' : '',
         ].join(' ')}
       >
@@ -100,8 +100,11 @@ function ParallaxProductCard({
             </div>
           )}
         </motion.div>
-        <motion.div className="p-4 dark:bg-gray-950" style={{ y: textY }}>
-          <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mb-1 font-medium tracking-wide">
+        <motion.div
+          className="border-t border-neutral-100 bg-neutral-50/80 p-4 dark:border-gray-800 dark:bg-gray-950"
+          style={{ y: textY }}
+        >
+          <p className="text-xs text-amber-800 dark:text-amber-400/90 mb-1 font-medium tracking-wide">
             {cat}
           </p>
           <h2 className="text-lg font-semibold mb-2 text-neutral-900 dark:text-white group-hover:text-amber-800 dark:group-hover:text-amber-300 transition-colors">
@@ -176,7 +179,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
               setCategoryFilter(e.target.value)
               setPage(1)
             }}
-            className="border border-neutral-200 rounded-xl px-4 py-2.5 min-w-[160px] shadow-sm dark:bg-gray-950 dark:border-gray-800"
+            className="min-w-[160px] rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 shadow-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-400/50 focus:outline-none dark:bg-gray-950 dark:border-gray-700 dark:text-neutral-100"
           >
             <option value="">{tr.allCategories[lang]}</option>
             {CATEGORY_KEYS.map((key) => (
@@ -195,21 +198,23 @@ export default function CatalogClient({ products }: { products: Product[] }) {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-8">
+        <div className="mt-8 flex justify-center gap-2">
           <button
+            type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="border rounded-xl px-4 py-2 disabled:opacity-50 hover:bg-amber-50 dark:hover:bg-gray-900 transition-colors"
+            className="rounded-xl border border-neutral-300 bg-white px-4 py-2 font-medium text-neutral-900 transition-colors hover:bg-amber-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-neutral-100 dark:hover:bg-gray-800"
           >
             {tr.prevPage[lang]}
           </button>
-          <span className="flex items-center px-4">
+          <span className="flex items-center px-4 font-medium text-neutral-800 dark:text-neutral-200">
             {page} / {totalPages}
           </span>
           <button
+            type="button"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
-            className="border rounded-xl px-4 py-2 disabled:opacity-50 hover:bg-amber-50 dark:hover:bg-gray-900 transition-colors"
+            className="rounded-xl border border-neutral-300 bg-white px-4 py-2 font-medium text-neutral-900 transition-colors hover:bg-amber-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-neutral-100 dark:hover:bg-gray-800"
           >
             {tr.nextPage[lang]}
           </button>

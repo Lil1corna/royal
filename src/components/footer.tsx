@@ -31,15 +31,15 @@ export default function Footer() {
       whileInView={{ opacity: 1 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.25 }}
-      className="border-t bg-gray-50 mt-auto"
+      className="mt-auto border-t border-neutral-200 bg-neutral-100 text-neutral-900"
     >
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
           <div>
-            <h3 className="font-bold text-lg mb-3">
-              Royal<span className="text-amber-500">Az</span>
+            <h3 className="mb-3 text-lg font-bold text-neutral-900">
+              Royal<span className="text-amber-600">Az</span>
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-neutral-600">
               {lang === 'ru'
                 ? 'Ортопедические матрасы и подушки'
                 : lang === 'en'
@@ -54,22 +54,22 @@ export default function Footer() {
             </Link>
           </div>
           <div>
-            <h3 className="font-bold mb-3">{tr.cart[lang]}</h3>
-            <Link href="/cart" className="block text-sm text-gray-600 hover:text-black">
+            <h3 className="mb-3 font-bold text-neutral-900">{tr.cart[lang]}</h3>
+            <Link href="/cart" className="block text-sm text-neutral-700 hover:text-neutral-950">
               {tr.cart[lang]}
             </Link>
           </div>
           <div>
-            <h3 className="font-bold mb-3">{tr.account[lang]}</h3>
-            <Link href="/account" className="block text-sm text-gray-600 hover:text-black">
+            <h3 className="mb-3 font-bold text-neutral-900">{tr.account[lang]}</h3>
+            <Link href="/account" className="block text-sm text-neutral-700 hover:text-neutral-950">
               {tr.account[lang]}
             </Link>
           </div>
           <div>
-            <h3 className="font-bold mb-3">{tr.contactUs[lang]}</h3>
+            <h3 className="mb-3 font-bold text-neutral-900">{tr.contactUs[lang]}</h3>
             <a
               href={telHref}
-              className="block text-sm font-semibold text-gray-900 hover:text-amber-600 mb-3"
+              className="mb-3 block text-sm font-semibold text-neutral-900 hover:text-amber-700"
             >
               {SITE_CONTACT.phoneDisplay}
             </a>
@@ -89,7 +89,7 @@ export default function Footer() {
                 href={SITE_CONTACT.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-pink-600 transition-colors"
+                className="text-neutral-600 hover:text-pink-600 transition-colors"
                 aria-label="Instagram"
               >
                 <IconInstagram className="w-7 h-7" />
@@ -98,7 +98,7 @@ export default function Footer() {
                 href={SITE_CONTACT.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-black transition-colors"
+                className="text-neutral-600 hover:text-neutral-900 transition-colors"
                 aria-label="TikTok"
               >
                 <IconTikTok className="w-7 h-7" />
@@ -106,7 +106,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t text-center text-sm text-gray-500">
+        <div className="mt-8 border-t border-neutral-200 pt-8 text-center text-sm text-neutral-600">
           © {new Date().getFullYear()} RoyalAz.{' '}
           {lang === 'ru'
             ? 'Все права защищены.'

@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         />
       </head>
-      <body className="bg-white min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col bg-[#f4f4f5] text-neutral-900 antialiased">
         <Providers>
           <NavbarWrapper />
           <div className="flex-1">{children}</div>
