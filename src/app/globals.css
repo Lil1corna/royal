@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* На тач-устройствах уменьшаем размытие задников — меньше нагрузка на GPU */
+@media (pointer: coarse) {
+  .backdrop-blur-xl,
+  .backdrop-blur-sm {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 body {
   font-family: 'DM Sans', system-ui, sans-serif;
   color: #171717;

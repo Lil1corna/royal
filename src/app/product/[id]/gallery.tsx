@@ -1,12 +1,13 @@
 'use client'
 import Image from 'next/image'
-import { useReducedMotion, useSpring, useTransform, motion, useMotionValue } from 'framer-motion'
+import { useSpring, useTransform, motion, useMotionValue } from 'framer-motion'
 import { useCallback, useRef, useState, type MouseEvent } from 'react'
+import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 export default function ProductGallery({ images }: { images: string[] }) {
   const [active, setActive] = useState(0)
   const mainRef = useRef<HTMLDivElement>(null)
-  const reduce = useReducedMotion()
+  const lowPower = useLowPowerMotion()
 
   const mx = useMotionValue(0.5)
   const my = useMotionValue(0.5)
@@ -18,12 +19,12 @@ export default function ProductGallery({ images }: { images: string[] }) {
 
   const onMove = useCallback(
     (e: MouseEvent<HTMLDivElement>) => {
-      if (reduce || !mainRef.current) return
+      if (lowPower || !mainRef.current) return
       const r = mainRef.current.getBoundingClientRect()
       mx.set((e.clientX - r.left) / r.width)
       my.set((e.clientY - r.top) / r.height)
     },
-    [mx, my, reduce]
+    [mx, my, lowPower]
   )
 
   const onLeave = useCallback(() => {
@@ -44,21 +45,21 @@ export default function ProductGallery({ images }: { images: string[] }) {
       <div
         ref={mainRef}
         className="aspect-square rounded-2xl mb-3 bg-gray-100 overflow-hidden"
-        style={{ perspective: 1100 }}
-        onMouseMove={onMove}
-        onMouseLeave={onLeave}
+        style={{ perspective: lowPower ? undefined : 1100 }}
+        onMouseMove={lowPower ? undefined : onMove}
+        onMouseLeave={lowPower ? undefined : onLeave}
       >
         <motion.div
-          className="w-full h-full will-change-transform"
+          className="h-full w-full will-change-transform"
           style={{
-            rotateX: reduce ? 0 : rotateX,
-            rotateY: reduce ? 0 : rotateY,
-            transformStyle: 'preserve-3d',
+            rotateX: lowPower ? 0 : rotateX,
+            rotateY: lowPower ? 0 : rotateY,
+            transformStyle: lowPower ? undefined : 'preserve-3d',
           }}
         >
           <div
-            className="w-full h-full relative"
-            style={{ transform: 'translateZ(24px)' }}
+            className="relative h-full w-full"
+            style={lowPower ? undefined : { transform: 'translateZ(24px)' }}
           >
             <Image
               src={images[active]}

@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 type FlyState = {
   x1: number
@@ -27,10 +28,11 @@ const Ctx = createContext<{ triggerFly: (el: HTMLElement, imageUrl?: string | nu
 export function FlyToCartProvider({ children }: { children: ReactNode }) {
   const [fly, setFly] = useState<FlyState | null>(null)
   const reduceMotion = useReducedMotion()
+  const lowPower = useLowPowerMotion()
 
   const triggerFly = useCallback(
     (fromEl: HTMLElement, imageUrl?: string | null) => {
-      if (reduceMotion) return
+      if (reduceMotion || lowPower) return
       const from = fromEl.getBoundingClientRect()
       const target = document.getElementById('nav-cart-fly-target')
       if (!target) return
@@ -45,7 +47,7 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
       /* длительность анимации + небольшой запас, чтобы не обрезать конец */
       window.setTimeout(() => setFly(null), 2100)
     },
-    [reduceMotion]
+    [reduceMotion, lowPower]
   )
 
   return (

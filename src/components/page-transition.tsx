@@ -3,23 +3,25 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { useRef } from 'react'
+import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 /**
  * Золотой «занавес» при переходе между страницами (поднимается вверх и открывает контент).
- * Первый заход на сайт без эффекта.
+ * Первый заход на сайт без эффекта. На тач-устройствах отключён (лаги, артефакты viewport).
  */
 function CurtainOverlay() {
   const pathname = usePathname()
   const reduce = useReducedMotion()
+  const lowPower = useLowPowerMotion()
   const hasNavigated = useRef(false)
 
-  if (reduce) return null
+  if (reduce || lowPower) return null
 
   return (
     <motion.div
       key={pathname}
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-[350]"
+      className="pointer-events-none fixed inset-x-0 top-0 z-[350] min-h-[100dvh] min-h-[100svh]"
       style={{
         transformOrigin: 'top',
         background:

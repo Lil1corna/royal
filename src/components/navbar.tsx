@@ -7,6 +7,7 @@ import { useCart } from '@/context/cart'
 import { useWishlist } from '@/context/wishlist'
 import { useRouter } from 'next/navigation'
 import Magnetic from '@/components/magnetic'
+import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 type Lang = 'az' | 'ru' | 'en'
 
@@ -132,43 +133,50 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
 
 export default function Navbar({ userEmail }: { userEmail?: string | null }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const lowPower = useLowPowerMotion()
 
   return (
     <motion.nav
-      initial={{ y: -12, opacity: 0 }}
+      initial={lowPower ? false : { y: -12, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="sticky top-0 z-50 border-b border-neutral-200/90 bg-white/95 text-neutral-900 backdrop-blur-xl shadow-[0_4px_24px_rgba(15,23,42,0.08)]"
+      transition={
+        lowPower
+          ? { duration: 0 }
+          : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
+      }
+      className={`sticky top-0 z-50 border-b border-neutral-200/90 bg-white/95 text-neutral-900 shadow-[0_4px_24px_rgba(15,23,42,0.08)] ${lowPower ? '' : 'backdrop-blur-xl'}`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[4.25rem] flex items-center justify-between gap-3">
-        <Link href="/" className="group flex items-center gap-1 shrink-0">
+        <Link href="/" className="group flex shrink-0 items-center gap-1">
           <motion.span
             className="text-2xl font-bold tracking-tight text-neutral-900"
-            whileHover={{ scale: 1.02 }}
+            whileHover={lowPower ? undefined : { scale: 1.02 }}
           >
             Royal
             <span className="bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">
               Az
             </span>
           </motion.span>
-          <motion.span
-            className="hidden sm:inline-block h-2 w-2 rounded-full bg-amber-400 opacity-0 group-hover:opacity-100"
-            layoutId="nav-dot"
-            transition={{ type: 'spring', stiffness: 300 }}
-          />
+          {!lowPower && (
+            <motion.span
+              className="hidden h-2 w-2 rounded-full bg-amber-400 opacity-0 group-hover:opacity-100 sm:inline-block"
+              layoutId="nav-dot"
+              transition={{ type: 'spring', stiffness: 300 }}
+            />
+          )}
         </Link>
 
         <div className="hidden lg:flex items-center gap-1.5 flex-wrap justify-end">
           <NavLinks userEmail={userEmail} />
         </div>
 
-        <motion.button
-          type="button"
-          onClick={() => setMobileOpen(true)}
-          className="lg:hidden flex h-11 w-11 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-900 shadow-sm"
-          aria-label="Menu"
-          whileTap={{ scale: 0.95 }}
-        >
+      <motion.button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        className="flex h-11 w-11 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-900 shadow-sm lg:hidden"
+        aria-label="Menu"
+        whileTap={lowPower ? undefined : { scale: 0.95 }}
+      >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
@@ -179,19 +187,23 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
         {mobileOpen && (
           <>
             <motion.div
-              className="lg:hidden fixed inset-0 bg-black/45 backdrop-blur-sm z-40"
+              className={`fixed inset-0 z-40 bg-black/45 lg:hidden ${lowPower ? '' : 'backdrop-blur-sm'}`}
               onClick={() => setMobileOpen(false)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: lowPower ? 0.12 : 0.2 }}
             />
             <motion.div
-              className="lg:hidden fixed top-0 right-0 w-[min(100%,20rem)] h-full bg-white text-neutral-900 backdrop-blur-xl border-l border-neutral-200 shadow-2xl z-50 p-5 flex flex-col gap-5"
+              className={`fixed right-0 top-0 z-50 flex h-full w-[min(100%,20rem)] flex-col gap-5 border-l border-neutral-200 bg-white p-5 text-neutral-900 shadow-2xl lg:hidden ${lowPower ? '' : 'backdrop-blur-xl'}`}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              transition={
+                lowPower
+                  ? { type: 'tween', duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }
+                  : { type: 'spring', damping: 28, stiffness: 280 }
+              }
             >
               <div className="flex justify-between items-center">
                 <span className="font-bold text-lg text-neutral-900">

@@ -1,15 +1,11 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from 'framer-motion'
+import { motion, useScroll, useTransform, type Variants } from 'framer-motion'
 import { useMemo, useRef, useState } from 'react'
 import { useLang, translations } from '@/context/lang'
 import CatalogHero from '@/components/catalog-hero'
+import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 const ITEMS_PER_PAGE = 12
 
@@ -27,7 +23,7 @@ type Product = {
 
 const CATEGORY_KEYS = ['ortopedik', 'berk', 'yumshaq', 'topper', 'ushaq', 'yastig'] as const
 
-const catalogGridContainer = {
+const catalogGridContainerHeavy = {
   hidden: {},
   show: {
     transition: {
@@ -37,7 +33,7 @@ const catalogGridContainer = {
   },
 }
 
-const catalogGridItem = {
+const catalogGridItemHeavy = {
   hidden: { opacity: 0, y: 40, scale: 0.94 },
   show: {
     opacity: 1,
@@ -47,24 +43,47 @@ const catalogGridItem = {
   },
 }
 
+/** Тач: короче stagger, без scale — меньше подвисаний */
+const catalogGridContainerLight = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.035,
+      delayChildren: 0.02,
+    },
+  },
+}
+
+const catalogGridItemLight = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
+}
+
 function ParallaxProductCard({
   p,
   lang,
   tr,
+  lowPower,
+  gridItemVariants,
 }: {
   p: Product
   lang: 'az' | 'ru' | 'en'
   tr: typeof translations
+  lowPower: boolean
+  gridItemVariants: Variants
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
   })
-  /* фото двигается меньше → «глубже»; текст — сильнее */
-  const imgY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [14, -14])
-  const textY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [-22, 22])
+  /* фото двигается меньше → «глубже»; текст — сильнее; на таче выкл. */
+  const imgY = useTransform(scrollYProgress, [0, 1], lowPower ? [0, 0] : [14, -14])
+  const textY = useTransform(scrollYProgress, [0, 1], lowPower ? [0, 0] : [-22, 22])
 
   const name = lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
   const cat = tr.categories[p.category]?.[lang] || p.category
@@ -76,7 +95,7 @@ function ParallaxProductCard({
   const showProductImage = Boolean(primaryImage) && !imgFailed
 
   return (
-    <motion.div ref={ref} variants={catalogGridItem}>
+    <motion.div ref={ref} variants={gridItemVariants}>
       <Link
         href={'/product/' + p.id}
         className={[
@@ -85,8 +104,8 @@ function ParallaxProductCard({
         ].join(' ')}
       >
         <motion.div
-          className="relative aspect-video bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-gray-900 dark:to-gray-950 overflow-hidden"
-          whileHover={{ scale: 1.01 }}
+          className="relative aspect-video overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-gray-900 dark:to-gray-950"
+          whileHover={lowPower ? undefined : { scale: 1.01 }}
           transition={{ duration: 0.35 }}
         >
           <motion.div className="absolute inset-0" style={{ y: imgY }}>
@@ -96,7 +115,7 @@ function ParallaxProductCard({
                 alt={name}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover scale-110 transition-transform duration-700 ease-out group-hover:scale-[1.18]"
+                className={`object-cover scale-110 transition-transform duration-700 ease-out ${lowPower ? '' : 'group-hover:scale-[1.18]'}`}
                 unoptimized
                 onError={() => setImgFailed(true)}
               />
@@ -150,6 +169,9 @@ function ParallaxProductCard({
 export default function CatalogClient({ products }: { products: Product[] }) {
   const { lang } = useLang()
   const tr = translations
+  const lowPower = useLowPowerMotion()
+  const gridContainerVariants = lowPower ? catalogGridContainerLight : catalogGridContainerHeavy
+  const gridItemVariants = lowPower ? catalogGridItemLight : catalogGridItemHeavy
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [page, setPage] = useState(1)
@@ -210,12 +232,19 @@ export default function CatalogClient({ products }: { products: Product[] }) {
         <motion.div
           key={`${page}-${categoryFilter}-${searchLower}`}
           className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          variants={catalogGridContainer}
+          variants={gridContainerVariants}
           initial="hidden"
           animate="show"
         >
           {paginatedProducts.map((p) => (
-            <ParallaxProductCard key={p.id} p={p} lang={lang} tr={tr} />
+            <ParallaxProductCard
+              key={p.id}
+              p={p}
+              lang={lang}
+              tr={tr}
+              lowPower={lowPower}
+              gridItemVariants={gridItemVariants}
+            />
           ))}
         </motion.div>
       </div>

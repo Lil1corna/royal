@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 const STORAGE_KEY = 'royalaz_preloader_seen'
 
 export default function PagePreloader() {
   const reduceMotion = useReducedMotion()
+  const lowPower = useLowPowerMotion()
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    if (reduceMotion) return
+    if (reduceMotion || lowPower) return
     try {
       if (sessionStorage.getItem(STORAGE_KEY)) return
       sessionStorage.setItem(STORAGE_KEY, '1')
@@ -20,9 +22,9 @@ export default function PagePreloader() {
     } catch {
       setShow(false)
     }
-  }, [reduceMotion])
+  }, [reduceMotion, lowPower])
 
-  if (reduceMotion) return null
+  if (reduceMotion || lowPower) return null
 
   const royal = ['R', 'o', 'y', 'a', 'l']
   const az = ['A', 'z']
