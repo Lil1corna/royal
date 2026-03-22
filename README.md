@@ -64,6 +64,8 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 5. Для обхода secrets scan: `SECRETS_SCAN_OMIT_KEYS=NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL`
 6. Добавьте Netlify URL в Supabase Redirect URLs
 
+Если после переноса **не работает вход Google** — см. [docs/AUTH_NETLIFY_CHECKLIST.md](./docs/AUTH_NETLIFY_CHECKLIST.md).
+
 ## Технологии
 
 - Next.js 16
