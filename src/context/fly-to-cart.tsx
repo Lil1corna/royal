@@ -42,7 +42,8 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
         y2: to.top + to.height / 2 - H / 2,
         url: imageUrl || null,
       })
-      window.setTimeout(() => setFly(null), 1000)
+      /* длительность анимации + небольшой запас, чтобы не обрезать конец */
+      window.setTimeout(() => setFly(null), 2100)
     },
     [reduceMotion]
   )
@@ -91,12 +92,13 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
             }}
             exit={{ opacity: 0, scale: 0.35, transition: { duration: 0.12 } }}
             transition={{
-              duration: 0.88,
-              times: [0, 0.34, 0.7, 0.86, 1],
+              /* медленнее и плавнее, чем раньше (~×2) */
+              duration: 1.75,
+              times: [0, 0.32, 0.68, 0.84, 1],
               ease: [
-                [0.22, 1, 0.36, 1],
-                [0.45, 0, 0.55, 1],
-                [0.34, 1.35, 0.64, 1],
+                [0.25, 0.46, 0.45, 0.94],
+                [0.55, 0, 0.45, 1],
+                [0.34, 1.25, 0.64, 1],
                 [0.22, 1, 0.36, 1],
               ],
             }}

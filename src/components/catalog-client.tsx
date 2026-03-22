@@ -53,6 +53,10 @@ function ParallaxProductCard({
   const discountedPrice =
     p.discount_pct > 0 ? (p.price * (1 - p.discount_pct / 100)).toFixed(0) : null
 
+  const [imgFailed, setImgFailed] = useState(false)
+  const primaryImage = p.image_urls?.[0]?.trim()
+  const showProductImage = Boolean(primaryImage) && !imgFailed
+
   return (
     <motion.div
       ref={ref}
@@ -74,17 +78,18 @@ function ParallaxProductCard({
           transition={{ duration: 0.35 }}
         >
           <motion.div className="absolute inset-0" style={{ y: imgY }}>
-            {p.image_urls && p.image_urls.length > 0 ? (
+            {showProductImage ? (
               <Image
-                src={p.image_urls[0]}
+                src={primaryImage!}
                 alt={name}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover scale-110 group-hover:scale-[1.18] transition-transform duration-700 ease-out"
+                className="object-cover scale-110 transition-transform duration-700 ease-out group-hover:scale-[1.18]"
                 unoptimized
+                onError={() => setImgFailed(true)}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-300 text-5xl">
+              <div className="flex h-full w-full items-center justify-center text-5xl text-neutral-300">
                 🛏
               </div>
             )}

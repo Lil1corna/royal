@@ -125,7 +125,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
           whileTap={{ scale: 0.98 }}
           onClick={() => {
             handleAdd(orderBtnRef.current)
-            window.setTimeout(() => router.push('/cart'), 420)
+            window.setTimeout(() => router.push('/cart'), 1400)
           }}
           className="w-full py-3 rounded-xl text-lg btn-secondary border-2 border-black"
         >
