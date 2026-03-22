@@ -27,14 +27,32 @@ type Product = {
 
 const CATEGORY_KEYS = ['ortopedik', 'berk', 'yumshaq', 'topper', 'ushaq', 'yastig'] as const
 
+const catalogGridContainer = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.09,
+      delayChildren: 0.1,
+    },
+  },
+}
+
+const catalogGridItem = {
+  hidden: { opacity: 0, y: 40, scale: 0.94 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
+  },
+}
+
 function ParallaxProductCard({
   p,
-  index,
   lang,
   tr,
 }: {
   p: Product
-  index: number
   lang: 'az' | 'ru' | 'en'
   tr: typeof translations
 }) {
@@ -58,13 +76,7 @@ function ParallaxProductCard({
   const showProductImage = Boolean(primaryImage) && !imgFailed
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.45, delay: index * 0.04, ease: [0.22, 1, 0.36, 1] }}
-    >
+    <motion.div ref={ref} variants={catalogGridItem}>
       <Link
         href={'/product/' + p.id}
         className={[
@@ -176,7 +188,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
               setSearch(e.target.value)
               setPage(1)
             }}
-            className="flex-1 border border-neutral-200 rounded-xl px-4 py-2.5 shadow-sm focus:ring-2 focus:ring-amber-400/40 focus:border-amber-300 outline-none transition-shadow dark:bg-gray-950 dark:border-gray-800"
+            className="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 shadow-sm placeholder:text-neutral-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 dark:border-gray-700 dark:bg-gray-950 dark:text-neutral-100"
           />
           <select
             value={categoryFilter}
@@ -195,11 +207,17 @@ export default function CatalogClient({ products }: { products: Product[] }) {
           </select>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {paginatedProducts.map((p, index) => (
-            <ParallaxProductCard key={p.id} p={p} index={index} lang={lang} tr={tr} />
+        <motion.div
+          key={`${page}-${categoryFilter}-${searchLower}`}
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          variants={catalogGridContainer}
+          initial="hidden"
+          animate="show"
+        >
+          {paginatedProducts.map((p) => (
+            <ParallaxProductCard key={p.id} p={p} lang={lang} tr={tr} />
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {totalPages > 1 && (

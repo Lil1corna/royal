@@ -6,6 +6,7 @@ import { useFlyToCart } from '@/context/fly-to-cart'
 import { useWishlist } from '@/context/wishlist'
 import { useRouter } from 'next/navigation'
 import { useLang, translations } from '@/context/lang'
+import Magnetic from '@/components/magnetic'
 
 type Size = {
   id: string
@@ -110,27 +111,33 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
         >
           {inWishlist ? tr.removeFromWishlist[lang] : tr.addToWishlist[lang]}
         </motion.button>
-        <motion.button
-          ref={addBtnRef}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => handleAdd(addBtnRef.current)}
-          className={`w-full py-3 rounded-xl text-lg transition-all ${
-            added ? 'bg-green-500 text-white' : 'btn-primary'
-          }`}
-        >
-          {added ? tr.addToCartSuccess[lang] : tr.addToCart[lang]}
-        </motion.button>
-        <motion.button
-          ref={orderBtnRef}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => {
-            handleAdd(orderBtnRef.current)
-            window.setTimeout(() => router.push('/cart'), 1400)
-          }}
-          className="w-full py-3 rounded-xl text-lg btn-secondary border-2 border-black"
-        >
-          {tr.orderNow[lang]}
-        </motion.button>
+        <Magnetic className="w-full" strength={0.16}>
+          <motion.button
+            ref={addBtnRef}
+            type="button"
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleAdd(addBtnRef.current)}
+            className={`w-full rounded-xl py-3 text-lg transition-all ${
+              added ? 'bg-green-500 text-white' : 'btn-primary'
+            }`}
+          >
+            {added ? tr.addToCartSuccess[lang] : tr.addToCart[lang]}
+          </motion.button>
+        </Magnetic>
+        <Magnetic className="w-full" strength={0.16}>
+          <motion.button
+            ref={orderBtnRef}
+            type="button"
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              handleAdd(orderBtnRef.current)
+              window.setTimeout(() => router.push('/cart'), 1400)
+            }}
+            className="w-full rounded-xl border-2 border-black py-3 text-lg btn-secondary"
+          >
+            {tr.orderNow[lang]}
+          </motion.button>
+        </Magnetic>
       </motion.div>
     </div>
   )

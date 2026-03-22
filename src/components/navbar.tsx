@@ -6,6 +6,7 @@ import { useLang, translations } from '@/context/lang'
 import { useCart } from '@/context/cart'
 import { useWishlist } from '@/context/wishlist'
 import { useRouter } from 'next/navigation'
+import Magnetic from '@/components/magnetic'
 
 type Lang = 'az' | 'ru' | 'en'
 
@@ -115,13 +116,15 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
           </form>
         </div>
       ) : (
-        <Link
-          href="/auth/signin"
-          onClick={() => onClose?.()}
-          className="btn-primary rounded-full px-5 py-2.5 text-sm shadow-lg shadow-amber-900/15"
-        >
-          {tr.signin[lang]}
-        </Link>
+        <Magnetic className="inline-flex" strength={0.24}>
+          <Link
+            href="/auth/signin"
+            onClick={() => onClose?.()}
+            className="btn-primary rounded-full px-5 py-2.5 text-sm shadow-lg shadow-amber-900/15"
+          >
+            {tr.signin[lang]}
+          </Link>
+        </Magnetic>
       )}
     </>
   )

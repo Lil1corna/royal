@@ -3,6 +3,7 @@ import './globals.css'
 import { Providers } from '@/components/providers'
 import NavbarWrapper from '@/components/navbar-wrapper'
 import Footer from '@/components/footer'
+import { PageTransition } from '@/components/page-transition'
 
 export const metadata: Metadata = {
   title: 'RoyalAz — Ortopedik Dosekler',
@@ -38,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen flex flex-col bg-[#f4f4f5] text-neutral-900 antialiased">
         <Providers>
           <NavbarWrapper />
-          <div className="flex-1">{children}</div>
+          <PageTransition className="flex-1">{children}</PageTransition>
           <Footer />
         </Providers>
       </body>

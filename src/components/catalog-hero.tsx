@@ -2,6 +2,9 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 import { useLang, translations } from '@/context/lang'
+import Magnetic from '@/components/magnetic'
+
+const PARTICLE_SEEDS = [12, 28, 44, 58, 71, 83, 91, 17, 65, 38, 52, 7]
 
 export default function CatalogHero() {
   const { lang } = useLang()
@@ -9,43 +12,81 @@ export default function CatalogHero() {
   const reduce = useReducedMotion()
 
   return (
-    <section className="relative overflow-hidden rounded-3xl mb-10 px-6 py-14 sm:py-16 border border-amber-200/40 bg-gradient-to-br from-[#0b0f17] via-[#141a26] to-[#1a1510]">
-      {/* Морфинг «живые» пятна */}
+    <section className="relative mb-10 overflow-hidden rounded-3xl border border-amber-200/40 bg-gradient-to-br from-[#0b0f17] via-[#141a26] to-[#1a1510] px-6 py-14 sm:py-16">
+      {/* Liquid / morphing blobs + лёгкие частицы */}
       {!reduce && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
           <motion.div
-            className="absolute -top-20 -left-16 w-[280px] h-[280px] rounded-[40%_60%_70%_30%] bg-amber-500/25 blur-3xl"
+            className="absolute -top-20 -left-16 h-[280px] w-[280px] rounded-[40%_60%_70%_30%] bg-amber-500/25 blur-3xl"
             animate={{
               borderRadius: [
                 '40% 60% 70% 30%',
-                '60% 40% 30% 70%',
+                '55% 45% 35% 65%',
                 '30% 70% 60% 40%',
+                '45% 55% 50% 50%',
                 '40% 60% 70% 30%',
               ],
-              scale: [1, 1.08, 0.95, 1],
-              rotate: [0, 12, -8, 0],
+              scale: [1, 1.12, 0.92, 1.06, 1],
+              rotate: [0, 18, -12, 8, 0],
+              skewX: [0, 6, -4, 0],
             }}
-            transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+            transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute -bottom-24 right-0 w-[320px] h-[320px] rounded-[60%_40%_30%_70%] bg-amber-400/20 blur-3xl"
+            className="absolute -bottom-24 right-0 h-[320px] w-[320px] rounded-[60%_40%_30%_70%] bg-amber-400/22 blur-3xl"
             animate={{
               borderRadius: [
                 '60% 40% 30% 70%',
-                '45% 55% 65% 35%',
-                '70% 30% 45% 55%',
+                '40% 60% 55% 45%',
+                '70% 30% 40% 60%',
+                '50% 50% 60% 40%',
                 '60% 40% 30% 70%',
               ],
-              scale: [1, 1.12, 1.05, 1],
-              x: [0, -20, 10, 0],
+              scale: [1, 1.14, 1.02, 1.08, 1],
+              x: [0, -28, 14, -8, 0],
+              y: [0, 12, -6, 0],
             }}
-            transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] rounded-full bg-amber-300/10 blur-2xl"
-            animate={{ scale: [1, 1.4, 1], opacity: [0.15, 0.35, 0.15] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-[45%_55%_60%_40%] bg-amber-300/12 blur-2xl"
+            animate={{
+              borderRadius: [
+                '45% 55% 60% 40%',
+                '60% 40% 45% 55%',
+                '35% 65% 55% 45%',
+                '45% 55% 60% 40%',
+              ],
+              scale: [1, 1.35, 1.08, 1],
+              opacity: [0.12, 0.38, 0.2, 0.12],
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
           />
+          {/* золотые частицы */}
+          {PARTICLE_SEEDS.map((seed, i) => (
+            <motion.span
+              key={i}
+              className="absolute rounded-full bg-amber-300/90 shadow-[0_0_12px_rgba(251,191,36,0.6)]"
+              style={{
+                width: 3 + (seed % 3),
+                height: 3 + (seed % 3),
+                left: `${(seed * 7) % 92}%`,
+                top: `${(seed * 11) % 78}%`,
+              }}
+              animate={{
+                y: [0, -18 - (seed % 12), 0],
+                x: [0, (seed % 2 === 0 ? 1 : -1) * (8 + (seed % 6)), 0],
+                opacity: [0.25, 0.85, 0.35, 0.25],
+                scale: [1, 1.4, 1],
+              }}
+              transition={{
+                duration: 4 + (seed % 5) * 0.5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: (seed % 10) * 0.15,
+              }}
+            />
+          ))}
         </div>
       )}
 
@@ -82,14 +123,16 @@ export default function CatalogHero() {
               ? 'Quality you feel — delivery across Baku.'
               : 'Keyfiyyət və Bakı üzrə catdırılma.'}
         </motion.p>
-        <motion.a
-          href="#catalog-grid"
-          className="inline-flex mt-8 px-6 py-3 rounded-xl font-semibold text-[#0b0f17] bg-gradient-to-r from-amber-300 to-amber-500 shadow-lg shadow-amber-900/30 hover:from-amber-200 hover:to-amber-400 transition-all"
-          whileHover={{ scale: 1.03, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          {tr.catalog[lang]}
-        </motion.a>
+        <Magnetic className="mt-8 inline-flex" strength={0.28}>
+          <motion.a
+            href="#catalog-grid"
+            className="inline-flex rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 px-6 py-3 font-semibold text-[#0b0f17] shadow-lg shadow-amber-900/30 transition-all hover:from-amber-200 hover:to-amber-400"
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {tr.catalog[lang]}
+          </motion.a>
+        </Magnetic>
       </div>
     </section>
   )
