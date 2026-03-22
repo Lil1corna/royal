@@ -75,3 +75,18 @@ body {
 .card-soft:hover {
   box-shadow: 0 14px 34px rgba(17, 24, 39, 0.10);
 }
+
+/* Кастомный курсор: скрываем стандартный только у мыши */
+@media (pointer: fine) {
+  html.royal-custom-cursor,
+  html.royal-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.royal-custom-cursor,
+  html.royal-custom-cursor * {
+    cursor: auto !important;
+  }
+}

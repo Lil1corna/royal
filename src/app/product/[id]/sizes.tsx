@@ -1,7 +1,8 @@
 'use client'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useCart } from '@/context/cart'
+import { useFlyToCart } from '@/context/fly-to-cart'
 import { useWishlist } from '@/context/wishlist'
 import { useRouter } from 'next/navigation'
 import { useLang, translations } from '@/context/lang'
@@ -22,6 +23,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
   productImage: string | null
 }) {
   const { add } = useCart()
+  const { triggerFly } = useFlyToCart()
   const { has, toggle } = useWishlist()
   const { lang } = useLang()
   const tr = translations
@@ -31,13 +33,15 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
     sizes.length > 0 ? sizes[0] : null
   )
   const [added, setAdded] = useState(false)
+  const addBtnRef = useRef<HTMLButtonElement>(null)
+  const orderBtnRef = useRef<HTMLButtonElement>(null)
 
   const original = selected ? selected.price : basePrice
   const current = discountPct > 0
     ? parseFloat((original * (1 - discountPct / 100)).toFixed(0))
     : original
 
-  const handleAdd = () => {
+  const handleAdd = (fromEl?: HTMLElement | null) => {
     add({
       id: productId,
       name: productName,
@@ -46,6 +50,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
       image: productImage,
       quantity: 1,
     })
+    if (fromEl) triggerFly(fromEl, productImage)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
@@ -106,8 +111,9 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
           {inWishlist ? tr.removeFromWishlist[lang] : tr.addToWishlist[lang]}
         </motion.button>
         <motion.button
+          ref={addBtnRef}
           whileTap={{ scale: 0.98 }}
-          onClick={handleAdd}
+          onClick={() => handleAdd(addBtnRef.current)}
           className={`w-full py-3 rounded-xl text-lg transition-all ${
             added ? 'bg-green-500 text-white' : 'btn-primary'
           }`}
@@ -115,8 +121,12 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
           {added ? tr.addToCartSuccess[lang] : tr.addToCart[lang]}
         </motion.button>
         <motion.button
+          ref={orderBtnRef}
           whileTap={{ scale: 0.98 }}
-          onClick={() => { handleAdd(); router.push('/cart') }}
+          onClick={() => {
+            handleAdd(orderBtnRef.current)
+            window.setTimeout(() => router.push('/cart'), 420)
+          }}
           className="w-full py-3 rounded-xl text-lg btn-secondary border-2 border-black"
         >
           {tr.orderNow[lang]}

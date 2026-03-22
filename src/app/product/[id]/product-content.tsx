@@ -1,9 +1,7 @@
 'use client'
-import { useEffect } from 'react'
 import { useLang, translations } from '@/context/lang'
 import ProductGallery from './gallery'
 import SizeSelector from './sizes'
-import { pushRecentProductId } from '@/lib/recently-viewed'
 
 type Product = {
   id: string
@@ -35,10 +33,6 @@ export default function ProductContent({
 
   const name = lang === 'az' ? product.name_az : lang === 'ru' ? product.name_ru : product.name_en
   const cat = tr.categories[product.category]?.[lang] || product.category
-
-  useEffect(() => {
-    pushRecentProductId(product.id)
-  }, [product.id])
 
   return (
     <main className="p-8 max-w-6xl mx-auto">

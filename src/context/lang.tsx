@@ -114,6 +114,8 @@ export const translations = {
   wishlistEmpty: t('Secilmisler boshdur', 'Избранное пусто', 'Wishlist is empty'),
   openWishlist: t('Secilmislere bax', 'Открыть избранное', 'Open wishlist'),
   loading: t('Yuklenir...', 'Загрузка...', 'Loading...'),
+  contactUs: t('Elaqe', 'Контакты', 'Contact'),
+  followSocial: t('Bizi izle', 'Мы в соцсетях', 'Follow us'),
   addressFromProfile: t(
     'Profilimdəki ünvan',
     'Адрес из профиля',

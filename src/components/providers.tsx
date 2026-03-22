@@ -1,13 +1,22 @@
 'use client'
 import { CartProvider } from '@/context/cart'
+import { FlyToCartProvider } from '@/context/fly-to-cart'
 import { LangProvider } from '@/context/lang'
 import { WishlistProvider } from '@/context/wishlist'
+import CustomCursor from '@/components/custom-cursor'
+import PagePreloader from '@/components/page-preloader'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <LangProvider>
+      <PagePreloader />
       <CartProvider>
-        <WishlistProvider>{children}</WishlistProvider>
+        <FlyToCartProvider>
+          <WishlistProvider>
+            <CustomCursor />
+            {children}
+          </WishlistProvider>
+        </FlyToCartProvider>
       </CartProvider>
     </LangProvider>
   )

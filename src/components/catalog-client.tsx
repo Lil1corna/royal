@@ -1,9 +1,15 @@
 'use client'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
-import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from 'framer-motion'
+import { useMemo, useRef, useState } from 'react'
 import { useLang, translations } from '@/context/lang'
-import RecentlyViewed from '@/components/recently-viewed'
+import CatalogHero from '@/components/catalog-hero'
 
 const ITEMS_PER_PAGE = 12
 
@@ -21,6 +27,106 @@ type Product = {
 
 const CATEGORY_KEYS = ['ortopedik', 'berk', 'yumshaq', 'topper', 'ushaq', 'yastig'] as const
 
+function ParallaxProductCard({
+  p,
+  index,
+  lang,
+  tr,
+}: {
+  p: Product
+  index: number
+  lang: 'az' | 'ru' | 'en'
+  tr: typeof translations
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const reduce = useReducedMotion()
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start end', 'end start'],
+  })
+  /* фото двигается меньше → «глубже»; текст — сильнее */
+  const imgY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [14, -14])
+  const textY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [-22, 22])
+
+  const name = lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
+  const cat = tr.categories[p.category]?.[lang] || p.category
+  const discountedPrice =
+    p.discount_pct > 0 ? (p.price * (1 - p.discount_pct / 100)).toFixed(0) : null
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.45, delay: index * 0.04, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Link
+        href={'/product/' + p.id}
+        className={[
+          'group block border border-neutral-200/90 rounded-2xl overflow-hidden bg-white/90 shadow-sm hover:shadow-xl hover:shadow-amber-100/40 hover:border-amber-200/70 transition-shadow duration-500 dark:border-gray-800 dark:bg-gray-950',
+          !p.in_stock ? 'opacity-60' : '',
+        ].join(' ')}
+      >
+        <motion.div
+          className="relative aspect-video bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-gray-900 dark:to-gray-950 overflow-hidden"
+          whileHover={{ scale: 1.01 }}
+          transition={{ duration: 0.35 }}
+        >
+          <motion.div className="absolute inset-0" style={{ y: imgY }}>
+            {p.image_urls && p.image_urls.length > 0 ? (
+              <Image
+                src={p.image_urls[0]}
+                alt={name}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover scale-110 group-hover:scale-[1.18] transition-transform duration-700 ease-out"
+                unoptimized
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-300 text-5xl">
+                🛏
+              </div>
+            )}
+          </motion.div>
+          {!p.in_stock && (
+            <div className="absolute top-3 right-3 bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full z-10">
+              {tr.outOfStock[lang]}
+            </div>
+          )}
+          {p.discount_pct > 0 && p.in_stock && (
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md z-10">
+              -{p.discount_pct}%
+            </div>
+          )}
+        </motion.div>
+        <motion.div className="p-4 dark:bg-gray-950" style={{ y: textY }}>
+          <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mb-1 font-medium tracking-wide">
+            {cat}
+          </p>
+          <h2 className="text-lg font-semibold mb-2 text-neutral-900 dark:text-white group-hover:text-amber-800 dark:group-hover:text-amber-300 transition-colors">
+            {name}
+          </h2>
+          <div className="flex items-center gap-2">
+            {discountedPrice ? (
+              <>
+                <span className="text-xl font-bold text-neutral-900 dark:text-white">
+                  {discountedPrice} AZN
+                </span>
+                <span className="text-gray-400 text-sm line-through">{p.price} AZN</span>
+              </>
+            ) : (
+              <span className="text-xl font-bold text-neutral-900 dark:text-white">
+                {p.price} AZN
+              </span>
+            )}
+          </div>
+        </motion.div>
+      </Link>
+    </motion.div>
+  )
+}
+
 export default function CatalogClient({ products }: { products: Product[] }) {
   const { lang } = useLang()
   const tr = translations
@@ -31,9 +137,9 @@ export default function CatalogClient({ products }: { products: Product[] }) {
   const searchLower = search.trim().toLowerCase()
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const matchesSearch = !searchLower || [p.name_az, p.name_ru, p.name_en].some(
-        (n) => n?.toLowerCase().includes(searchLower)
-      )
+      const matchesSearch =
+        !searchLower ||
+        [p.name_az, p.name_ru, p.name_en].some((n) => n?.toLowerCase().includes(searchLower))
       const matchesCategory = !categoryFilter || p.category === categoryFilter
       return matchesSearch && matchesCategory
     })
@@ -41,101 +147,51 @@ export default function CatalogClient({ products }: { products: Product[] }) {
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
   const paginatedProducts = useMemo(() => {
-    return filteredProducts.slice(
-      (page - 1) * ITEMS_PER_PAGE,
-      page * ITEMS_PER_PAGE
-    )
+    return filteredProducts.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
   }, [filteredProducts, page])
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-8">
-      <RecentlyViewed />
-      <h1 className="text-3xl font-bold mb-6 dark:text-white">{tr.catalog[lang]}</h1>
+      <CatalogHero />
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <input
-          type="search"
-          placeholder={tr.searchPlaceholder[lang]}
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          className="flex-1 border rounded-lg px-4 py-2"
-        />
-        <select
-          value={categoryFilter}
-          onChange={(e) => { setCategoryFilter(e.target.value); setPage(1) }}
-          className="border rounded-lg px-4 py-2 min-w-[160px]"
-        >
-          <option value="">{tr.allCategories[lang]}</option>
-          {CATEGORY_KEYS.map((key) => (
-            <option key={key} value={key}>
-              {tr.categories[key]?.[lang] || key}
-            </option>
+      <div id="catalog-grid" className="scroll-mt-28">
+        <h1 className="text-3xl font-bold mb-6 text-neutral-900 dark:text-white tracking-tight">
+          {tr.catalog[lang]}
+        </h1>
+
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <input
+            type="search"
+            placeholder={tr.searchPlaceholder[lang]}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
+            className="flex-1 border border-neutral-200 rounded-xl px-4 py-2.5 shadow-sm focus:ring-2 focus:ring-amber-400/40 focus:border-amber-300 outline-none transition-shadow dark:bg-gray-950 dark:border-gray-800"
+          />
+          <select
+            value={categoryFilter}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value)
+              setPage(1)
+            }}
+            className="border border-neutral-200 rounded-xl px-4 py-2.5 min-w-[160px] shadow-sm dark:bg-gray-950 dark:border-gray-800"
+          >
+            <option value="">{tr.allCategories[lang]}</option>
+            {CATEGORY_KEYS.map((key) => (
+              <option key={key} value={key}>
+                {tr.categories[key]?.[lang] || key}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {paginatedProducts.map((p, index) => (
+            <ParallaxProductCard key={p.id} p={p} index={index} lang={lang} tr={tr} />
           ))}
-        </select>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {paginatedProducts.map((p, index) => {
-          const name = lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
-          const cat = tr.categories[p.category]?.[lang] || p.category
-          const discountedPrice = p.discount_pct > 0
-            ? (p.price * (1 - p.discount_pct / 100)).toFixed(0)
-            : null
-
-          return (
-            <motion.a
-              key={p.id}
-              href={'/product/' + p.id}
-              initial={{ opacity: 0, y: 8 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.2, delay: index * 0.03 }}
-              whileHover={{ y: -2 }}
-              className={['border rounded-xl overflow-hidden hover:shadow-lg transition-shadow dark:border-gray-800', !p.in_stock ? 'opacity-60' : ''].join(' ')}
-            >
-              <div className="relative aspect-video bg-gray-100 dark:bg-gray-900">
-                {p.image_urls && p.image_urls.length > 0 ? (
-                  <Image
-                    src={p.image_urls[0]}
-                    alt={name}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-300 text-5xl">
-                    🛏
-                  </div>
-                )}
-                {!p.in_stock && (
-                  <div className="absolute top-3 right-3 bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full">
-                    {tr.outOfStock[lang]}
-                  </div>
-                )}
-                {p.discount_pct > 0 && p.in_stock && (
-                  <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    -{p.discount_pct}%
-                  </div>
-                )}
-              </div>
-              <div className="p-4 dark:bg-gray-950">
-                <p className="text-xs text-gray-400 mb-1">{cat}</p>
-                <h2 className="text-lg font-semibold mb-2 dark:text-white">{name}</h2>
-                <div className="flex items-center gap-2">
-                  {discountedPrice ? (
-                    <>
-                      <span className="text-xl font-bold dark:text-white">{discountedPrice} AZN</span>
-                      <span className="text-gray-400 text-sm line-through">{p.price} AZN</span>
-                    </>
-                  ) : (
-                    <span className="text-xl font-bold dark:text-white">{p.price} AZN</span>
-                  )}
-                </div>
-              </div>
-            </motion.a>
-          )
-        })}
+        </div>
       </div>
 
       {totalPages > 1 && (
@@ -143,7 +199,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="border rounded-lg px-4 py-2 disabled:opacity-50 hover:bg-gray-50"
+            className="border rounded-xl px-4 py-2 disabled:opacity-50 hover:bg-amber-50 dark:hover:bg-gray-900 transition-colors"
           >
             {tr.prevPage[lang]}
           </button>
@@ -153,7 +209,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
-            className="border rounded-lg px-4 py-2 disabled:opacity-50 hover:bg-gray-50"
+            className="border rounded-xl px-4 py-2 disabled:opacity-50 hover:bg-amber-50 dark:hover:bg-gray-900 transition-colors"
           >
             {tr.nextPage[lang]}
           </button>
