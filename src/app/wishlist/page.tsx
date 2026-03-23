@@ -49,7 +49,7 @@ export default function WishlistPage() {
 
   if (loading) {
     return (
-      <main className="p-8 max-w-4xl mx-auto text-center text-gray-500">
+      <main className="p-8 max-w-4xl mx-auto text-center text-white/60">
         {tr.loading[lang]}…
       </main>
     )
@@ -60,7 +60,7 @@ export default function WishlistPage() {
       <main className="p-8 max-w-2xl mx-auto text-center">
         <div className="text-6xl mb-4">♡</div>
         <h1 className="text-2xl font-bold mb-2">{tr.wishlistEmpty[lang]}</h1>
-        <Link href="/" className="text-amber-700 font-medium hover:underline">
+        <Link href="/" className="text-[#e8c97a] font-medium hover:underline">
           {tr.backToCatalog[lang]}
         </Link>
       </main>
@@ -70,10 +70,10 @@ export default function WishlistPage() {
   return (
     <main className="p-8 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/" className="text-gray-500 hover:text-black">
+        <Link href="/" className="text-white/60 hover:text-white">
           {tr.back[lang]}
         </Link>
-        <h1 className="text-3xl font-bold">{tr.wishlist[lang]}</h1>
+        <h1 className="text-3xl font-bold text-white">{tr.wishlist[lang]}</h1>
       </div>
       <div className="flex flex-col gap-4">
         {products.map((p, i) => {
@@ -92,7 +92,10 @@ export default function WishlistPage() {
               transition={{ delay: i * 0.04 }}
               className="flex gap-4 border rounded-xl p-4 card-soft items-center"
             >
-              <Link href={`/product/${p.id}`} className="shrink-0 relative w-24 h-24 rounded-lg overflow-hidden bg-neutral-50">
+              <Link
+                href={`/product/${p.id}`}
+                className="shrink-0 relative w-24 h-24 rounded-lg overflow-hidden bg-white/5 border border-white/10"
+              >
                 {img ? (
                   <Image src={img} alt={name} fill className="object-cover" sizes="96px" />
                 ) : (
@@ -100,18 +103,20 @@ export default function WishlistPage() {
                 )}
               </Link>
               <div className="flex-1 min-w-0">
-                <Link href={`/product/${p.id}`} className="font-semibold hover:text-amber-700 line-clamp-2">
+                <Link href={`/product/${p.id}`} className="font-semibold text-white/80 hover:text-[#e8c97a] line-clamp-2">
                   {name}
                 </Link>
-                <div className="text-lg font-bold mt-1">{price} AZN</div>
+                <div className="text-lg font-bold mt-1 text-[#e8c97a]">{price} AZN</div>
                 {!p.in_stock && (
-                  <span className="text-xs text-red-600">{tr.outOfStock[lang]}</span>
+                  <span className="text-[10px] font-semibold bg-[rgba(220,53,69,0.1)] border border-[rgba(220,53,69,0.2)] text-[rgba(255,100,100,0.85)] px-2 py-1 rounded-full">
+                    {tr.outOfStock[lang]}
+                  </span>
                 )}
               </div>
               <button
                 type="button"
                 onClick={() => toggle(p.id)}
-                className="text-sm text-red-600 hover:underline shrink-0 px-2"
+                className="text-sm text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b] shrink-0 px-2"
               >
                 ✕
               </button>

@@ -113,13 +113,12 @@ function ParallaxProductCard({
       <Link
         href={'/product/' + p.id}
         className={[
-          'group block rounded-2xl overflow-hidden border border-white/15 bg-white/5 shadow-[0_18px_60px_rgba(2,6,23,0.35)] transform-gpu transition-shadow transition-transform duration-300',
-          'hover:border-amber-400/60 hover:shadow-[0_22px_70px_rgba(245,158,11,0.22)]',
+          'group block ds-card-glass transform-gpu transition-shadow transition-transform duration-300',
           !p.in_stock ? 'opacity-60' : '',
         ].join(' ')}
       >
         <motion.div
-          className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-white/10 to-transparent"
+          className="relative aspect-[4/3] overflow-hidden bg-[rgba(255,255,255,0.03)]"
           whileHover={lowPower ? undefined : { scale: 1.035 }}
           transition={{ duration: 0.35 }}
         >
@@ -146,38 +145,36 @@ function ParallaxProductCard({
           <div className="absolute inset-0 bg-gradient-to-t from-[#061226]/80 via-transparent to-transparent pointer-events-none" />
           <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(245,158,11,0.22),transparent_55%),radial-gradient(circle_at_70%_10%,rgba(255,255,255,0.14),transparent_45%)]" />
           {!p.in_stock && (
-            <div className="absolute top-3 right-3 bg-red-500/15 text-red-200 text-xs font-semibold px-2 py-1 rounded-full z-10">
+            <div className="absolute top-3 right-3 bg-[rgba(220,53,69,0.1)] border border-[rgba(220,53,69,0.2)] text-[rgba(255,100,100,0.8)] text-[10px] font-semibold px-2 py-1 rounded-full z-10">
               {tr.outOfStock[lang]}
             </div>
           )}
           {p.discount_pct > 0 && p.in_stock && (
-            <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-400 to-amber-600 text-[#061226] text-xs font-bold px-2 py-1 rounded-full shadow-md z-10">
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] text-[#050d1a] text-[10px] font-extrabold px-2 py-1 rounded-full z-10">
               -{p.discount_pct}%
             </div>
           )}
         </motion.div>
         <motion.div
-          className="border-t border-white/10 bg-[#0b1b35]/55 backdrop-blur-sm p-4"
+          className="border-t border-[rgba(255,255,255,0.08)] bg-[rgba(5,13,26,0.6)] backdrop-blur-sm p-5"
           style={{ y: textY }}
         >
-          <p className="text-xs text-amber-200/90 mb-1 font-semibold tracking-wide">
+          <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)] mb-2">
             {cat}
           </p>
-          <h2 className="text-lg font-semibold mb-2 text-white group-hover:text-amber-200 transition-colors">
+          <h2 className="font-serif text-[20px] font-semibold mb-2 text-white group-hover:text-[#e8c97a] transition-colors">
             {name}
           </h2>
           <div className="flex items-center gap-2">
             {discountedPrice ? (
               <>
-                <span className="text-xl font-bold text-amber-200">
+                <span className="font-serif text-[26px] font-bold text-[#e8c97a]">
                   {discountedPrice} AZN
                 </span>
                 <span className="text-white/40 text-sm line-through">{p.price} AZN</span>
               </>
             ) : (
-              <span className="text-xl font-bold text-amber-200">
-                {p.price} AZN
-              </span>
+              <span className="font-serif text-[26px] font-bold text-[#e8c97a]">{p.price} AZN</span>
             )}
           </div>
         </motion.div>
@@ -259,7 +256,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
                     setSearch(e.target.value)
                     setPage(1)
                   }}
-                  className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-5 py-2.5 text-white shadow-sm placeholder:text-neutral-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/35"
+                  className="ds-input flex-1"
                 />
                 <select
                   value={categoryFilter}
@@ -267,7 +264,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
                     setCategoryFilter(e.target.value)
                     setPage(1)
                   }}
-                  className="min-w-[160px] rounded-2xl border border-white/15 bg-white/5 px-4 py-2.5 text-white shadow-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/35"
+                  className="ds-input min-w-[160px]"
                 >
                   <option value="">{tr.allCategories[lang]}</option>
                   {CATEGORY_KEYS.map((key) => (

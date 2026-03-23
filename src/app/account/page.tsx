@@ -44,29 +44,29 @@ export default async function AccountPage() {
   return (
     <main className="p-8 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/" className="text-gray-500 hover:text-black">
+        <a href="/" className="text-white/60 hover:text-white">
           Geri
         </a>
-        <h1 className="text-3xl font-bold">Kabinet</h1>
+        <h1 className="text-3xl font-bold text-white">Kabinet</h1>
       </div>
 
-      <div className="border rounded-xl p-6 mb-8 flex items-center gap-4">
+      <div className="card-soft p-6 mb-8 flex items-center gap-4 border border-white/10">
         {avatarUrl ? (
-          <img src={avatarUrl} alt="avatar" className="w-14 h-14 rounded-full object-cover border" />
+          <img src={avatarUrl} alt="avatar" className="w-14 h-14 rounded-full object-cover border border-white/10" />
         ) : (
-          <div className="w-14 h-14 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold">
+          <div className="w-14 h-14 bg-[#050d1a] text-white rounded-full flex items-center justify-center text-xl font-bold border border-white/10">
             {user.email?.[0].toUpperCase()}
           </div>
         )}
         <div>
-          <div className="font-semibold text-lg">{displayName}</div>
-          <div className="text-gray-500 text-sm">{user.email}</div>
-          <div className="text-xs text-gray-400 mt-1">{profile?.role || 'customer'}</div>
+          <div className="font-semibold text-lg text-white">{displayName}</div>
+          <div className="text-white/60 text-sm">{user.email}</div>
+          <div className="text-xs text-white/60 mt-1">{profile?.role || 'customer'}</div>
         </div>
         {isStaff && (
           <a
             href="/admin"
-            className="ml-auto bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800"
+            className="ml-auto btn-secondary text-sm"
           >
             Admin Panel
           </a>

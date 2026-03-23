@@ -4,6 +4,7 @@ import { Providers } from '@/components/providers'
 import NavbarWrapper from '@/components/navbar-wrapper'
 import Footer from '@/components/footer'
 import { PageTransition } from '@/components/page-transition'
+import AuroraBackground from '@/components/aurora-background'
 
 export const metadata: Metadata = {
   title: 'RoyalAz — Ortopedik Dosekler',
@@ -40,8 +41,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-[#f4f4f5] text-neutral-900 antialiased">
+      <body className="min-h-screen flex flex-col bg-transparent antialiased">
         <Providers>
+          <AuroraBackground />
           <NavbarWrapper />
           <PageTransition className="flex-1">{children}</PageTransition>
           <Footer />

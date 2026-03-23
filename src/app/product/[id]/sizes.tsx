@@ -59,13 +59,13 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <span className="text-3xl font-bold">{current} AZN</span>
+        <span className="font-serif text-[26px] font-bold text-[#e8c97a]">{current} AZN</span>
         {discountPct > 0 && (
           <>
-            <span className="text-gray-400 text-lg" style={{textDecoration:'line-through'}}>
+            <span className="text-white/40 text-lg" style={{ textDecoration: 'line-through' }}>
               {original} AZN
             </span>
-            <span className="bg-green-500 text-white text-sm px-2 py-1 rounded-full">
+            <span className="bg-[rgba(201,168,76,0.15)] border border-[rgba(201,168,76,0.25)] text-[#e8c97a] text-sm px-2 py-1 rounded-full">
               -{discountPct}%
             </span>
           </>
@@ -74,17 +74,19 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
 
       {sizes.length > 0 && (
         <div className="mb-6">
-          <p className="font-medium mb-3">{tr.selectSizeLabel[lang]}</p>
+          <p className="ds-label">{tr.selectSizeLabel[lang]}</p>
           <div className="flex flex-wrap gap-2">
             {sizes.map((s) => (
               <button key={s.id} disabled={!s.in_stock} onClick={() => setSelected(s)}
                 className={`border-2 rounded-lg px-4 py-2 text-sm transition-all ${
-                  !s.in_stock ? 'opacity-40 cursor-not-allowed border-gray-200'
-                  : selected?.id === s.id ? 'border-black bg-black text-white'
-                  : 'border-gray-200 hover:border-black'
+                  !s.in_stock
+                    ? 'opacity-40 cursor-not-allowed border-white/10 bg-white/5'
+                    : selected?.id === s.id
+                      ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.12)] text-[#e8c97a]'
+                      : 'border-white/10 bg-white/5 hover:border-[#c9a84c]/40 text-white/80'
                 }`}>
                 <div className="font-medium">{s.size}</div>
-                <div className={selected?.id === s.id ? 'text-gray-300' : 'text-gray-500'}>
+                <div className={selected?.id === s.id ? 'text-[#e8c97a]' : 'text-white/60'}>
                   {s.price} AZN
                 </div>
               </button>
@@ -105,8 +107,8 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
           onClick={() => toggle(productId)}
           className={`w-full py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
             inWishlist
-              ? 'border-amber-500 bg-amber-50 text-amber-900'
-              : 'border-neutral-200 hover:border-amber-300 text-neutral-700'
+              ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.12)] text-[#e8c97a]'
+              : 'border-white/10 bg-white/5 hover:border-[#c9a84c]/40 text-white/80'
           }`}
         >
           {inWishlist ? tr.removeFromWishlist[lang] : tr.addToWishlist[lang]}
@@ -133,7 +135,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
               handleAdd(orderBtnRef.current)
               window.setTimeout(() => router.push('/cart'), 1400)
             }}
-            className="w-full rounded-xl border-2 border-black py-3 text-lg btn-secondary"
+            className="w-full rounded-xl py-3 text-lg btn-secondary"
           >
             {tr.orderNow[lang]}
           </motion.button>

@@ -62,31 +62,34 @@ export default async function AdminPage() {
           </a>
         </div>
       </div>
-      <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-white/10 bg-transparent">
         <thead>
-          <tr className="bg-neutral-50">
-            <th className="text-left p-3 border-b border-neutral-200">Mehsul</th>
-            <th className="text-left p-3 border-b border-neutral-200">Kateqoriya</th>
-            <th className="text-left p-3 border-b border-neutral-200">Qiymet</th>
-            <th className="text-left p-3 border-b border-neutral-200">Endirim</th>
-            <th className="text-left p-3 border-b border-neutral-200">Stok</th>
-            <th className="text-left p-3 border-b border-neutral-200">Emeliyyat</th>
+          <tr className="bg-[rgba(201,168,76,0.06)]">
+            <th className="text-left p-3 border-b border-white/10 text-[10px] font-bold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)]">Mehsul</th>
+            <th className="text-left p-3 border-b border-white/10 text-[10px] font-bold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)]">Kateqoriya</th>
+            <th className="text-left p-3 border-b border-white/10 text-[10px] font-bold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)]">Qiymet</th>
+            <th className="text-left p-3 border-b border-white/10 text-[10px] font-bold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)]">Endirim</th>
+            <th className="text-left p-3 border-b border-white/10 text-[10px] font-bold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)]">Stok</th>
+            <th className="text-left p-3 border-b border-white/10 text-[10px] font-bold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)]">Emeliyyat</th>
           </tr>
         </thead>
         <tbody>
           {products?.map((p) => (
-            <tr key={p.id} className="hover:bg-neutral-50">
-              <td className="p-3 border-b border-neutral-100 font-medium">{p.name_ru}</td>
-              <td className="p-3 border-b border-neutral-100 text-gray-500">{p.category}</td>
-              <td className="p-3 border-b border-neutral-100">{p.price} AZN</td>
-              <td className="p-3 border-b border-neutral-100">{p.discount_pct > 0 ? p.discount_pct + '%' : '-'}</td>
-              <td className="p-3 border-b border-neutral-100">
-                <span className={p.in_stock ? 'text-green-600' : 'text-red-600'}>
+            <tr key={p.id} className="hover:bg-white/5">
+              <td className="p-3 border-b border-white/10 font-medium text-[rgba(255,255,255,0.85)]">{p.name_ru}</td>
+              <td className="p-3 border-b border-white/10 text-white/60">{p.category}</td>
+              <td className="p-3 border-b border-white/10">{p.price} AZN</td>
+              <td className="p-3 border-b border-white/10">{p.discount_pct > 0 ? p.discount_pct + '%' : '-'}</td>
+              <td className="p-3 border-b border-white/10">
+                <span className={p.in_stock ? 'text-emerald-300' : 'text-[#ff6b6b]'}>
                   {p.in_stock ? 'Var' : 'Yoxdur'}
                 </span>
               </td>
-              <td className="p-3 border-b border-neutral-100">
-                <a href={'/admin/products/' + p.id} className="text-blue-600 hover:underline">
+              <td className="p-3 border-b border-white/10">
+                <a
+                  href={'/admin/products/' + p.id}
+                  className="text-[rgba(201,168,76,0.8)] text-[12px] font-semibold tracking-[0.06em] uppercase hover:text-[#e8c97a] hover:underline"
+                >
                   Edit
                 </a>
               </td>

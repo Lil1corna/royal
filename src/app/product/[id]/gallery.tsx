@@ -34,7 +34,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
 
   if (images.length === 0) {
     return (
-      <div className="aspect-square bg-gray-100 rounded-xl flex items-center justify-center text-gray-300 text-8xl">
+      <div className="aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/30 text-8xl">
         🛏
       </div>
     )
@@ -44,7 +44,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
     <div>
       <div
         ref={mainRef}
-        className="aspect-square rounded-2xl mb-3 bg-gray-100 overflow-hidden"
+        className="aspect-square rounded-2xl mb-3 bg-white/5 border border-white/10 overflow-hidden"
         style={{ perspective: lowPower ? undefined : 1100 }}
         onMouseMove={lowPower ? undefined : onMove}
         onMouseLeave={lowPower ? undefined : onLeave}
@@ -80,10 +80,10 @@ export default function ProductGallery({ images }: { images: string[] }) {
               key={i}
               type="button"
               onClick={() => setActive(i)}
-              className={`aspect-square rounded-xl overflow-hidden cursor-pointer border-2 transition-all duration-200 ${
+              className={`aspect-square rounded-xl overflow-hidden cursor-pointer border transition-all duration-200 ${
                 active === i
-                  ? 'border-amber-500 ring-2 ring-amber-200 scale-[1.02]'
-                  : 'border-transparent hover:border-neutral-300 opacity-90 hover:opacity-100'
+                  ? 'border-[#c9a84c] ring-2 ring-[rgba(201,168,76,0.25)] scale-[1.02]'
+                  : 'border-transparent bg-white/5 hover:border-white/20 opacity-90 hover:opacity-100'
               }`}
             >
               <Image

@@ -1,0 +1,195 @@
+.wrap {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #050d1a;
+}
+
+.blob1,
+.blob2,
+.blob3,
+.blob4,
+.blob5 {
+  position: absolute;
+  border-radius: 9999px;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  will-change: transform, filter, opacity;
+}
+
+.blob1 {
+  width: 640px;
+  height: 640px;
+  left: -140px;
+  top: 30vh;
+  background: radial-gradient(circle at center, #2d9bb5 0%, rgba(45, 155, 181, 0.1) 38%, transparent 62%);
+  filter: blur(95px);
+  opacity: 0.45;
+  animation: move1 18s ease-in-out infinite;
+}
+
+.blob2 {
+  width: 760px;
+  height: 760px;
+  right: -260px;
+  top: 10vh;
+  background: radial-gradient(circle at center, #1a6b8a 0%, rgba(26, 107, 138, 0.1) 40%, transparent 64%);
+  filter: blur(105px);
+  opacity: 0.55;
+  animation: move2 24s ease-in-out infinite;
+}
+
+.blob3 {
+  width: 680px;
+  height: 680px;
+  left: 20vw;
+  top: -220px;
+  background: radial-gradient(circle at center, #2d9bb5 0%, rgba(77, 191, 212, 0.12) 35%, transparent 62%);
+  filter: blur(120px);
+  opacity: 0.4;
+  animation: move3 31s ease-in-out infinite;
+}
+
+.blob4 {
+  width: 720px;
+  height: 720px;
+  right: 10vw;
+  bottom: -320px;
+  background: radial-gradient(circle at center, #4dbfd4 0%, rgba(77, 191, 212, 0.12) 38%, transparent 64%);
+  filter: blur(110px);
+  opacity: 0.6;
+  animation: move4 27s ease-in-out infinite;
+}
+
+.blob5 {
+  width: 540px;
+  height: 540px;
+  left: 35vw;
+  bottom: 10vh;
+  background: radial-gradient(circle at center, #b8f0f7 0%, rgba(184, 240, 247, 0.12) 42%, transparent 66%);
+  filter: blur(92px);
+  opacity: 0.45;
+  animation: move5 22s ease-in-out infinite;
+}
+
+@keyframes move1 {
+  0% {
+    transform: translate(-40px, 0px) scale(1);
+    filter: blur(90px);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(160px, -120px) scale(1.16);
+    filter: blur(120px);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate(-40px, 0px) scale(1);
+    filter: blur(92px);
+    opacity: 0.35;
+  }
+}
+
+@keyframes move2 {
+  0% {
+    transform: translate(0px, 0px) scale(1.02);
+    filter: blur(90px);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-190px, 140px) scale(1.18);
+    filter: blur(120px);
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1.02);
+    filter: blur(95px);
+    opacity: 0.4;
+  }
+}
+
+@keyframes move3 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+    filter: blur(110px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(160px, 190px) scale(1.22);
+    filter: blur(130px);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+    filter: blur(112px);
+    opacity: 0.3;
+  }
+}
+
+@keyframes move4 {
+  0% {
+    transform: translate(0px, 0px) scale(1.01);
+    filter: blur(105px);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(-140px, -170px) scale(1.2);
+    filter: blur(125px);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1.01);
+    filter: blur(108px);
+    opacity: 0.35;
+  }
+}
+
+@keyframes move5 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+    filter: blur(85px);
+    opacity: 0.32;
+  }
+  50% {
+    transform: translate(110px, -90px) scale(1.15);
+    filter: blur(115px);
+    opacity: 0.62;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+    filter: blur(90px);
+    opacity: 0.32;
+  }
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='120'%20height='120'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='.8'%20numOctaves='4'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='120'%20height='120'%20filter='url(%23n)'%20opacity='.6'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  pointer-events: none;
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(184, 240, 247, 0.08) 0%, rgba(5, 13, 26, 0.55) 52%, rgba(0, 0, 0, 0.75) 100%);
+  pointer-events: none;
+}
+

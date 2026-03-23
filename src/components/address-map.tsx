@@ -119,7 +119,7 @@ export default function AddressMap({
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
         <input
-          className="flex-1 border rounded-lg p-2 text-sm"
+          className="flex-1 ds-input"
           placeholder={tr.mapSearch[lang]}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -128,18 +128,18 @@ export default function AddressMap({
         <button
           type="button"
           onClick={handleSearch}
-          className="bg-black text-white px-4 rounded-lg text-sm whitespace-nowrap"
+          className="ds-btn-secondary whitespace-nowrap"
         >
           {loading ? '...' : tr.mapSearchBtn[lang]}
         </button>
       </div>
       {suggestions.length > 0 && (
-        <div className="border rounded-lg max-h-40 overflow-y-auto">
+        <div className="border border-white/10 bg-white/5 rounded-lg max-h-40 overflow-y-auto">
           {suggestions.map((s, i) => (
             <div
               key={i}
               onClick={() => selectSuggestion(s)}
-              className="p-2 text-sm hover:bg-gray-50 cursor-pointer border-b last:border-0"
+              className="p-2 text-sm text-white/80 hover:bg-white/5 cursor-pointer border-b border-white/10 last:border-0"
             >
               {s.display_name}
             </div>
@@ -152,16 +152,16 @@ export default function AddressMap({
           height: '360px',
           borderRadius: '12px',
           overflow: 'hidden',
-          border: '1px solid #e5e7eb',
+          border: '1px solid rgba(255,255,255,0.08)',
         }}
       />
       {selected ? (
-        <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+        <div className="flex items-start gap-2 p-3 bg-[rgba(45,198,83,0.12)] border border-[rgba(45,198,83,0.25)] rounded-lg text-sm text-[rgba(45,198,83,0.95)]">
           <span>✓</span>
           <span>{selected}</span>
         </div>
       ) : (
-        <p className="text-xs text-gray-400">{tr.mapHint[lang]}</p>
+        <p className="text-xs text-white/60">{tr.mapHint[lang]}</p>
       )}
     </div>
   )

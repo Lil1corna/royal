@@ -35,15 +35,15 @@ export default function ProductContent({
   const cat = tr.categories[product.category]?.[lang] || product.category
 
   return (
-    <main className="mx-auto max-w-6xl p-8 text-neutral-900">
+    <main className="mx-auto max-w-6xl p-8 text-white">
       <a
         href="/"
-        className="mb-6 inline-block font-medium text-amber-800 underline-offset-4 hover:text-amber-950 hover:underline"
+        className="mb-6 inline-block font-medium text-[#c9a84c] underline-offset-4 hover:text-[#e8c97a] hover:underline"
       >
         ← {tr.backToCatalogBtn[lang]}
       </a>
-      <p className="text-sm text-gray-400 mb-1">{cat}</p>
-      <h1 className="text-3xl font-bold mb-8">{name}</h1>
+      <p className="text-sm text-white/60 mb-1">{cat}</p>
+      <h1 className="text-3xl font-bold mb-8 font-serif">{name}</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <ProductGallery images={product.image_urls || []} />
         <SizeSelector

@@ -185,7 +185,7 @@ export default function CartPage() {
       <main className="p-8 max-w-2xl mx-auto text-center">
         <div className="text-6xl mb-4">🛒</div>
         <h1 className="text-2xl font-bold mb-2">{tr.cartEmpty[lang]}</h1>
-        <a href="/" className="text-blue-600 hover:underline">{tr.backToCatalog[lang]}</a>
+        <a href="/" className="text-[#e8c97a] hover:underline">{tr.backToCatalog[lang]}</a>
       </main>
     )
   }
@@ -193,7 +193,7 @@ export default function CartPage() {
   return (
     <main className="p-8 max-w-5xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/" className="text-gray-500 hover:text-black">{tr.back[lang]}</a>
+        <a href="/" className="text-white/60 hover:text-white">{tr.back[lang]}</a>
         <h1 className="text-3xl font-bold">{tr.cart[lang]}</h1>
       </div>
       <ToastMessage toast={toast} className="mb-5" />
@@ -213,31 +213,31 @@ export default function CartPage() {
                 )}
                 <div className="flex-1">
                   <div className="font-semibold">{item.name}</div>
-                  {item.size && <div className="text-sm text-gray-500">{item.size}</div>}
+                  {item.size && <div className="text-sm text-white/60">{item.size}</div>}
                   <div className="font-bold mt-1">{item.price * item.quantity} AZN</div>
-                  <div className="text-sm text-gray-400">{item.quantity} {tr.pieces[lang]}</div>
+                  <div className="text-sm text-white/60">{item.quantity} {tr.pieces[lang]}</div>
                 </div>
                 <button onClick={() => remove(item.id, item.size)}
-                  className="text-red-400 hover:text-red-600">X</button>
+                  className="text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b]">X</button>
               </motion.div>
             ))}
           </div>
           <div className="border-t pt-4 flex flex-col gap-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">{tr.subtotal[lang]}</span>
+              <span className="text-white/60">{tr.subtotal[lang]}</span>
               <span className="font-medium">{subtotal} AZN</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">{tr.shippingFee[lang]}</span>
+              <span className="text-white/60">{tr.shippingFee[lang]}</span>
               <span className="font-medium">
                 {shippingFee === 0 ? (
-                  <span className="text-emerald-600">{lang === 'ru' ? 'Бесплатно' : lang === 'en' ? 'Free' : 'Pulsuz'}</span>
+                  <span className="text-emerald-300">{lang === 'ru' ? 'Бесплатно' : lang === 'en' ? 'Free' : 'Pulsuz'}</span>
                 ) : (
                   `${shippingFee} AZN`
                 )}
               </span>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-white/60">
               {lang === 'ru'
                 ? `Бесплатная доставка от ${FREE_SHIPPING_THRESHOLD} AZN (курьер)`
                 : lang === 'en'
@@ -254,26 +254,28 @@ export default function CartPage() {
         <form onSubmit={handleOrder} className="flex flex-col gap-4">
           <h2 className="text-xl font-bold">{tr.orderForm[lang]}</h2>
           <div>
-            <p className="text-sm font-medium mb-2">{tr.deliveryMethod[lang]}</p>
+            <span className="ds-label">{tr.deliveryMethod[lang]}</span>
             <div className="flex flex-col gap-2">
               {(['courier', 'pickup'] as DeliveryMode[]).map((mode) => (
                 <label
                   key={mode}
-                  className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
-                    deliveryMode === mode ? 'border-amber-500 bg-amber-50/50 ring-1 ring-amber-200' : 'border-gray-200 hover:border-gray-300'
+                  className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors text-white/80 ${
+                    deliveryMode === mode
+                      ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.08)] ring-1 ring-[#c9a84c]/30'
+                      : 'border-white/10 bg-white/5 hover:border-[#c9a84c]/25'
                   }`}
                 >
                   <input
                     type="radio"
                     name="delivery"
-                    className="accent-amber-600"
+                    className="accent-[#c9a84c]"
                     checked={deliveryMode === mode}
                     onChange={() => setDeliveryMode(mode)}
                   />
                   <div>
                     <div className="font-medium">{deliveryModeLabel(mode, lang)}</div>
                     {mode === 'pickup' && (
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-white/60">
                         {lang === 'ru' ? 'Без стоимости доставки' : lang === 'en' ? 'No shipping fee' : 'Catdırılma haqqı yoxdur'}
                       </div>
                     )}
@@ -283,10 +285,11 @@ export default function CartPage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">{tr.phone[lang]}</label>
+            <label className="ds-label" htmlFor="cart-phone">{tr.phone[lang]}</label>
             <input
+              id="cart-phone"
               type="tel"
-              className="w-full border rounded-lg p-2"
+              className="ds-input"
               placeholder="+994 XX XXX XX XX"
               value={phone}
               onChange={e => setPhone(e.target.value)}
@@ -295,10 +298,10 @@ export default function CartPage() {
           </div>
           {deliveryMode === 'courier' && (
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="ds-label">
                 {tr.deliveryAddress[lang]}
                 {address.trim() && (
-                  <span className="text-green-600 ml-2 text-xs">
+                  <span className="text-emerald-300 ml-2 text-xs">
                     ✓ {tr.addressSelected[lang]}
                   </span>
                 )}
@@ -309,14 +312,14 @@ export default function CartPage() {
                   <label
                     className={`flex items-start gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
                       addressMode === 'saved'
-                        ? 'border-amber-500 bg-amber-50/40 ring-1 ring-amber-200'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.08)] ring-1 ring-[#c9a84c]/30'
+                        : 'border-white/10 bg-white/5 hover:border-[#c9a84c]/25'
                     }`}
                   >
                     <input
                       type="radio"
                       name="addrMode"
-                      className="mt-1 accent-amber-600"
+                      className="mt-1 accent-[#c9a84c]"
                       checked={addressMode === 'saved'}
                       onChange={() => {
                         setAddressMode('saved')
@@ -327,12 +330,12 @@ export default function CartPage() {
                     />
                     <div>
                       <div className="font-medium">{tr.addressFromProfile[lang]}</div>
-                      <div className="text-sm text-gray-600 mt-1">{profileSaved.line}</div>
+                      <div className="text-sm text-white/70 mt-1">{profileSaved.line}</div>
                       {profileSaved.lat != null && profileSaved.lng != null && (
-                        <div className="text-xs text-emerald-700 mt-1">
+                        <div className="text-xs text-emerald-300 mt-1">
                           GPS ·{' '}
                           <a
-                            className="underline"
+                            className="underline hover:text-emerald-100"
                             href={`https://www.google.com/maps?q=${profileSaved.lat},${profileSaved.lng}`}
                             target="_blank"
                             rel="noreferrer"
@@ -346,14 +349,14 @@ export default function CartPage() {
                   <label
                     className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors ${
                       addressMode === 'map'
-                        ? 'border-amber-500 bg-amber-50/40 ring-1 ring-amber-200'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.08)] ring-1 ring-[#c9a84c]/30'
+                        : 'border-white/10 bg-white/5 hover:border-[#c9a84c]/25'
                     }`}
                   >
                     <input
                       type="radio"
                       name="addrMode"
-                      className="accent-amber-600"
+                      className="accent-[#c9a84c]"
                       checked={addressMode === 'map'}
                       onChange={() => {
                         setAddressMode('map')
@@ -380,7 +383,7 @@ export default function CartPage() {
               )}
 
               {profileSaved && addressMode === 'saved' && (
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm text-gray-700 border">
+                <div className="mt-2 p-3 bg-white/5 rounded-lg text-sm text-white/70 border border-white/10">
                   {profileSaved.line}
                 </div>
               )}
@@ -388,13 +391,13 @@ export default function CartPage() {
           )}
 
           {deliveryMode === 'pickup' && (
-            <p className="text-sm text-gray-600 bg-gray-50 border rounded-xl p-3">
+            <p className="text-sm text-white/70 bg-white/5 border border-white/10 rounded-xl p-3">
               {tr.pickupNoAddressNeeded[lang]}
             </p>
           )}
           <div>
-            <label className="block text-sm font-medium mb-1">{tr.notes[lang]}</label>
-            <textarea className="w-full border rounded-lg p-2 h-20 resize-none"
+            <label className="ds-label">{tr.notes[lang]}</label>
+            <textarea className="ds-input h-20 resize-none"
               placeholder={tr.extraInfo[lang] + '...'}
               value={notes} onChange={e => setNotes(e.target.value)} />
           </div>
@@ -402,7 +405,7 @@ export default function CartPage() {
             whileTap={{ scale: 0.985 }}
             type="submit"
             disabled={loading || (deliveryMode === 'courier' && !address.trim())}
-            className="btn-primary py-3 rounded-xl text-lg"
+            className="btn-primary w-full"
           >
             {loading ? tr.submitting[lang] : `${tr.submitOrder[lang]} — ${grandTotal} AZN`}
           </motion.button>

@@ -24,7 +24,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
   }
 
   const pill =
-    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 border border-neutral-200/90 bg-white text-neutral-900 hover:border-amber-300 hover:bg-amber-50 hover:shadow-sm'
+    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-medium transition-all duration-300 border border-white/10 bg-transparent text-white/60 hover:text-[#e8c97a] hover:border-[#c9a84c]/50'
 
   return (
     <>
@@ -38,7 +38,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
         {tr.about[lang]}
       </Link>
 
-      <div className="flex rounded-full border border-neutral-300 bg-neutral-100 p-0.5 shadow-inner text-xs font-semibold">
+      <div className="flex rounded-full border border-white/10 bg-white/5 p-0.5 shadow-inner text-[11px] font-semibold">
         {(['az', 'ru', 'en'] as Lang[]).map((l) => (
           <button
             key={l}
@@ -46,8 +46,8 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
             onClick={() => setLang(l)}
             className={`px-3 py-1.5 rounded-full transition-all duration-200 ${
               lang === l
-                ? 'bg-gradient-to-br from-neutral-900 to-neutral-800 text-white shadow-md'
-                : 'text-neutral-800 hover:bg-white'
+                ? 'bg-[rgba(201,168,76,0.15)] border border-[rgba(201,168,76,0.4)] text-[#e8c97a]'
+                : 'text-white/70 hover:bg-white/5'
             }`}
           >
             {l.toUpperCase()}
@@ -58,7 +58,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
       <Link
         href="/wishlist"
         onClick={() => onClose?.()}
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-900 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-md"
+        className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c9a84c]/35 hover:bg-[rgba(201,168,76,0.1)]"
         title={tr.wishlist[lang]}
       >
         <motion.span
@@ -86,7 +86,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
         onClick={handleCart}
         whileHover={{ scale: 1.06, y: -2 }}
         whileTap={{ scale: 0.96 }}
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-amber-400/50 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 text-lg shadow-lg shadow-amber-900/20 transition-shadow hover:shadow-amber-500/25"
+        className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-lg text-white/70 shadow-sm transition-all hover:bg-[rgba(201,168,76,0.1)] hover:border-[#c9a84c]/35"
         aria-label={tr.cart[lang]}
       >
         <span className="drop-shadow-sm">🛒</span>
@@ -108,14 +108,14 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
           <Link
             href="/account"
             onClick={() => onClose?.()}
-            className="rounded-full border border-neutral-200 bg-white/80 px-4 py-2 text-sm font-medium text-neutral-800 shadow-sm transition-all hover:border-amber-300 hover:shadow-md"
+            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 shadow-sm transition-all hover:border-[#c9a84c]/40 hover:bg-[rgba(201,168,76,0.1)]"
           >
             {userEmail.split('@')[0]}
           </Link>
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              className="rounded-full border border-neutral-200 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-600 transition-all hover:bg-neutral-50"
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/70 transition-all hover:bg-white/10"
             >
               {tr.signout[lang]}
             </button>
@@ -149,16 +149,16 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
           ? { duration: 0 }
           : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
       }
-      className={`sticky top-0 z-50 border-b border-neutral-200/90 bg-white/95 text-neutral-900 shadow-[0_4px_24px_rgba(15,23,42,0.08)] ${lowPower ? '' : 'backdrop-blur-xl'}`}
+      className={`sticky top-0 z-50 border-b border-white/5 bg-[rgba(5,13,26,0.85)] text-white shadow-none ${lowPower ? '' : 'backdrop-blur-xl'}`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[4.25rem] flex items-center justify-between gap-3">
         <Link href="/" className="group flex shrink-0 items-center gap-1">
           <motion.span
-            className="text-2xl font-bold tracking-tight text-neutral-900"
+            className="text-2xl font-bold tracking-tight text-white"
             whileHover={lowPower ? undefined : { scale: 1.02 }}
           >
             Royal
-            <span className="bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">
+            <span className="text-[#c9a84c]">
               Az
             </span>
           </motion.span>
@@ -200,7 +200,7 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
               transition={{ duration: lowPower ? 0.12 : 0.2 }}
             />
             <motion.div
-              className={`fixed right-0 top-0 z-50 flex h-full w-[min(100%,20rem)] flex-col gap-5 border-l border-neutral-200 bg-white p-5 text-neutral-900 shadow-2xl lg:hidden ${lowPower ? '' : 'backdrop-blur-xl'}`}
+              className={`fixed right-0 top-0 z-50 flex h-full w-[min(100%,20rem)] flex-col gap-5 border-l border-white/10 bg-[rgba(5,13,26,0.95)] p-5 text-white shadow-2xl lg:hidden ${lowPower ? '' : 'backdrop-blur-xl'}`}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -212,12 +212,12 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
             >
               <div className="flex justify-between items-center">
                 <span className="font-bold text-lg text-neutral-900">
-                  Royal<span className="text-amber-600">Az</span>
+                  Royal<span className="text-[#c9a84c]">Az</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
-                  className="h-10 w-10 rounded-xl border border-neutral-200 flex items-center justify-center hover:bg-neutral-50"
+                  className="h-10 w-10 rounded-xl border border-white/10 flex items-center justify-center hover:bg-white/10"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

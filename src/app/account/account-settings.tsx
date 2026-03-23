@@ -173,7 +173,7 @@ export default function AccountSettings({
     <div className="card-soft p-5 mb-8">
       <ToastMessage toast={toast} className="mb-4" />
       <h2 className="text-lg font-semibold mb-4">{tr.accountSettings[lang]}</h2>
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-white/60 mb-4">
         {lang === 'ru'
           ? `Email: ${currentEmail} (смена email отключена)`
           : lang === 'en'
@@ -181,25 +181,25 @@ export default function AccountSettings({
             : `Email: ${currentEmail} (email dəyişmə söndürülüb)`}
       </p>
       <form onSubmit={save}>
-        <label className="block text-sm font-medium mb-2">{tr.displayName[lang]}</label>
+        <label className="ds-label">{tr.displayName[lang]}</label>
         <input
-          className="w-full border rounded-lg p-2 mb-4"
+          className="ds-input mb-4"
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={60}
         />
 
-        <label className="block text-sm font-medium mb-2">{tr.accountPhone[lang]}</label>
+        <label className="ds-label">{tr.accountPhone[lang]}</label>
         <input
-          className="w-full border rounded-lg p-2 mb-4"
+          className="ds-input mb-4"
           value={phone}
           onChange={(e) => setPhone(formatAzPhone(e.target.value))}
           placeholder={tr.phoneFormatHint[lang]}
           maxLength={20}
         />
 
-        <label className="block text-sm font-medium mb-2">{tr.shippingAddress[lang]}</label>
-        <p className="text-xs text-gray-500 mb-3">{tr.addressProfileHint[lang]}</p>
+        <label className="ds-label">{tr.shippingAddress[lang]}</label>
+        <p className="text-xs text-white/60 mb-3">{tr.addressProfileHint[lang]}</p>
 
         <AddressMap
           key={mapKey}
@@ -213,9 +213,9 @@ export default function AccountSettings({
           }}
         />
 
-        <label className="block text-sm font-medium mt-4 mb-1">{tr.addressDetailHint[lang]}</label>
+        <label className="ds-label mt-4">{tr.addressDetailHint[lang]}</label>
         <input
-          className="w-full border rounded-lg p-2 mb-4"
+          className="ds-input mb-4"
           value={addressExtra}
           onChange={(e) => setAddressExtra(e.target.value)}
           maxLength={80}
@@ -223,21 +223,21 @@ export default function AccountSettings({
         />
 
         {fullAddressLine && (
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700 border">
-            <span className="text-xs text-gray-500 block mb-1">
+          <div className="mb-4 p-3 bg-white/5 rounded-lg text-sm text-white/70 border border-white/10">
+            <span className="text-xs text-white/60 block mb-1">
               {lang === 'ru' ? 'Сохранится:' : lang === 'en' ? 'Will save:' : 'Yadda saxlanacaq:'}
             </span>
             {fullAddressLine}
             {shippingLat != null && shippingLng != null && (
-              <span className="block text-xs text-emerald-700 mt-1">
+              <span className="block text-xs text-emerald-300 mt-1">
                 GPS: {shippingLat.toFixed(5)}, {shippingLng.toFixed(5)}
               </span>
             )}
           </div>
         )}
 
-        <label className="block text-sm font-medium mb-2">{tr.avatarUrl[lang]}</label>
-        <p className="text-xs text-gray-500 mb-2">
+        <label className="ds-label">{tr.avatarUrl[lang]}</label>
+        <p className="text-xs text-white/60 mb-2">
           {lang === 'ru'
             ? 'Прямая ссылка на картинку (https). Если превью не грузится из‑за защиты сайта — сохранение всё равно возможно.'
             : lang === 'en'
@@ -245,7 +245,7 @@ export default function AccountSettings({
               : 'Birbaşa şəkil linki (https). Bəzi saytlar önizləməni bloklaya bilər — saxlama işləyir.'}
         </p>
         <input
-          className="w-full border rounded-lg p-2 mb-4"
+          className="ds-input mb-4"
           value={avatarUrl}
           onChange={(e) => setAvatarUrl(e.target.value)}
           placeholder="https://..."
@@ -259,12 +259,12 @@ export default function AccountSettings({
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-gray-100 border flex items-center justify-center text-gray-400 text-xs">
+            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 text-xs">
               preview
             </div>
           )}
           {previewAvatar && avatarValid && (
-            <div className="text-xs mt-2 text-gray-500">
+            <div className="text-xs mt-2 text-white/60">
               {avatarChecking
                 ? lang === 'ru'
                   ? 'Проверка…'
@@ -288,7 +288,7 @@ export default function AccountSettings({
         <button className="btn-primary" disabled={saving}>
           {saving ? tr.saving[lang] : tr.saveChanges[lang]}
         </button>
-        {saved && <span className="ml-3 text-sm text-green-600">{tr.saved[lang]}</span>}
+        {saved && <span className="ml-3 text-sm text-emerald-300">{tr.saved[lang]}</span>}
       </form>
     </div>
   )

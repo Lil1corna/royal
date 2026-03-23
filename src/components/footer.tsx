@@ -37,15 +37,15 @@ export default function Footer() {
       whileInView={{ opacity: 1 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.25 }}
-      className="mt-auto border-t border-neutral-200 bg-neutral-100 text-neutral-900"
+      className="mt-auto border-t border-white/5 bg-[rgba(5,13,26,0.8)] text-white"
     >
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
           <div>
-            <h3 className="mb-3 text-lg font-bold text-neutral-900">
-              Royal<span className="text-amber-600">Az</span>
+            <h3 className="mb-3 text-lg font-bold text-white">
+              Royal<span className="text-[#c9a84c]">Az</span>
             </h3>
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-white/70">
               {lang === 'ru'
                 ? 'Ортопедические матрасы и подушки'
                 : lang === 'en'
@@ -54,28 +54,28 @@ export default function Footer() {
             </p>
           </div>
           <div>
-            <h3 className="font-bold mb-3">{tr.catalog[lang]}</h3>
-            <Link href="/" className="block text-sm text-gray-600 hover:text-black">
+            <h3 className="font-bold mb-3 text-[rgba(201,168,76,0.85)]">{tr.catalog[lang]}</h3>
+            <Link href="/" className="block text-sm text-white/60 hover:text-[#e8c97a]">
               {tr.backToCatalog[lang]}
             </Link>
           </div>
           <div>
-            <h3 className="mb-3 font-bold text-neutral-900">{tr.cart[lang]}</h3>
-            <Link href="/cart" className="block text-sm text-neutral-700 hover:text-neutral-950">
+            <h3 className="mb-3 font-bold text-[rgba(201,168,76,0.85)]">{tr.cart[lang]}</h3>
+            <Link href="/cart" className="block text-sm text-white/60 hover:text-[#e8c97a]">
               {tr.cart[lang]}
             </Link>
           </div>
           <div>
-            <h3 className="mb-3 font-bold text-neutral-900">{tr.account[lang]}</h3>
-            <Link href="/account" className="block text-sm text-neutral-700 hover:text-neutral-950">
+            <h3 className="mb-3 font-bold text-[rgba(201,168,76,0.85)]">{tr.account[lang]}</h3>
+            <Link href="/account" className="block text-sm text-white/60 hover:text-[#e8c97a]">
               {tr.account[lang]}
             </Link>
           </div>
           <div>
-            <h3 className="mb-3 font-bold text-neutral-900">{tr.contactUs[lang]}</h3>
+            <h3 className="mb-3 font-bold text-[rgba(201,168,76,0.85)]">{tr.contactUs[lang]}</h3>
             <a
               href={telHref}
-              className="mb-3 block text-sm font-semibold text-neutral-900 hover:text-amber-700"
+              className="mb-3 block text-sm font-semibold text-white/80 hover:text-[#e8c97a]"
             >
               {SITE_CONTACT.phoneDisplay}
             </a>
@@ -83,11 +83,11 @@ export default function Footer() {
               href={whatsappChatUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 mb-4"
+              className="inline-flex items-center gap-2 text-sm text-emerald-300 hover:text-emerald-200 mb-4"
             >
               <span aria-hidden>💬</span> WhatsApp
             </a>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            <p className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">
               {tr.followSocial[lang]}
             </p>
             <div className="flex items-center gap-3">
@@ -95,7 +95,7 @@ export default function Footer() {
                 href={SITE_CONTACT.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-neutral-600 hover:text-pink-600 transition-colors"
+                className="text-white/60 hover:text-[#e8c97a] transition-colors"
                 aria-label="Instagram"
               >
                 <IconInstagram className="w-7 h-7" />
@@ -104,7 +104,7 @@ export default function Footer() {
                 href={SITE_CONTACT.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-neutral-600 hover:text-neutral-900 transition-colors"
+                className="text-white/60 hover:text-[#e8c97a] transition-colors"
                 aria-label="TikTok"
               >
                 <IconTikTok className="w-7 h-7" />
@@ -112,7 +112,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="mt-8 border-t border-neutral-200 pt-8 text-center text-sm text-neutral-600">
+        <div className="mt-8 border-t border-white/5 pt-8 text-center text-sm text-white/60">
           © {new Date().getFullYear()} RoyalAz.{' '}
           {lang === 'ru'
             ? 'Все права защищены.'
