@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { motion, useScroll, useTransform, type Variants } from 'framer-motion'
 import { useMemo, useRef, useState } from 'react'
 import { useLang, translations } from '@/context/lang'
-import RoyalMatrasHero from '@/components/royal-matras-hero'
+import CinematicHero from '@/components/cinematic-hero'
+import AboutSection from '@/components/about-section'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 const ITEMS_PER_PAGE = 12
@@ -132,6 +133,9 @@ function ParallaxProductCard({
                 className={`object-cover scale-110 transition-transform duration-700 ease-out ${
                   lowPower ? '' : 'group-hover:scale-[1.18]'
                 }`}
+                style={{
+                  filter: 'brightness(0.95) contrast(1.05)',
+                }}
                 unoptimized
                 onError={() => setImgFailed(true)}
               />
@@ -141,6 +145,15 @@ function ParallaxProductCard({
               </div>
             )}
           </motion.div>
+          {/* Product Image Vignette */}
+          <div
+            className="product-image-vignette absolute inset-0 pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse 90% 90% at 50% 50%,
+                transparent 50%,
+                rgba(5,13,26,0.35) 100%)`,
+            }}
+          />
           {/* Небольшая "тонировка" как в референсе */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#061226]/80 via-transparent to-transparent pointer-events-none" />
           <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(245,158,11,0.22),transparent_55%),radial-gradient(circle_at_70%_10%,rgba(255,255,255,0.14),transparent_45%)]" />
@@ -211,9 +224,14 @@ export default function CatalogClient({ products }: { products: Product[] }) {
 
   return (
     <main className="w-full">
-      <div className="w-full bg-[#061226]">
-        <RoyalMatrasHero />
+      {/* Cinematic Hero Section */}
+      <CinematicHero />
 
+      {/* About Section */}
+      <AboutSection />
+
+      {/* Press/Quality Image */}
+      <div className="w-full bg-[#061226]">
         <div className="mx-auto w-full max-w-[1024px] px-0">
           <motion.div
             className="relative w-full"
