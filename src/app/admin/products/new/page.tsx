@@ -3,6 +3,9 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
+// Отключаем static generation для admin страниц
+export const dynamic = 'force-dynamic'
+
 export default function NewProduct() {
   const router = useRouter()
   const supabase = createClient()
