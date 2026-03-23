@@ -17,7 +17,9 @@
 
 После изменения переменных сделайте **новый деплой** (Redeploy).
 
-**Важно:** если `NEXT_PUBLIC_SITE_URL` указывает на **старый** домен, а открываете **новый** — Google вернёт ошибку redirect_uri / Supabase не примет callback.
+**Редирект после входа:** в коде `getBaseUrl(request)` сначала берёт **хост из запроса** (тот сайт, где открыли `/auth/callback`), поэтому после деплоя на новый URL вроде `deft-torte-….netlify.app` вы не должны улетать на старый `royalaz.netlify.app` из‑за env. Всё равно обновите `NEXT_PUBLIC_SITE_URL` и Supabase **Site URL** на актуальный адрес — для ссылок и консистентности.
+
+**Важно:** если в Supabase в **Redirect URLs** нет строки с вашим новым доменом и `/auth/callback` — вход может падать с ошибкой.
 
 ## 2. Supabase → Authentication → URL Configuration
 
