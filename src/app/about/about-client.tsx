@@ -410,7 +410,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                       : lang === 'en'
                         ? 'Mattress models'
                         : 'Matras modeli'
-                    : ((tr as Record<string, Record<string, string>>)[s.labelKey]?.[lang] as string | undefined) ?? s.labelKey
+                    : ((tr as any)[s.labelKey]?.[lang] as string | undefined) ?? s.labelKey
 
                 return (
                   <CountUpStat
