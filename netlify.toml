@@ -2,11 +2,14 @@
   command = "npm run build"
   publish = ".next"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
 [build.environment]
-  # Эти переменные публичные и не являются секретами
   NEXT_PUBLIC_SUPABASE_URL = ""
   NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
   NEXT_PUBLIC_SITE_URL = ""
+
+[functions]
+  # Передаём переменные в функции
+  included_files = [".env"]
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
