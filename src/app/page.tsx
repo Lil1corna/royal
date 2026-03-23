@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase'
 import CatalogClient from '@/components/catalog-client'
 
 type Product = {
@@ -22,16 +22,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-        if (!supabaseUrl || !supabaseAnonKey) {
-          console.error('Missing Supabase credentials')
-          setLoading(false)
-          return
-        }
-
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        const supabase = createClient()
         
         const { data, error } = await supabase
           .from('products')

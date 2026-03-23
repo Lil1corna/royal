@@ -15,17 +15,25 @@ export default function SignInPage() {
     const run = async () => {
       const supabase = createClient()
       const redirectTo = `${window.location.origin}/auth/callback`
+      
+      console.log('[Sign In] Starting OAuth flow', { redirectTo })
+      
       const { data, error: err } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo },
       })
+      
       if (err) {
+        console.error('[Sign In] OAuth error:', err)
         setError(err.message)
         return
       }
+      
       if (data.url) {
+        console.log('[Sign In] Redirecting to Google OAuth')
         window.location.assign(data.url)
       } else {
+        console.error('[Sign In] No auth URL returned')
         setError('No auth URL')
       }
     }

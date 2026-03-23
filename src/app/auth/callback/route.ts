@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
   const baseUrl = getBaseUrl(request)
   const redirectUrl = `${baseUrl}${next}`
 
+  console.log('[Auth Callback] Starting OAuth callback', { code: code ? 'present' : 'missing', next })
+
   if (!code) {
+    console.error('[Auth Callback] No code provided')
     return NextResponse.redirect(`${baseUrl}/auth/error?message=No+code`)
   }
 
@@ -34,9 +37,11 @@ export async function GET(request: NextRequest) {
 
   const { error } = await supabase.auth.exchangeCodeForSession(code)
   if (error) {
-    console.error('Auth callback error:', error)
+    console.error('[Auth Callback] Session exchange failed:', error)
     return NextResponse.redirect(`${baseUrl}/auth/error?message=${encodeURIComponent(error.message)}`)
   }
+
+  console.log('[Auth Callback] Session exchange successful')
 
   // Assign pending staff role after first successful sign-in
   try {

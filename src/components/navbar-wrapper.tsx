@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase'
 import Navbar from './navbar'
 
 export default function NavbarWrapper() {
@@ -10,19 +10,18 @@ export default function NavbarWrapper() {
   useEffect(() => {
     async function getUser() {
       try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-        if (!supabaseUrl || !supabaseAnonKey) {
-          setLoading(false)
-          return
+        const supabase = createClient()
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error) {
+          console.error('[Navbar] Error getting user:', error)
+        } else {
+          console.log('[Navbar] User session:', user ? `Logged in as ${user.email}` : 'Not logged in')
         }
-
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
-        const { data: { user } } = await supabase.auth.getUser()
+        
         setUserEmail(user?.email)
       } catch (error) {
-        console.error('Error getting user:', error)
+        console.error('[Navbar] Error getting user:', error)
       } finally {
         setLoading(false)
       }

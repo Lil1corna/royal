@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import { useLang, translations } from '@/context/lang'
 import Link from 'next/link'
 
@@ -54,87 +53,10 @@ export default function AboutSection() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-12 lg:gap-16 items-center">
-          {/* Left Column - Cinematic Image */}
+        <div className="grid grid-cols-1 gap-12 lg:gap-16">
+          {/* Content */}
           <motion.div
-            className="about-image-container relative rounded-[20px] overflow-hidden order-1"
-            initial={{ x: -40, opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            viewport={{ once: true, margin: '-80px' }}
-            style={{
-              boxShadow: `
-                0 0 0 1px rgba(201,168,76,0.15),
-                0 40px 80px rgba(0,0,0,0.6),
-                0 0 60px rgba(45,155,181,0.1)
-              `,
-            }}
-          >
-            {/* Gold Frame Accent */}
-            <div
-              className="absolute left-0 z-20 w-[2px]"
-              style={{
-                top: '10%',
-                bottom: '10%',
-                background: 'linear-gradient(to bottom, transparent, #c9a84c, transparent)',
-              }}
-            />
-
-            {/* Year Badge */}
-            <div
-              className="about-year-badge absolute top-4 right-4 lg:top-6 lg:right-6 z-30 rounded-xl px-3 py-2 lg:px-4 lg:py-3 text-center"
-              style={{
-                background: 'rgba(5,13,26,0.8)',
-                border: '1px solid rgba(201,168,76,0.3)',
-                backdropFilter: 'blur(12px)',
-              }}
-            >
-              <div className="font-serif text-[28px] lg:text-[32px] font-bold text-[#e8c97a] leading-none">
-                1998
-              </div>
-              <div className="text-[8px] lg:text-[9px] tracking-[0.2em] text-white/50 uppercase mt-1">
-                {lang === 'az' ? 'İldən' : lang === 'ru' ? 'Год' : 'Since'}
-              </div>
-            </div>
-
-            {/* Main Image */}
-            <div className="relative aspect-[3/4]">
-              <Image
-                src="/royal-matras/Accommodations-a7547b7e-d22f-45f8-be69-0f6b509bb46f.png"
-                alt="Royal Matras Production"
-                fill
-                sizes="(max-width: 1024px) 100vw, 55vw"
-                className="about-image object-cover"
-                style={{
-                  filter: 'brightness(0.9) contrast(1.1) saturate(0.85)',
-                }}
-              />
-
-              {/* Inner Vignette */}
-              <div
-                className="about-image-overlay absolute inset-0"
-                style={{
-                  background: `radial-gradient(ellipse 80% 70% at 50% 40%,
-                    transparent 40%,
-                    rgba(5,13,26,0.3) 80%,
-                    rgba(5,13,26,0.7) 100%)`,
-                }}
-              />
-
-              {/* Bottom Gradient */}
-              <div
-                className="about-image-bottom absolute bottom-0 left-0 right-0 flex items-end p-6"
-                style={{
-                  height: '40%',
-                  background: 'linear-gradient(to top, rgba(5,13,26,0.9), transparent)',
-                }}
-              />
-            </div>
-          </motion.div>
-
-          {/* Right Column - Text Content */}
-          <motion.div
-            className="about-content flex flex-col justify-center gap-6 lg:gap-7 lg:pl-10 order-2"
+            className="about-content flex flex-col justify-center gap-6 lg:gap-7 order-1 max-w-3xl mx-auto"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
