@@ -4,7 +4,7 @@ import { Providers } from '@/components/providers'
 import NavbarWrapper from '@/components/navbar-wrapper'
 import Footer from '@/components/footer'
 import { PageTransition } from '@/components/page-transition'
-import AuroraBackground from '@/components/aurora-background'
+import AuroraBg from '@/components/aurora-bg'
 
 export const metadata: Metadata = {
   title: 'RoyalAz — Ortopedik Dosekler',
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen flex flex-col bg-transparent antialiased">
         <Providers>
-          <AuroraBackground />
+          <AuroraBg className="fixed" />
           <NavbarWrapper />
           <PageTransition className="flex-1">{children}</PageTransition>
           <Footer />

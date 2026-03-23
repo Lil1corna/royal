@@ -24,6 +24,137 @@
 }
 
 @layer components {
+  /* Aurora Background */
+  .aurora-container {
+    position: absolute;
+    inset: 0;
+    background: #050d1a;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  /* BASE DEEP BACKGROUND */
+  .aurora-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 20% 80%, #0d2b4e 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 20%, #0a1f3d 0%, transparent 55%),
+                radial-gradient(ellipse 100% 80% at 50% 50%, #071428 0%, transparent 70%);
+  }
+
+  /* BLOB 1 — Large teal/steel blob, drifts slowly left-right */
+  .blob-1 {
+    position: absolute;
+    width: 70%;
+    height: 60%;
+    top: -10%;
+    left: -15%;
+    background: radial-gradient(ellipse at center, 
+                rgba(45, 155, 181, 0.45) 0%, 
+                rgba(29, 105, 140, 0.3) 35%, 
+                transparent 70%);
+    filter: blur(70px);
+    animation: blob1drift 28s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  /* BLOB 2 — Mid teal, opposite corner */
+  .blob-2 {
+    position: absolute;
+    width: 55%;
+    height: 55%;
+    bottom: -5%;
+    right: -10%;
+    background: radial-gradient(ellipse at center,
+                rgba(77, 191, 212, 0.35) 0%,
+                rgba(45, 155, 181, 0.2) 40%,
+                transparent 70%);
+    filter: blur(90px);
+    animation: blob2drift 35s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  /* BLOB 3 — Lime/cyan accent, center-left */
+  .blob-3 {
+    position: absolute;
+    width: 40%;
+    height: 45%;
+    top: 30%;
+    left: 10%;
+    background: radial-gradient(ellipse at center,
+                rgba(100, 210, 180, 0.25) 0%,
+                rgba(60, 180, 140, 0.15) 40%,
+                transparent 70%);
+    filter: blur(80px);
+    animation: blob3drift 22s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  /* BLOB 4 — Deep blue, top right */
+  .blob-4 {
+    position: absolute;
+    width: 60%;
+    height: 50%;
+    top: -20%;
+    right: 5%;
+    background: radial-gradient(ellipse at center,
+                rgba(30, 80, 160, 0.4) 0%,
+                rgba(15, 50, 120, 0.25) 45%,
+                transparent 70%);
+    filter: blur(100px);
+    animation: blob4drift 32s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  /* BLOB 5 — Soft lime glow, bottom center */
+  .blob-5 {
+    position: absolute;
+    width: 45%;
+    height: 40%;
+    bottom: 10%;
+    left: 35%;
+    background: radial-gradient(ellipse at center,
+                rgba(120, 220, 160, 0.2) 0%,
+                rgba(80, 190, 130, 0.12) 40%,
+                transparent 70%);
+    filter: blur(85px);
+    animation: blob5drift 40s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  /* GRAIN TEXTURE OVERLAY — subtle noise like film grain */
+  .aurora-noise {
+    position: absolute;
+    inset: 0;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 128px 128px;
+    pointer-events: none;
+  }
+
+  /* VIGNETTE — darkens edges, brightens center slightly */
+  .aurora-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 85% 75% at 50% 50%,
+                transparent 30%,
+                rgba(5, 13, 26, 0.5) 70%,
+                rgba(5, 13, 26, 0.85) 100%);
+    pointer-events: none;
+  }
+
+  /* Glass card for content on aurora */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 20px;
+    padding: 40px;
+  }
+
   .btn-primary {
     background: linear-gradient(135deg, #c9a84c, #e8c97a, #c9a84c);
     background-size: 200% 200%;
@@ -47,15 +178,6 @@
 
   .btn-primary:active {
     transform: translateY(0);
-  }
-
-  @keyframes goldShimmer {
-    0%, 100% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
   }
 
   .btn-secondary {
@@ -188,5 +310,53 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     overflow: hidden;
+  }
+}
+
+/* KEYFRAMES — each blob moves in different elliptical path */
+@keyframes blob1drift {
+  0%   { transform: translate(0%, 0%)   scale(1);    opacity: 0.7; }
+  20%  { transform: translate(8%, -5%)  scale(1.08); opacity: 0.9; }
+  40%  { transform: translate(15%, 8%)  scale(0.95); opacity: 0.75; }
+  60%  { transform: translate(5%, 15%)  scale(1.12); opacity: 0.85; }
+  80%  { transform: translate(-8%, 5%)  scale(0.98); opacity: 0.7; }
+  100% { transform: translate(0%, 0%)   scale(1);    opacity: 0.7; }
+}
+
+@keyframes blob2drift {
+  0%   { transform: translate(0%, 0%)    scale(1);    opacity: 0.6; }
+  25%  { transform: translate(-10%, 8%)  scale(1.1);  opacity: 0.8; }
+  50%  { transform: translate(-18%, -5%) scale(0.92); opacity: 0.65; }
+  75%  { transform: translate(-5%, -12%) scale(1.06); opacity: 0.75; }
+  100% { transform: translate(0%, 0%)    scale(1);    opacity: 0.6; }
+}
+
+@keyframes blob3drift {
+  0%   { transform: translate(0%, 0%)   scale(1);    opacity: 0.5; }
+  33%  { transform: translate(12%, 10%) scale(1.15); opacity: 0.7; }
+  66%  { transform: translate(-5%, 18%) scale(0.88); opacity: 0.55; }
+  100% { transform: translate(0%, 0%)   scale(1);    opacity: 0.5; }
+}
+
+@keyframes blob4drift {
+  0%   { transform: translate(0%, 0%)    scale(1);    opacity: 0.65; }
+  30%  { transform: translate(-12%, 10%) scale(1.08); opacity: 0.8; }
+  60%  { transform: translate(5%, 20%)   scale(0.94); opacity: 0.6; }
+  100% { transform: translate(0%, 0%)    scale(1);    opacity: 0.65; }
+}
+
+@keyframes blob5drift {
+  0%   { transform: translate(0%, 0%)   scale(1);    opacity: 0.45; }
+  40%  { transform: translate(-8%, -8%) scale(1.12); opacity: 0.65; }
+  70%  { transform: translate(10%, 5%)  scale(0.9);  opacity: 0.5; }
+  100% { transform: translate(0%, 0%)   scale(1);    opacity: 0.45; }
+}
+
+@keyframes goldShimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
   }
 }
