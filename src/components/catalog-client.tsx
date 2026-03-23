@@ -4,10 +4,13 @@ import Link from 'next/link'
 import { motion, useScroll, useTransform, type Variants } from 'framer-motion'
 import { useMemo, useRef, useState } from 'react'
 import { useLang, translations } from '@/context/lang'
-import CatalogHero from '@/components/catalog-hero'
+import RoyalMatrasHero from '@/components/royal-matras-hero'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 const ITEMS_PER_PAGE = 12
+// В дизайне есть статичное фото с продуктами, но пользователь просит карточки настоящими
+// (каждая карточка ведет на отдельную страницу товара).
+const SHOW_INTERACTIVE_CATALOG = true
 
 type Product = {
   id: string
@@ -27,19 +30,19 @@ const catalogGridContainerHeavy = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.09,
-      delayChildren: 0.1,
+      staggerChildren: 0.065,
+      delayChildren: 0.04,
     },
   },
 }
 
 const catalogGridItemHeavy = {
-  hidden: { opacity: 0, y: 40, scale: 0.94 },
+  hidden: { opacity: 0, y: 26, scale: 0.985 },
   show: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.48, ease: [0.22, 1, 0.36, 1] as const },
   },
 }
 
@@ -48,18 +51,18 @@ const catalogGridContainerLight = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.035,
-      delayChildren: 0.02,
+      staggerChildren: 0.03,
+      delayChildren: 0.01,
     },
   },
 }
 
 const catalogGridItemLight = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0, y: 10 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] as const },
+    transition: { duration: 0.26, ease: [0.25, 0.46, 0.45, 0.94] as const },
   },
 }
 
@@ -95,17 +98,29 @@ function ParallaxProductCard({
   const showProductImage = Boolean(primaryImage) && !imgFailed
 
   return (
-    <motion.div ref={ref} variants={gridItemVariants}>
+    <motion.div
+      ref={ref}
+      variants={gridItemVariants}
+      whileHover={
+        lowPower
+          ? undefined
+          : {
+              y: -6,
+              transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const },
+            }
+      }
+    >
       <Link
         href={'/product/' + p.id}
         className={[
-          'group block border border-neutral-300 rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl hover:border-amber-300/80 transition-shadow duration-500 dark:border-gray-700 dark:bg-gray-950',
+          'group block rounded-2xl overflow-hidden border border-white/15 bg-white/5 shadow-[0_18px_60px_rgba(2,6,23,0.35)] transform-gpu transition-shadow transition-transform duration-300',
+          'hover:border-amber-400/60 hover:shadow-[0_22px_70px_rgba(245,158,11,0.22)]',
           !p.in_stock ? 'opacity-60' : '',
         ].join(' ')}
       >
         <motion.div
-          className="relative aspect-video overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-gray-900 dark:to-gray-950"
-          whileHover={lowPower ? undefined : { scale: 1.01 }}
+          className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-white/10 to-transparent"
+          whileHover={lowPower ? undefined : { scale: 1.035 }}
           transition={{ duration: 0.35 }}
         >
           <motion.div className="absolute inset-0" style={{ y: imgY }}>
@@ -115,7 +130,9 @@ function ParallaxProductCard({
                 alt={name}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className={`object-cover scale-110 transition-transform duration-700 ease-out ${lowPower ? '' : 'group-hover:scale-[1.18]'}`}
+                className={`object-cover scale-110 transition-transform duration-700 ease-out ${
+                  lowPower ? '' : 'group-hover:scale-[1.18]'
+                }`}
                 unoptimized
                 onError={() => setImgFailed(true)}
               />
@@ -125,37 +142,40 @@ function ParallaxProductCard({
               </div>
             )}
           </motion.div>
+          {/* Небольшая "тонировка" как в референсе */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#061226]/80 via-transparent to-transparent pointer-events-none" />
+          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(245,158,11,0.22),transparent_55%),radial-gradient(circle_at_70%_10%,rgba(255,255,255,0.14),transparent_45%)]" />
           {!p.in_stock && (
-            <div className="absolute top-3 right-3 bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full z-10">
+            <div className="absolute top-3 right-3 bg-red-500/15 text-red-200 text-xs font-semibold px-2 py-1 rounded-full z-10">
               {tr.outOfStock[lang]}
             </div>
           )}
           {p.discount_pct > 0 && p.in_stock && (
-            <div className="absolute top-3 right-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md z-10">
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-400 to-amber-600 text-[#061226] text-xs font-bold px-2 py-1 rounded-full shadow-md z-10">
               -{p.discount_pct}%
             </div>
           )}
         </motion.div>
         <motion.div
-          className="border-t border-neutral-100 bg-neutral-50/80 p-4 dark:border-gray-800 dark:bg-gray-950"
+          className="border-t border-white/10 bg-[#0b1b35]/55 backdrop-blur-sm p-4"
           style={{ y: textY }}
         >
-          <p className="text-xs text-amber-800 dark:text-amber-400/90 mb-1 font-medium tracking-wide">
+          <p className="text-xs text-amber-200/90 mb-1 font-semibold tracking-wide">
             {cat}
           </p>
-          <h2 className="text-lg font-semibold mb-2 text-neutral-900 dark:text-white group-hover:text-amber-800 dark:group-hover:text-amber-300 transition-colors">
+          <h2 className="text-lg font-semibold mb-2 text-white group-hover:text-amber-200 transition-colors">
             {name}
           </h2>
           <div className="flex items-center gap-2">
             {discountedPrice ? (
               <>
-                <span className="text-xl font-bold text-neutral-900 dark:text-white">
+                <span className="text-xl font-bold text-amber-200">
                   {discountedPrice} AZN
                 </span>
-                <span className="text-gray-400 text-sm line-through">{p.price} AZN</span>
+                <span className="text-white/40 text-sm line-through">{p.price} AZN</span>
               </>
             ) : (
-              <span className="text-xl font-bold text-neutral-900 dark:text-white">
+              <span className="text-xl font-bold text-amber-200">
                 {p.price} AZN
               </span>
             )}
@@ -193,85 +213,142 @@ export default function CatalogClient({ products }: { products: Product[] }) {
   }, [filteredProducts, page])
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-8">
-      <CatalogHero />
+    <main className="w-full">
+      <div className="w-full bg-[#061226]">
+        <RoyalMatrasHero />
 
-      <div id="catalog-grid" className="scroll-mt-28">
-        <h1 className="text-3xl font-bold mb-6 text-neutral-900 dark:text-white tracking-tight">
-          {tr.catalog[lang]}
-        </h1>
-
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <input
-            type="search"
-            placeholder={tr.searchPlaceholder[lang]}
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              setPage(1)
-            }}
-            className="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 shadow-sm placeholder:text-neutral-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 dark:border-gray-700 dark:bg-gray-950 dark:text-neutral-100"
-          />
-          <select
-            value={categoryFilter}
-            onChange={(e) => {
-              setCategoryFilter(e.target.value)
-              setPage(1)
-            }}
-            className="min-w-[160px] rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 shadow-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-400/50 focus:outline-none dark:bg-gray-950 dark:border-gray-700 dark:text-neutral-100"
+        <div className="mx-auto w-full max-w-[1024px] px-0">
+          <motion.div
+            className="relative w-full"
+            style={{ aspectRatio: '1024/575' }}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
           >
-            <option value="">{tr.allCategories[lang]}</option>
-            {CATEGORY_KEYS.map((key) => (
-              <option key={key} value={key}>
-                {tr.categories[key]?.[lang] || key}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <motion.div
-          key={`${page}-${categoryFilter}-${searchLower}`}
-          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          variants={gridContainerVariants}
-          initial="hidden"
-          animate="show"
-        >
-          {paginatedProducts.map((p) => (
-            <ParallaxProductCard
-              key={p.id}
-              p={p}
-              lang={lang}
-              tr={tr}
-              lowPower={lowPower}
-              gridItemVariants={gridItemVariants}
+            <Image
+              src="/royal-matras/Press-daa5752d-fb5e-4a0e-899c-9d35ca08a814.png"
+              alt="Royal Matras - Press / Keyfiyyət"
+              fill
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-cover"
+              priority
             />
-          ))}
-        </motion.div>
+            <div className="absolute inset-0 bg-gradient-to-b from-[#061226]/10 via-transparent to-[#061226]/40 pointer-events-none" />
+          </motion.div>
+
+          {/* Блок с товарами заменяем интерактивной сеткой ниже */}
+        </div>
       </div>
 
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-            className="rounded-xl border border-neutral-300 bg-white px-4 py-2 font-medium text-neutral-900 transition-colors hover:bg-amber-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-neutral-100 dark:hover:bg-gray-800"
-          >
-            {tr.prevPage[lang]}
-          </button>
-          <span className="flex items-center px-4 font-medium text-neutral-800 dark:text-neutral-200">
-            {page} / {totalPages}
-          </span>
-          <button
-            type="button"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-            className="rounded-xl border border-neutral-300 bg-white px-4 py-2 font-medium text-neutral-900 transition-colors hover:bg-amber-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-neutral-100 dark:hover:bg-gray-800"
-          >
-            {tr.nextPage[lang]}
-          </button>
-        </div>
+      {/* Интерактивный каталог (поиск/фильтр/карточки). */}
+      {SHOW_INTERACTIVE_CATALOG && (
+        <>
+          <div className="w-full bg-[#061226] py-10">
+            <div id="catalog-grid" className="scroll-mt-28 max-w-6xl mx-auto px-6">
+              <h1 className="text-3xl font-bold mb-6 text-white tracking-tight">
+                {tr.catalog[lang]}
+              </h1>
+
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <input
+                  type="search"
+                  placeholder={tr.searchPlaceholder[lang]}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value)
+                    setPage(1)
+                  }}
+                  className="flex-1 rounded-2xl border border-white/15 bg-white/5 px-5 py-2.5 text-white shadow-sm placeholder:text-neutral-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/35"
+                />
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => {
+                    setCategoryFilter(e.target.value)
+                    setPage(1)
+                  }}
+                  className="min-w-[160px] rounded-2xl border border-white/15 bg-white/5 px-4 py-2.5 text-white shadow-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/35"
+                >
+                  <option value="">{tr.allCategories[lang]}</option>
+                  {CATEGORY_KEYS.map((key) => (
+                    <option key={key} value={key}>
+                      {tr.categories[key]?.[lang] || key}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <motion.div
+                key={`${page}-${categoryFilter}-${searchLower}`}
+                className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                variants={gridContainerVariants}
+                initial="hidden"
+                animate="show"
+              >
+                {paginatedProducts.map((p) => (
+                  <ParallaxProductCard
+                    key={p.id}
+                    p={p}
+                    lang={lang}
+                    tr={tr}
+                    lowPower={lowPower}
+                    gridItemVariants={gridItemVariants}
+                  />
+                ))}
+              </motion.div>
+            </div>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="w-full bg-[#061226] pb-10">
+              <div className="mt-8 flex justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+                >
+                  {tr.prevPage[lang]}
+                </button>
+                <span className="flex items-center px-4 font-medium text-white/90">
+                  {page} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+                >
+                  {tr.nextPage[lang]}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
+
+      <div className="w-full bg-[#061226] py-10">
+        <div className="mx-auto w-full max-w-[1024px] px-0">
+          <motion.div
+            className="relative w-full"
+            style={{ aspectRatio: '910/1024' }}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Image
+              src="/royal-matras/Contact-f5fe71ba-5590-472c-9269-1b286eff99fb.png"
+              alt="Royal Matras - Contact"
+              fill
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#061226]/35 via-transparent to-[#061226]/5 pointer-events-none" />
+          </motion.div>
+        </div>
+      </div>
     </main>
   )
 }
