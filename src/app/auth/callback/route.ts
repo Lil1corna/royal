@@ -9,17 +9,17 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') || '/'
 
   const baseUrl = getBaseUrl(request)
-  const redirectUrl = `${baseUrl}${next}`
 
-  console.log('[Auth Callback] Starting OAuth callback', { code: code ? 'present' : 'missing', next })
+  console.log('[Auth Callback] Starting OAuth callback', { code: code ? 'present' : 'missing', next, baseUrl })
 
   if (!code) {
     console.error('[Auth Callback] No code provided')
     return NextResponse.redirect(`${baseUrl}/auth/error?message=No+code`)
   }
 
-  // Create response first so session cookies are written to it — fixes Vercel
-  const response = NextResponse.redirect(redirectUrl)
+  // Create response object that we'll use to set cookies
+  let response = NextResponse.redirect(`${baseUrl}${next}`)
+  
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,21 +27,25 @@ export async function GET(request: NextRequest) {
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options)
-          )
+          })
         },
       },
     }
   )
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code)
+  const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
+  
   if (error) {
     console.error('[Auth Callback] Session exchange failed:', error)
     return NextResponse.redirect(`${baseUrl}/auth/error?message=${encodeURIComponent(error.message)}`)
   }
 
-  console.log('[Auth Callback] Session exchange successful')
+  console.log('[Auth Callback] Session exchange successful', { 
+    userId: sessionData?.user?.id,
+    email: sessionData?.user?.email 
+  })
 
   // Assign pending staff role after first successful sign-in
   try {

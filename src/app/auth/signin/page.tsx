@@ -10,31 +10,44 @@ import { createClient } from '@/lib/supabase'
  */
 export default function SignInPage() {
   const [error, setError] = useState<string | null>(null)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   useEffect(() => {
     const run = async () => {
-      const supabase = createClient()
-      const redirectTo = `${window.location.origin}/auth/callback`
-      
-      console.log('[Sign In] Starting OAuth flow', { redirectTo })
-      
-      const { data, error: err } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo },
-      })
-      
-      if (err) {
-        console.error('[Sign In] OAuth error:', err)
-        setError(err.message)
-        return
-      }
-      
-      if (data.url) {
-        console.log('[Sign In] Redirecting to Google OAuth')
-        window.location.assign(data.url)
-      } else {
-        console.error('[Sign In] No auth URL returned')
-        setError('No auth URL')
+      try {
+        const supabase = createClient()
+        const redirectTo = `${window.location.origin}/auth/callback`
+        
+        console.log('[Sign In] Starting OAuth flow', { redirectTo })
+        
+        const { data, error: err } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { 
+            redirectTo,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            }
+          },
+        })
+        
+        if (err) {
+          console.error('[Sign In] OAuth error:', err)
+          setError(err.message)
+          return
+        }
+        
+        if (data.url) {
+          console.log('[Sign In] Redirecting to Google OAuth', { url: data.url })
+          setIsRedirecting(true)
+          window.location.href = data.url
+        } else {
+          console.error('[Sign In] No auth URL returned')
+          setError('No auth URL returned from Supabase')
+        }
+      } catch (err) {
+        console.error('[Sign In] Unexpected error:', err)
+        setError(err instanceof Error ? err.message : 'Unexpected error occurred')
       }
     }
     void run()
@@ -59,6 +72,9 @@ export default function SignInPage() {
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" aria-hidden />
       <p className="text-neutral-200">Google-a yönləndirilir…</p>
       <p className="text-sm text-neutral-400">Redirecting to Google…</p>
+      {isRedirecting && (
+        <p className="text-xs text-neutral-500 mt-4">If you are not redirected, please check your browser settings.</p>
+      )}
     </main>
   )
 }
