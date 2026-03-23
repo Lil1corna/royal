@@ -47,10 +47,12 @@ Add these variables:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://peihzxieybpsmocidwfa.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlaWh6eGlleWJwc21vY2lkd2ZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODQwODksImV4cCI6MjA4OTI2MDA4OX0.KTVw8fpj0XI0ilx7YNOJxrRs7NenySnqhqyMpTvYUGs
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlaWh6eGlleWJwc21vY2lkd2ZhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzY4NDA4OSwiZXhwIjoyMDg5MjYwMDg5fQ.WoVnl_TuVM2i9hFMtp9WUu7D4-7TdDxeJ5bRwC8nRJ4
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 NEXT_PUBLIC_SITE_URL=https://statuesque-rabanadas-82127c.netlify.app
 ```
+
+**Get these values from:** Supabase Dashboard → Settings → API
 
 **After adding:** Trigger a new deploy!
 
