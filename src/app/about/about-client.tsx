@@ -113,7 +113,8 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
   const { lang } = useLang()
   const tr = translations
   const [tagIndex, setTagIndex] = useState(0)
-  const [hasMounted, setHasMounted] = useState(false)
+  // Initialize hasMounted as true since we're client-side only
+  const [hasMounted, setHasMounted] = useState(true)
 
   const taglines = useMemo(
     () => [
@@ -123,10 +124,6 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
     ],
     []
   )
-
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -413,7 +410,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                       : lang === 'en'
                         ? 'Mattress models'
                         : 'Matras modeli'
-                    : ((tr as any)[s.labelKey]?.[lang] as string | undefined) ?? s.labelKey
+                    : ((tr as Record<string, Record<string, string>>)[s.labelKey]?.[lang] as string | undefined) ?? s.labelKey
 
                 return (
                   <CountUpStat
