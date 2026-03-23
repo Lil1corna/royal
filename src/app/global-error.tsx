@@ -16,15 +16,15 @@ export default function GlobalError({
 
   return (
     <html lang="az">
-      <body className="min-h-screen flex flex-col items-center justify-center p-8 bg-neutral-50">
-        <h1 className="text-2xl font-bold mb-2">Xəta baş verdi</h1>
-        <p className="text-gray-600 text-center max-w-md mb-6">
+      <body className="min-h-screen flex flex-col items-center justify-center p-8 bg-neutral-950">
+        <h1 className="text-2xl font-bold mb-2 text-white">Xəta baş verdi</h1>
+        <p className="text-neutral-300 text-center max-w-md mb-6">
           Səhifəni yeniləyin və ya bir az sonra yenidən cəhd edin.
         </p>
         <button
           type="button"
           onClick={() => reset()}
-          className="rounded-xl bg-black text-white px-6 py-3 font-semibold hover:bg-neutral-800"
+          className="ds-btn-primary px-6 py-3"
         >
           Yenidən cəhd et
         </button>

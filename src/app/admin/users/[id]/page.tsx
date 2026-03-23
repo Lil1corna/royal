@@ -53,18 +53,18 @@ export default function EditUser() {
   return (
     <main className="p-8 max-w-md mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/admin/users" className="text-gray-500 hover:text-black">Geri</a>
-        <h1 className="text-3xl font-bold">Rol Deyis</h1>
+        <a href="/admin/users" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</a>
+        <h1 className="text-3xl font-bold text-white">Rol Deyis</h1>
       </div>
       <ToastMessage toast={toast} className="mb-4" />
-      <div className="border rounded-lg p-6 flex flex-col gap-4">
+      <div className="ds-card-glass rounded-2xl p-6 flex flex-col gap-4">
         <div>
-          <div className="text-sm text-gray-500">Email</div>
-          <div className="font-medium">{user.email}</div>
+          <div className="text-sm text-neutral-400">Email</div>
+          <div className="font-medium text-white">{user.email}</div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Rol</label>
-          <select className="w-full border rounded-lg p-2" value={role}
+          <label className="ds-label">Rol</label>
+          <select className="ds-input" value={role}
             onChange={e => setRole(e.target.value)}>
             <option value="customer">Customer</option>
             <option value="content_manager">Content Manager</option>
@@ -73,7 +73,7 @@ export default function EditUser() {
           </select>
         </div>
         <button onClick={handleSave} disabled={loading}
-          className="bg-black text-white py-3 rounded-lg hover:bg-gray-800 disabled:opacity-50">
+          className="ds-btn-primary">
           {loading ? 'Saxlanilir...' : 'Saxla'}
         </button>
       </div>

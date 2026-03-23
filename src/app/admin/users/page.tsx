@@ -36,50 +36,52 @@ export default async function UsersPage() {
     <main className="p-8 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
-          <a href="/admin" className="text-gray-500 hover:text-black">Geri</a>
-          <h1 className="text-3xl font-bold">Staff</h1>
+          <a href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</a>
+          <h1 className="text-3xl font-bold text-white">Staff</h1>
         </div>
         <a href="/admin/users/invite"
           className="btn-primary btn-icon-arrow px-6 py-2">
           Yeni admin <span className="arrow">→</span>
         </a>
       </div>
-      <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-neutral-200 bg-white">
-        <thead>
-          <tr className="bg-neutral-50">
-            <th className="text-left p-3 border-b border-neutral-200">Email</th>
-            <th className="text-left p-3 border-b border-neutral-200">Ad</th>
-            <th className="text-left p-3 border-b border-neutral-200">Rol</th>
-            <th className="text-left p-3 border-b border-neutral-200">Tarix</th>
-            <th className="text-left p-3 border-b border-neutral-200">Deyis</th>
-          </tr>
-        </thead>
-        <tbody>
-          {staff?.map((u) => (
-            <tr key={u.id} className="hover:bg-neutral-50">
-              <td className="p-3 border-b border-neutral-100">{u.email}</td>
-              <td className="p-3 border-b border-neutral-100">{u.name || '-'}</td>
-              <td className="p-3 border-b border-neutral-100">
-                <span className={`px-2 py-1 rounded-full text-sm ${
-                  u.role === 'super_admin' ? 'bg-purple-100 text-purple-700' :
-                  u.role === 'manager' ? 'bg-blue-100 text-blue-700' :
-                  'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {u.role}
-                </span>
-              </td>
-              <td className="p-3 border-b border-neutral-100 text-gray-500 text-sm">
-                {new Date(u.created_at).toLocaleDateString()}
-              </td>
-              <td className="p-3 border-b border-neutral-100">
-                <a href={'/admin/users/' + u.id} className="text-blue-600 hover:underline">
-                  Edit
-                </a>
-              </td>
+      <div className="ds-card-glass rounded-2xl overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/10">
+              <th className="text-left p-4 text-sm font-semibold text-neutral-300">Email</th>
+              <th className="text-left p-4 text-sm font-semibold text-neutral-300">Ad</th>
+              <th className="text-left p-4 text-sm font-semibold text-neutral-300">Rol</th>
+              <th className="text-left p-4 text-sm font-semibold text-neutral-300">Tarix</th>
+              <th className="text-left p-4 text-sm font-semibold text-neutral-300">Deyis</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {staff?.map((u) => (
+              <tr key={u.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                <td className="p-4 text-neutral-200">{u.email}</td>
+                <td className="p-4 text-neutral-200">{u.name || '-'}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    u.role === 'super_admin' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' :
+                    u.role === 'manager' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
+                    'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                  }`}>
+                    {u.role}
+                  </span>
+                </td>
+                <td className="p-4 text-neutral-400 text-sm">
+                  {new Date(u.created_at).toLocaleDateString()}
+                </td>
+                <td className="p-4">
+                  <a href={'/admin/users/' + u.id} className="text-amber-400 hover:text-amber-300 transition-colors">
+                    Edit
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </main>
   )
 }

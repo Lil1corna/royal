@@ -143,31 +143,31 @@ export default function EditProduct() {
   return (
     <main className="p-8 max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/admin" className="text-gray-500 hover:text-black">Geri</a>
-        <h1 className="text-3xl font-bold">Mehsulu Redakte Et</h1>
+        <a href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</a>
+        <h1 className="text-3xl font-bold text-white">Mehsulu Redakte Et</h1>
       </div>
-      <form onSubmit={handleSave} className="flex flex-col gap-4">
+      <form onSubmit={handleSave} className="flex flex-col gap-4 ds-card-glass p-6 rounded-2xl">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Ad (AZ)</label>
-            <input className="w-full border rounded-lg p-2" value={form.name_az}
+            <label className="ds-label">Ad (AZ)</label>
+            <input className="ds-input" value={form.name_az}
               onChange={e => setForm({...form, name_az: e.target.value})} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Ad (RU)</label>
-            <input className="w-full border rounded-lg p-2" value={form.name_ru}
+            <label className="ds-label">Ad (RU)</label>
+            <input className="ds-input" value={form.name_ru}
               onChange={e => setForm({...form, name_ru: e.target.value})} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Ad (EN)</label>
-            <input className="w-full border rounded-lg p-2" value={form.name_en}
+            <label className="ds-label">Ad (EN)</label>
+            <input className="ds-input" value={form.name_en}
               onChange={e => setForm({...form, name_en: e.target.value})} required />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Kateqoriya</label>
-          <select className="w-full border rounded-lg p-2" value={form.category}
+          <label className="ds-label">Kateqoriya</label>
+          <select className="ds-input" value={form.category}
             onChange={e => setForm({...form, category: e.target.value})}>
             <option value="ortopedik">Ortopedik</option>
             <option value="berk">Berk</option>
@@ -180,13 +180,13 @@ export default function EditProduct() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Qiymet (AZN)</label>
-            <input type="number" className="w-full border rounded-lg p-2" value={form.price}
+            <label className="ds-label">Qiymet (AZN)</label>
+            <input type="number" className="ds-input" value={form.price}
               onChange={e => setForm({...form, price: e.target.value})} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Endirim (%)</label>
-            <input type="number" className="w-full border rounded-lg p-2" value={form.discount_pct}
+            <label className="ds-label">Endirim (%)</label>
+            <input type="number" className="ds-input" value={form.discount_pct}
               onChange={e => setForm({...form, discount_pct: e.target.value})} />
           </div>
         </div>
@@ -194,32 +194,32 @@ export default function EditProduct() {
         <div className="flex items-center gap-2">
           <input type="checkbox" id="in_stock" checked={form.in_stock}
             onChange={e => setForm({...form, in_stock: e.target.checked})} />
-          <label htmlFor="in_stock" className="font-medium">Stokda var</label>
+          <label htmlFor="in_stock" className="text-sm text-neutral-200">Stokda var</label>
         </div>
 
-        <div className="border rounded-xl p-4 bg-gray-50/80">
-          <label className="block font-medium mb-2">Sekiller</label>
-          <p className="text-xs text-gray-500 mb-3">
+        <div className="ds-card-glass p-4 rounded-xl">
+          <label className="ds-label mb-2">Sekiller</label>
+          <p className="text-xs text-neutral-400 mb-3">
             Movcud sekilleri silə və ya sırasını dəyişə bilərsiniz. Yeni şəkil əlavə etmək üçün fayl seçin.
           </p>
 
           {existingUrls.length > 0 && (
             <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">Movcud ({existingUrls.length})</p>
+              <p className="text-sm text-neutral-300 mb-2">Movcud ({existingUrls.length})</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {existingUrls.map((src, i) => (
-                  <div key={`${src}-${i}`} className="relative group border rounded-lg overflow-hidden bg-white">
+                  <div key={`${src}-${i}`} className="relative group border border-white/20 rounded-lg overflow-hidden bg-black/40">
                     <img src={src} alt="" className="w-full aspect-square object-cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
                       <button type="button" onClick={() => moveExisting(i, 'left')}
-                        className="bg-white text-black w-8 h-8 rounded-full text-sm" disabled={i === 0}>{'<'}</button>
+                        className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === 0}>{'<'}</button>
                       <button type="button" onClick={() => removeExisting(i)}
-                        className="bg-red-500 text-white w-8 h-8 rounded-full text-sm">X</button>
+                        className="bg-red-500 text-white w-8 h-8 rounded-full text-sm hover:bg-red-600">X</button>
                       <button type="button" onClick={() => moveExisting(i, 'right')}
-                        className="bg-white text-black w-8 h-8 rounded-full text-sm" disabled={i === existingUrls.length - 1}>{'>'}</button>
+                        className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === existingUrls.length - 1}>{'>'}</button>
                     </div>
                     {i === 0 && (
-                      <span className="absolute top-1 left-1 bg-black text-white text-[10px] px-1 rounded">Ana</span>
+                      <span className="absolute top-1 left-1 bg-amber-500 text-black text-[10px] px-1 rounded font-semibold">Ana</span>
                     )}
                   </div>
                 ))}
@@ -232,23 +232,23 @@ export default function EditProduct() {
             accept="image/*"
             multiple
             onChange={handleNewFiles}
-            className="w-full border rounded-lg p-2 mb-3 bg-white"
+            className="ds-input mb-3"
           />
 
           {newPreviews.length > 0 && (
             <div>
-              <p className="text-sm text-gray-600 mb-2">Yeni (Saxla düyməsindən sonra yüklənəcək)</p>
+              <p className="text-sm text-neutral-300 mb-2">Yeni (Saxla düyməsindən sonra yüklənəcək)</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {newPreviews.map((src, i) => (
-                  <div key={src} className="relative group border rounded-lg overflow-hidden bg-white">
+                  <div key={src} className="relative group border border-white/20 rounded-lg overflow-hidden bg-black/40">
                     <img src={src} alt="" className="w-full aspect-square object-cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
                       <button type="button" onClick={() => moveNew(i, 'left')}
-                        className="bg-white text-black w-8 h-8 rounded-full text-sm" disabled={i === 0}>{'<'}</button>
+                        className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === 0}>{'<'}</button>
                       <button type="button" onClick={() => removeNew(i)}
-                        className="bg-red-500 text-white w-8 h-8 rounded-full text-sm">X</button>
+                        className="bg-red-500 text-white w-8 h-8 rounded-full text-sm hover:bg-red-600">X</button>
                       <button type="button" onClick={() => moveNew(i, 'right')}
-                        className="bg-white text-black w-8 h-8 rounded-full text-sm" disabled={i === newPreviews.length - 1}>{'>'}</button>
+                        className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === newPreviews.length - 1}>{'>'}</button>
                     </div>
                   </div>
                 ))}
@@ -259,11 +259,11 @@ export default function EditProduct() {
 
         <div className="flex gap-4 mt-4">
           <button type="submit" disabled={loading}
-            className="flex-1 bg-black text-white py-3 rounded-lg hover:bg-gray-800 disabled:opacity-50">
+            className="flex-1 ds-btn-primary">
             {loading ? 'Saxlanilir...' : 'Saxla'}
           </button>
           <button type="button" onClick={handleDelete}
-            className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700">
+            className="bg-red-600/20 text-red-300 px-6 py-3 rounded-lg hover:bg-red-600/30 border border-red-500/30 transition-colors">
             Sil
           </button>
         </div>

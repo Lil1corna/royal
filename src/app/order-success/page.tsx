@@ -21,8 +21,8 @@ export default function OrderSuccess() {
       >
         ✅
       </motion.div>
-      <h1 className="text-3xl font-bold mb-3">{tr.orderSuccess[lang]}</h1>
-      <p className="text-gray-500 mb-8">{tr.orderSuccessMessage[lang]}</p>
+      <h1 className="text-3xl font-bold mb-3 text-white">{tr.orderSuccess[lang]}</h1>
+      <p className="text-neutral-300 mb-8">{tr.orderSuccessMessage[lang]}</p>
       <a href="/" className="btn-primary px-8 py-3">
         {tr.backToCatalogBtn[lang]}
       </a>

@@ -37,12 +37,12 @@ export default function InviteUser() {
     return (
       <main className="p-8 max-w-md mx-auto text-center">
         <div className="text-5xl mb-4">✓</div>
-        <h2 className="text-2xl font-bold mb-2">Davet gonderildi!</h2>
-        <p className="text-gray-500 mb-6">{email} — {role}</p>
-        <p className="text-sm text-gray-400 mb-6">
+        <h2 className="text-2xl font-bold mb-2 text-white">Davet gonderildi!</h2>
+        <p className="text-neutral-300 mb-6">{email} — {role}</p>
+        <p className="text-sm text-neutral-400 mb-6">
           Shexse email gelecek. Ilk girisden sonra rol avtomatik teyin olunacaq.
         </p>
-        <a href="/admin/users" className="bg-black text-white px-6 py-2 rounded-lg">
+        <a href="/admin/users" className="ds-btn-primary inline-block px-6 py-2">
           Geri qayit
         </a>
       </main>
@@ -52,16 +52,16 @@ export default function InviteUser() {
   return (
     <main className="p-8 max-w-md mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/admin/users" className="text-gray-500 hover:text-black">Geri</a>
-        <h1 className="text-3xl font-bold">Yeni Admin</h1>
+        <a href="/admin/users" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</a>
+        <h1 className="text-3xl font-bold text-white">Yeni Admin</h1>
       </div>
       <ToastMessage toast={toast} className="mb-4" />
-      <form onSubmit={handleInvite} className="border rounded-lg p-6 flex flex-col gap-4">
+      <form onSubmit={handleInvite} className="ds-card-glass rounded-2xl p-6 flex flex-col gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Gmail</label>
+          <label className="ds-label">Gmail</label>
           <input
             type="email"
-            className="w-full border rounded-lg p-2"
+            className="ds-input"
             placeholder="ornek@gmail.com"
             value={email}
             onChange={e => setEmail(e.target.value)}
@@ -69,8 +69,8 @@ export default function InviteUser() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Rol</label>
-          <select className="w-full border rounded-lg p-2" value={role}
+          <label className="ds-label">Rol</label>
+          <select className="ds-input" value={role}
             onChange={e => setRole(e.target.value)}>
             <option value="manager">Manager</option>
             <option value="content_manager">Content Manager</option>
@@ -78,11 +78,11 @@ export default function InviteUser() {
           </select>
         </div>
         <button type="submit" disabled={loading}
-          className="bg-black text-white py-3 rounded-lg hover:bg-gray-800 disabled:opacity-50">
+          className="ds-btn-primary">
           {loading ? 'Elave edilir...' : 'Elave et'}
         </button>
       </form>
-      <p className="text-sm text-gray-400 mt-4 text-center">
+      <p className="text-sm text-neutral-400 mt-4 text-center">
         Supabase Auth invite email gonderir. Ilk girisde rol avtomatik verilir.
       </p>
     </main>

@@ -26,13 +26,13 @@ export type AdminOrder = {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string }> = {
-    new: { label: 'Yeni', className: 'bg-orange-100 text-orange-700' },
-    confirmed: { label: 'Tesdiq edildi', className: 'bg-blue-100 text-blue-700' },
-    in_delivery: { label: 'Yolda', className: 'bg-purple-100 text-purple-700' },
-    delivered: { label: 'Catdirildi', className: 'bg-green-100 text-green-700' },
-    cancelled: { label: 'Legv edildi', className: 'bg-red-100 text-red-700' },
+    new: { label: 'Yeni', className: 'bg-orange-500/20 text-orange-300 border border-orange-500/30' },
+    confirmed: { label: 'Tesdiq edildi', className: 'bg-blue-500/20 text-blue-300 border border-blue-500/30' },
+    in_delivery: { label: 'Yolda', className: 'bg-purple-500/20 text-purple-300 border border-purple-500/30' },
+    delivered: { label: 'Catdirildi', className: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' },
+    cancelled: { label: 'Legv edildi', className: 'bg-red-500/20 text-red-300 border border-red-500/30' },
   }
-  const s = map[status] || { label: status, className: 'bg-gray-100 text-gray-700' }
+  const s = map[status] || { label: status, className: 'bg-neutral-500/20 text-neutral-300 border border-neutral-500/30' }
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-medium ${s.className}`}>
       {s.label}
@@ -41,21 +41,21 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function NotesWithMap({ notes }: { notes: string | null }) {
-  if (!notes) return <div className="text-sm">-</div>
+  if (!notes) return <div className="text-sm text-neutral-200">-</div>
   const match = notes.match(/Koordinat: ([\d.]+),([\d.]+)/)
-  if (!match) return <div className="text-sm">{notes}</div>
+  if (!match) return <div className="text-sm text-neutral-200">{notes}</div>
   const lat = match[1]
   const lng = match[2]
   const clean = notes.replace(/ \| Koordinat: [\d.,]+/, '')
   const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`
   return (
     <div className="text-sm flex flex-col gap-1">
-      <span>{clean}</span>
+      <span className="text-neutral-200">{clean}</span>
       <a
         href={mapsUrl}
         target="_blank"
         rel="noreferrer"
-        className="text-blue-600 hover:underline text-xs w-fit bg-blue-50 px-2 py-1 rounded-lg"
+        className="text-amber-400 hover:text-amber-300 text-xs w-fit bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/30 transition-colors"
       >
         Google Maps-de ac
       </a>
@@ -87,7 +87,7 @@ function OrderActions({ orderId, currentStatus }: { orderId: string; currentStat
           <input type="hidden" name="status" value="cancelled" />
           <button
             type="submit"
-            className="bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm hover:bg-red-200"
+            className="bg-red-500/20 text-red-300 px-4 py-2 rounded-lg text-sm hover:bg-red-500/30 border border-red-500/30 transition-colors"
           >
             Legv et
           </button>
@@ -191,7 +191,7 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Ad
           placeholder="ID və ya ünvan axtar..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 border rounded-xl px-4 py-2.5 text-sm"
+          className="flex-1 ds-input"
         />
       </div>
       <div className="flex flex-wrap gap-2 mb-8">
@@ -202,8 +202,8 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Ad
             onClick={() => setFilter(p.key)}
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
               filter === p.key
-                ? 'bg-black text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-amber-500 text-black'
+                : 'bg-white/10 text-neutral-300 hover:bg-white/20 border border-white/20'
             }`}
           >
             {p.label}
@@ -211,7 +211,7 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Ad
         ))}
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 mb-4">
+      <div className="flex items-center gap-2 text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2 mb-4">
         <span className="font-semibold">●</span> Canlı yeniləmə aktivdir — status dəyişəndə siyahı avtomatik
         yenilənir (Supabase Realtime).
       </div>
@@ -220,22 +220,22 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Ad
         {filtered.map((order) => (
           <div
             key={order.id}
-            className={`card-soft p-6 ${order.status === 'new' ? 'ring-1 ring-amber-200 bg-amber-50/40' : ''}`}
+            className={`ds-card-glass p-6 rounded-2xl ${order.status === 'new' ? 'ring-1 ring-amber-500/50' : ''}`}
           >
             <div className="flex justify-between items-start mb-4 flex-wrap gap-2">
               <div>
                 <div className="flex items-center gap-3 mb-1 flex-wrap">
-                  <span className="font-mono text-sm text-gray-400">#{order.id.slice(0, 8)}</span>
+                  <span className="font-mono text-sm text-neutral-400">#{order.id.slice(0, 8)}</span>
                   <StatusBadge status={order.status} />
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-neutral-400">
                   {new Date(order.created_at).toLocaleString()}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold">{order.total_price} AZN</div>
+                <div className="text-2xl font-bold text-white">{order.total_price} AZN</div>
                 {order.delivery_mode && (
-                  <div className="text-xs text-amber-800">
+                  <div className="text-xs text-amber-300">
                     {deliveryModeLabel(order.delivery_mode as DeliveryMode, 'az')}
                     {order.shipping_fee != null && order.shipping_fee > 0
                       ? ` · +${order.shipping_fee} AZN`
@@ -249,18 +249,18 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Ad
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <div className="text-xs text-gray-400 mb-1">Unvan</div>
-                <div className="text-sm">{order.address}</div>
+                <div className="text-xs text-neutral-500 mb-1">Unvan</div>
+                <div className="text-sm text-neutral-200">{order.address}</div>
               </div>
               <div>
-                <div className="text-xs text-gray-400 mb-1">Elaqe / Qeyd</div>
+                <div className="text-xs text-neutral-500 mb-1">Elaqe / Qeyd</div>
                 <NotesWithMap notes={order.notes} />
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2 mb-4">
               {order.order_items?.map((item) => (
-                <div key={item.id} className="bg-gray-100 rounded-lg px-3 py-1 text-sm">
+                <div key={item.id} className="bg-white/10 rounded-lg px-3 py-1 text-sm text-neutral-200 border border-white/20">
                   {item.products?.name_ru} x{item.quantity} — {item.price_at_purchase} AZN
                 </div>
               ))}
@@ -272,7 +272,7 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Ad
       </div>
 
       {filtered.length === 0 && (
-        <p className="text-center text-gray-500 py-12">Bu filtr üzrə sifariş yoxdur.</p>
+        <p className="text-center text-neutral-400 py-12">Bu filtr üzrə sifariş yoxdur.</p>
       )}
     </>
   )

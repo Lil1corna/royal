@@ -35,7 +35,7 @@ export default function SignInPage() {
   if (error) {
     return (
       <main className="flex min-h-[50vh] flex-col items-center justify-center p-8">
-        <p className="mb-4 max-w-md text-center text-red-600">{error}</p>
+        <p className="mb-4 max-w-md text-center text-red-300">{error}</p>
         <Link href={`/auth/error?message=${encodeURIComponent(error)}`} className="btn-secondary mb-2 px-4 py-2">
           Təfsilat
         </Link>
@@ -49,8 +49,8 @@ export default function SignInPage() {
   return (
     <main className="flex min-h-[50vh] flex-col items-center justify-center gap-2 p-8">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" aria-hidden />
-      <p className="text-neutral-700">Google-a yönləndirilir…</p>
-      <p className="text-sm text-neutral-500">Redirecting to Google…</p>
+      <p className="text-neutral-200">Google-a yönləndirilir…</p>
+      <p className="text-sm text-neutral-400">Redirecting to Google…</p>
     </main>
   )
 }

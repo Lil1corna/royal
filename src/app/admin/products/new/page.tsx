@@ -99,32 +99,32 @@ export default function NewProduct() {
   return (
     <main className="p-8 max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/admin" className="text-gray-500 hover:text-black">Geri</a>
-        <h1 className="text-3xl font-bold">Yeni Mehsul</h1>
+        <a href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</a>
+        <h1 className="text-3xl font-bold text-white">Yeni Mehsul</h1>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 ds-card-glass p-6 rounded-2xl">
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Ad (AZ)</label>
-            <input className="w-full border rounded-lg p-2" value={form.name_az}
+            <label className="ds-label">Ad (AZ)</label>
+            <input className="ds-input" value={form.name_az}
               onChange={e => setForm({...form, name_az: e.target.value})} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Ad (RU)</label>
-            <input className="w-full border rounded-lg p-2" value={form.name_ru}
+            <label className="ds-label">Ad (RU)</label>
+            <input className="ds-input" value={form.name_ru}
               onChange={e => setForm({...form, name_ru: e.target.value})} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Ad (EN)</label>
-            <input className="w-full border rounded-lg p-2" value={form.name_en}
+            <label className="ds-label">Ad (EN)</label>
+            <input className="ds-input" value={form.name_en}
               onChange={e => setForm({...form, name_en: e.target.value})} required />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Kateqoriya</label>
-          <select className="w-full border rounded-lg p-2" value={form.category}
+          <label className="ds-label">Kateqoriya</label>
+          <select className="ds-input" value={form.category}
             onChange={e => setForm({...form, category: e.target.value})}>
             <option value="ortopedik">Ortopedik</option>
             <option value="berk">Berk</option>
@@ -137,13 +137,13 @@ export default function NewProduct() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Esas qiymet (AZN)</label>
-            <input type="number" className="w-full border rounded-lg p-2" value={form.price}
+            <label className="ds-label">Esas qiymet (AZN)</label>
+            <input type="number" className="ds-input" value={form.price}
               onChange={e => setForm({...form, price: e.target.value})} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Endirim (%)</label>
-            <input type="number" className="w-full border rounded-lg p-2" value={form.discount_pct}
+            <label className="ds-label">Endirim (%)</label>
+            <input type="number" className="ds-input" value={form.discount_pct}
               onChange={e => setForm({...form, discount_pct: e.target.value})} />
           </div>
         </div>
@@ -151,41 +151,41 @@ export default function NewProduct() {
         <div className="flex items-center gap-2">
           <input type="checkbox" id="in_stock" checked={form.in_stock}
             onChange={e => setForm({...form, in_stock: e.target.checked})} />
-          <label htmlFor="in_stock" className="font-medium">Stokda var</label>
+          <label htmlFor="in_stock" className="text-sm text-neutral-200">Stokda var</label>
         </div>
 
         <div>
           <div className="flex justify-between items-center mb-3">
-            <label className="font-medium">Olcüler</label>
+            <label className="ds-label">Olcüler</label>
             <button type="button" onClick={addSize}
-              className="text-sm bg-gray-100 px-3 py-1 rounded-lg hover:bg-gray-200">
+              className="text-sm bg-white/10 text-amber-300 px-3 py-1 rounded-lg hover:bg-white/20 transition-colors border border-white/20">
               + Olcu elave et
             </button>
           </div>
           <div className="flex flex-col gap-2">
             {sizes.map((s, i) => (
               <div key={i} className="flex gap-2 items-center">
-                <input className="border rounded-lg p-2 w-32" placeholder="80x200"
+                <input className="ds-input w-32" placeholder="80x200"
                   value={s.size} onChange={e => updateSize(i, 'size', e.target.value)} />
-                <input type="number" className="border rounded-lg p-2 flex-1"
+                <input type="number" className="ds-input flex-1"
                   placeholder="Qiymet AZN" value={s.price}
                   onChange={e => updateSize(i, 'price', e.target.value)} />
-                <label className="flex items-center gap-1 text-sm">
+                <label className="flex items-center gap-1 text-sm text-neutral-200">
                   <input type="checkbox" checked={s.in_stock}
                     onChange={e => updateSize(i, 'in_stock', e.target.checked)} />
                   Var
                 </label>
                 <button type="button" onClick={() => removeSize(i)}
-                  className="text-red-500 px-2">X</button>
+                  className="text-red-400 hover:text-red-300 px-2">X</button>
               </div>
             ))}
           </div>
         </div>
 
         <div>
-          <label className="block font-medium mb-3">Sekiller</label>
+          <label className="ds-label mb-3">Sekiller</label>
           <input type="file" accept="image/*" multiple onChange={handleImages}
-            className="w-full border rounded-lg p-2 mb-3" />
+            className="ds-input mb-3" />
           {previews.length > 0 && (
             <div className="grid grid-cols-4 gap-2">
               {previews.map((src, i) => (
@@ -217,7 +217,7 @@ export default function NewProduct() {
         </div>
 
         <button type="submit" disabled={loading}
-          className="bg-black text-white py-3 rounded-lg hover:bg-gray-800 disabled:opacity-50">
+          className="ds-btn-primary">
           {loading ? 'Saxlanilir...' : 'Saxla'}
         </button>
       </form>

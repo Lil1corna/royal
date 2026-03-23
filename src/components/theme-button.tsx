@@ -9,13 +9,13 @@ export default function ThemeButton() {
   useEffect(() => setMounted(true), [])
 
   if (!mounted) return (
-    <div className="w-9 h-9 border rounded-lg" />
+    <div className="w-9 h-9 border border-white/20 rounded-lg bg-white/5" />
   )
 
   return (
     <button
       onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-      className="w-9 h-9 border rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 dark:border-gray-700 text-lg">
+      className="w-9 h-9 border border-white/20 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors text-lg bg-white/5">
       {resolvedTheme === 'dark' ? '☀️' : '🌙'}
     </button>
   )
