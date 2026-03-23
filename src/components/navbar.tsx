@@ -33,6 +33,11 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
         {tr.catalog[lang]}
       </Link>
 
+      <Link href="/about" onClick={() => onClose?.()} className={pill}>
+        <span className="text-amber-600">✦</span>
+        {tr.about[lang]}
+      </Link>
+
       <div className="flex rounded-full border border-neutral-300 bg-neutral-100 p-0.5 shadow-inner text-xs font-semibold">
         {(['az', 'ru', 'en'] as Lang[]).map((l) => (
           <button

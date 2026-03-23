@@ -32,6 +32,7 @@ export default function Footer() {
 
   return (
     <motion.footer
+      id="footer-contact"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true, amount: 0.2 }}

@@ -28,6 +28,9 @@ export const t = (az: string, ru: string, en: string) => ({ az, ru, en })
 
 export const translations = {
   catalog: t('Katalog', 'Каталог', 'Catalog'),
+  about: t('Haqqımızda', 'О нас', 'About'),
+  ourStory: t('Bizim hekayəmiz', 'Наша история', 'Our Story'),
+  ourValues: t('Dəyərlərimiz', 'Наши ценности', 'Our Values'),
   cart: t('Sebet', 'Корзина', 'Cart'),
   account: t('Kabinet', 'Кабинет', 'Account'),
   signin: t('Giris', 'Войти', 'Sign In'),
@@ -116,6 +119,14 @@ export const translations = {
   loading: t('Yuklenir...', 'Загрузка...', 'Loading...'),
   contactUs: t('Elaqe', 'Контакты', 'Contact'),
   followSocial: t('Bizi izle', 'Мы в соцсетях', 'Follow us'),
+  yearsExp: t('İl təcrübə', 'Лет опыта', 'Years of experience'),
+  happyCustomers: t('Məmnun müştəri', 'Довольных клиентов', 'Happy customers'),
+  warranty: t('Rəsmi zəmanət', 'Официальная гарантия', 'Official warranty'),
+  readyToChange: t(
+    'Yuxunuzu dəyişdirməyə hazırsınız?',
+    'Готовы изменить свой сон?',
+    'Ready to transform your sleep?'
+  ),
   addressFromProfile: t(
     'Profilimdəki ünvan',
     'Адрес из профиля',

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* На тач-устройствах уменьшаем размытие задников — меньше нагрузка на GPU */
 @media (pointer: coarse) {
   .backdrop-blur-xl,
