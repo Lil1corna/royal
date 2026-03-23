@@ -230,29 +230,26 @@ export default function CatalogClient({ products }: { products: Product[] }) {
       {/* About Section */}
       <AboutSection />
 
-      {/* Press/Quality Image */}
-      <div className="w-full bg-[#061226]">
-        <div className="mx-auto w-full max-w-[1024px] px-0">
+      {/* Press/Quality Section - Removed screenshot */}
+      <div className="w-full bg-[#061226] py-20">
+        <div className="mx-auto max-w-6xl px-6 text-center">
           <motion.div
-            className="relative w-full"
-            style={{ aspectRatio: '1024/575' }}
-            initial={{ opacity: 0, y: 14 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <Image
-              src="/royal-matras/Press-daa5752d-fb5e-4a0e-899c-9d35ca08a814.png"
-              alt="Royal Matras - Press / Keyfiyyət"
-              fill
-              sizes="(max-width: 1024px) 100vw, 1024px"
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#061226]/10 via-transparent to-[#061226]/40 pointer-events-none" />
+            <h2 className="font-serif text-4xl md:text-5xl font-semibold text-white mb-6">
+              {lang === 'az' ? 'Keyfiyyət və Rahatlıq' : lang === 'ru' ? 'Качество и Комфорт' : 'Quality & Comfort'}
+            </h2>
+            <p className="text-lg text-white/70 max-w-2xl mx-auto">
+              {lang === 'az' 
+                ? 'Hər bir məhsulumuz ən yüksək keyfiyyət standartlarına uyğun hazırlanır.' 
+                : lang === 'ru'
+                ? 'Каждый наш продукт изготовлен в соответствии с высочайшими стандартами качества.'
+                : 'Every product is crafted to the highest quality standards.'}
+            </p>
           </motion.div>
-
-          {/* Блок с товарами заменяем интерактивной сеткой ниже */}
         </div>
       </div>
 
@@ -341,29 +338,6 @@ export default function CatalogClient({ products }: { products: Product[] }) {
           )}
         </>
       )}
-
-      <div className="w-full bg-[#061226] py-10">
-        <div className="mx-auto w-full max-w-[1024px] px-0">
-          <motion.div
-            className="relative w-full"
-            style={{ aspectRatio: '910/1024' }}
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <Image
-              src="/royal-matras/Contact-f5fe71ba-5590-472c-9269-1b286eff99fb.png"
-              alt="Royal Matras - Contact"
-              fill
-              sizes="(max-width: 1024px) 100vw, 1024px"
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#061226]/35 via-transparent to-[#061226]/5 pointer-events-none" />
-          </motion.div>
-        </div>
-      </div>
     </main>
   )
 }

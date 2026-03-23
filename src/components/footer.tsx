@@ -26,8 +26,6 @@ export default function Footer() {
   const tr = translations
   const pathname = usePathname()
 
-  // На главной используем дизайн-картинку Contact, поэтому обычный футер скрываем.
-  if (pathname === '/') return null
   const telHref = `tel:${SITE_CONTACT.phoneE164.replace(/\s/g, '')}`
 
   return (
