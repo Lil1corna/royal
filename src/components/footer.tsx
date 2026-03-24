@@ -29,8 +29,7 @@ export default function Footer() {
     <motion.footer
       id="footer-contact"
       initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, amount: 0.2 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
       className="mt-auto border-t border-white/5 bg-[rgba(5,13,26,0.8)] text-white"
     >
