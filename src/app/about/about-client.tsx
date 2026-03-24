@@ -263,7 +263,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
       >
         {/* HERO */}
         <motion.section
-          className="min-h-[100vh] flex items-center justify-center px-6 pt-[5rem] pb-10 relative"
+          className="min-h-[100vh] flex items-center justify-center px-4 sm:px-6 pt-[5rem] pb-10 relative"
           initial="hidden"
           animate="visible"
           variants={{
@@ -367,7 +367,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
         </motion.section>
 
         {/* STORY */}
-        <section id="story" className="px-6 py-20 relative">
+        <section id="story" className="px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 relative">
           <div className="mx-auto max-w-5xl">
             <motion.div
               className={styles.glassCard}
@@ -397,7 +397,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
         </section>
 
         {/* STATS */}
-        <section className="px-6 py-14">
+        <section className="px-4 sm:px-6 md:px-8 py-10 sm:py-14">
           <div className="mx-auto max-w-6xl">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
               {stats.map((s, i) => {
@@ -430,10 +430,10 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
         </section>
 
         {/* VALUES */}
-        <section className="px-6 py-20">
+        <section className="px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20">
           <div className="mx-auto max-w-6xl">
             <motion.h2
-              className="text-center text-white text-[40px] font-serif"
+              className="text-center text-white text-2xl sm:text-3xl md:text-[40px] font-serif"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-120px' }}
@@ -469,7 +469,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
         </section>
 
         {/* PROCESS */}
-        <section className="px-6 py-20">
+        <section className="px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20">
           <div className="mx-auto max-w-6xl">
             <motion.h2
               className="text-white text-[40px] font-serif text-center"
@@ -516,7 +516,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
         </section>
 
         {/* CTA */}
-        <section className="px-6 py-20 relative">
+        <section className="px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 relative">
           <div className={styles.ctaTone} aria-hidden />
           <div className="mx-auto max-w-6xl text-center relative z-10">
             <motion.h2

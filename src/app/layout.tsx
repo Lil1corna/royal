@@ -5,6 +5,7 @@ import NavbarWrapper from '@/components/navbar-wrapper'
 import Footer from '@/components/footer'
 import { PageTransition } from '@/components/page-transition'
 import AuroraBg from '@/components/aurora-bg'
+import { jost, cormorant, dmSans } from '@/lib/fonts'
 
 export const metadata: Metadata = {
   title: 'RoyalAz — Ortopedik Dosekler',
@@ -24,24 +25,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="az">
+    <html lang="az" className={`${jost.variable} ${cormorant.variable} ${dmSans.variable} overflow-x-hidden`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@400;500;600&display=swap"
-        />
         <link
           rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-transparent antialiased">
+      <body className="min-h-screen flex flex-col bg-transparent antialiased overflow-x-hidden">
         <Providers>
           <AuroraBg className="fixed" />
           <NavbarWrapper />

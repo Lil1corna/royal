@@ -42,7 +42,7 @@ export default function WishlistPage() {
 
   if (ids.length > 0 && products.length === 0) {
     return (
-      <main className="p-8 max-w-4xl mx-auto text-center text-white/60">
+      <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto text-center text-white/60">
         {tr.loading[lang]}…
       </main>
     )
@@ -50,9 +50,9 @@ export default function WishlistPage() {
 
   if (ids.length === 0 || products.length === 0) {
     return (
-      <main className="p-8 max-w-2xl mx-auto text-center">
+      <main className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto text-center">
         <div className="text-6xl mb-4">♡</div>
-        <h1 className="text-2xl font-bold mb-2">{tr.wishlistEmpty[lang]}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold mb-2">{tr.wishlistEmpty[lang]}</h1>
         <Link href="/" className="text-[#e8c97a] font-medium hover:underline">
           {tr.backToCatalog[lang]}
         </Link>
@@ -61,12 +61,12 @@ export default function WishlistPage() {
   }
 
   return (
-    <main className="p-8 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-8">
-        <Link href="/" className="text-white/60 hover:text-white">
+    <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto overflow-x-hidden">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <Link href="/" className="text-white/60 hover:text-white min-h-[44px] inline-flex items-center">
           {tr.back[lang]}
         </Link>
-        <h1 className="text-3xl font-bold text-white">{tr.wishlist[lang]}</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{tr.wishlist[lang]}</h1>
       </div>
       <div className="flex flex-col gap-4">
         {products.map((p, i) => {
@@ -83,7 +83,7 @@ export default function WishlistPage() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="flex gap-4 border rounded-xl p-4 card-soft items-center"
+              className="flex flex-col sm:flex-row gap-4 border rounded-xl p-4 card-soft items-stretch sm:items-center"
             >
               <Link
                 href={`/product/${p.id}`}
@@ -109,7 +109,8 @@ export default function WishlistPage() {
               <button
                 type="button"
                 onClick={() => toggle(p.id)}
-                className="text-sm text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b] shrink-0 px-2"
+                className="text-sm text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b] shrink-0 min-h-[44px] min-w-[44px] p-3 flex items-center justify-center self-end sm:self-center"
+                aria-label={lang === 'ru' ? 'Удалить из избранного' : lang === 'en' ? 'Remove from wishlist' : 'Seçilmişlərdən çıxar'}
               >
                 ✕
               </button>

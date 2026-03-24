@@ -184,22 +184,22 @@ export default function CartPage() {
 
   if (count === 0) {
     return (
-      <main className="p-8 max-w-2xl mx-auto text-center">
+      <main className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto text-center overflow-x-hidden">
         <div className="text-6xl mb-4">🛒</div>
-        <h1 className="text-2xl font-bold mb-2">{tr.cartEmpty[lang]}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold mb-2">{tr.cartEmpty[lang]}</h1>
         <Link href="/" className="text-[#e8c97a] hover:underline">{tr.backToCatalog[lang]}</Link>
       </main>
     )
   }
 
   return (
-    <main className="p-8 max-w-5xl mx-auto">
-      <div className="flex items-center gap-4 mb-8">
-        <Link href="/" className="text-white/60 hover:text-white">{tr.back[lang]}</Link>
-        <h1 className="text-3xl font-bold">{tr.cart[lang]}</h1>
+    <main className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto overflow-x-hidden">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <Link href="/" className="text-white/60 hover:text-white min-h-[44px] inline-flex items-center">{tr.back[lang]}</Link>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">{tr.cart[lang]}</h1>
       </div>
       <ToastMessage toast={toast} className="mb-5" />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         <div>
           <div className="flex flex-col gap-3 mb-6">
             {items.map((item, i) => (
@@ -208,19 +208,32 @@ export default function CartPage() {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.16, delay: i * 0.03 }}
-                className="flex gap-4 border rounded-xl p-4 card-soft"
+                className="flex gap-4 border rounded-xl p-4 card-soft items-center"
               >
                 {item.image && (
-                  <Image src={item.image} alt={item.name} width={80} height={80} className="w-20 h-20 object-cover rounded-lg" />
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    width={80}
+                    height={80}
+                    className="w-20 h-20 object-cover rounded-lg shrink-0"
+                    sizes="80px"
+                    loading="lazy"
+                  />
                 )}
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="font-semibold">{item.name}</div>
                   {item.size && <div className="text-sm text-white/60">{item.size}</div>}
                   <div className="font-bold mt-1">{item.price * item.quantity} AZN</div>
                   <div className="text-sm text-white/60">{item.quantity} {tr.pieces[lang]}</div>
                 </div>
-                <button onClick={() => remove(item.id, item.size)}
-                  className="text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b]">X</button>
+                <button
+                  onClick={() => remove(item.id, item.size)}
+                  className="text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b] min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
+                  aria-label={lang === 'ru' ? 'Удалить' : lang === 'en' ? 'Remove' : 'Sil'}
+                >
+                  X
+                </button>
               </motion.div>
             ))}
           </div>

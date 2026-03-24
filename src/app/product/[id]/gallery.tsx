@@ -67,6 +67,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
               width={800}
               height={800}
               className="w-full h-full object-cover rounded-2xl shadow-lg"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
               unoptimized
               priority={active === 0}
             />
@@ -80,7 +81,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
               key={i}
               type="button"
               onClick={() => setActive(i)}
-              className={`aspect-square rounded-xl overflow-hidden cursor-pointer border transition-all duration-200 ${
+              className={`aspect-square min-h-[44px] rounded-xl overflow-hidden cursor-pointer border transition-all duration-200 ${
                 active === i
                   ? 'border-[#c9a84c] ring-2 ring-[rgba(201,168,76,0.25)] scale-[1.02]'
                   : 'border-transparent bg-white/5 hover:border-white/20 opacity-90 hover:opacity-100'
@@ -92,7 +93,9 @@ export default function ProductGallery({ images }: { images: string[] }) {
                 width={180}
                 height={180}
                 className="w-full h-full object-cover"
+                sizes="(max-width: 640px) 25vw, 180px"
                 unoptimized
+                loading="lazy"
               />
             </button>
           ))}

@@ -70,12 +70,14 @@ function ParallaxProductCard({
   tr,
   lowPower,
   gridItemVariants,
+  priority = false,
 }: {
   p: Product
   lang: 'az' | 'ru' | 'en'
   tr: typeof translations
   lowPower: boolean
   gridItemVariants: Variants
+  priority?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
@@ -134,6 +136,7 @@ function ParallaxProductCard({
                   filter: 'brightness(0.95) contrast(1.05)',
                 }}
                 unoptimized
+                priority={priority}
                 onError={() => setImgFailed(true)}
               />
             ) : (
@@ -228,18 +231,18 @@ export default function CatalogClient({ products }: { products: Product[] }) {
       <AboutSection />
 
       {/* Press/Quality Section - Removed screenshot */}
-      <div className="w-full bg-[#061226] py-20">
-        <div className="mx-auto max-w-6xl px-6 text-center">
+      <div className="w-full bg-[#061226] py-12 sm:py-16 md:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 md:px-8 lg:px-16 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h2 className="font-serif text-4xl md:text-5xl font-semibold text-white mb-6">
+            <h2 className="font-serif text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold text-white mb-4 sm:mb-6">
               {lang === 'az' ? 'Keyfiyyət və Rahatlıq' : lang === 'ru' ? 'Качество и Комфорт' : 'Quality & Comfort'}
             </h2>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-white/70 max-w-2xl mx-auto px-2">
               {lang === 'az' 
                 ? 'Hər bir məhsulumuz ən yüksək keyfiyyət standartlarına uyğun hazırlanır.' 
                 : lang === 'ru'
@@ -250,13 +253,13 @@ export default function CatalogClient({ products }: { products: Product[] }) {
         </div>
       </div>
 
-      <div className="w-full bg-[#061226] py-10">
-        <div id="catalog-grid" className="scroll-mt-28 max-w-6xl mx-auto px-6">
-          <h1 className="text-3xl font-bold mb-6 text-white tracking-tight">
+      <div className="w-full bg-[#061226] py-8 sm:py-10">
+        <div id="catalog-grid" className="scroll-mt-28 max-w-6xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-white tracking-tight">
             {tr.catalog[lang]}
           </h1>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
             <input
               type="search"
               placeholder={tr.searchPlaceholder[lang]}
@@ -265,7 +268,8 @@ export default function CatalogClient({ products }: { products: Product[] }) {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="ds-input flex-1"
+              className="ds-input flex-1 min-h-[44px]"
+              aria-label={tr.searchPlaceholder[lang]}
             />
             <select
               value={categoryFilter}
@@ -273,7 +277,8 @@ export default function CatalogClient({ products }: { products: Product[] }) {
                 setCategoryFilter(e.target.value)
                 setPage(1)
               }}
-              className="ds-input min-w-[160px]"
+              className="ds-input min-w-[160px] min-h-[44px]"
+              aria-label={tr.allCategories[lang]}
             >
               <option value="">{tr.allCategories[lang]}</option>
               {CATEGORY_KEYS.map((key) => (
@@ -288,12 +293,12 @@ export default function CatalogClient({ products }: { products: Product[] }) {
               Products are loaded asynchronously from the API at runtime. */}
           <motion.div
             key={`${page}-${categoryFilter}-${searchLower}`}
-            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3"
             variants={gridContainerVariants}
             initial="hidden"
             animate="show"
           >
-            {paginatedProducts.map((p) => (
+            {paginatedProducts.map((p, idx) => (
               <ParallaxProductCard
                 key={p.id}
                 p={p}
@@ -301,6 +306,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
                 tr={tr}
                 lowPower={lowPower}
                 gridItemVariants={gridItemVariants}
+                priority={idx < 4}
               />
             ))}
           </motion.div>
@@ -314,7 +320,8 @@ export default function CatalogClient({ products }: { products: Product[] }) {
               type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+              className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 min-h-[44px] font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+              aria-label={tr.prevPage[lang]}
             >
               {tr.prevPage[lang]}
             </button>
@@ -325,7 +332,8 @@ export default function CatalogClient({ products }: { products: Product[] }) {
               type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+              className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 min-h-[44px] font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+              aria-label={tr.nextPage[lang]}
             >
               {tr.nextPage[lang]}
             </button>

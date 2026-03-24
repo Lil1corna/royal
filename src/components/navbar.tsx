@@ -24,7 +24,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
   }
 
   const pill =
-    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-medium transition-all duration-300 border border-white/10 bg-transparent text-white/60 hover:text-[#e8c97a] hover:border-[#c9a84c]/50'
+    'inline-flex items-center justify-center gap-2 rounded-full px-4 py-3 min-h-[44px] text-sm sm:text-[12px] font-medium transition-all duration-300 border border-white/10 bg-transparent text-white/60 hover:text-[#e8c97a] hover:border-[#c9a84c]/50'
 
   return (
     <>
@@ -175,10 +175,10 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
           <NavLinks userEmail={userEmail} />
         </div>
 
-      <motion.button
+        <motion.button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="flex h-11 w-11 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-900 shadow-sm lg:hidden"
+        className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white shadow-sm lg:hidden"
         aria-label="Menu"
         whileTap={lowPower ? undefined : { scale: 0.95 }}
       >
@@ -211,13 +211,14 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
               }
             >
               <div className="flex justify-between items-center">
-                <span className="font-bold text-lg text-neutral-900">
+                <span className="font-bold text-lg text-white">
                   Royal<span className="text-[#c9a84c]">Az</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
-                  className="h-10 w-10 rounded-xl border border-white/10 flex items-center justify-center hover:bg-white/10"
+                  className="h-11 w-11 min-h-[44px] min-w-[44px] rounded-xl border border-white/10 flex items-center justify-center hover:bg-white/10 text-white"
+                  aria-label="Close menu"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

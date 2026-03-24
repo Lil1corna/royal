@@ -44,12 +44,12 @@ export default async function AccountPage() {
   const displayName = profile?.name || user.email
 
   return (
-    <main className="p-8 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4 mb-8">
-        <Link href="/" className="text-white/60 hover:text-white">
+    <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto overflow-x-hidden">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <Link href="/" className="text-white/60 hover:text-white min-h-[44px] inline-flex items-center">
           Geri
         </Link>
-        <h1 className="text-3xl font-bold text-white">Kabinet</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">Kabinet</h1>
       </div>
 
       <div className="card-soft p-6 mb-8 flex items-center gap-4 border border-white/10">

@@ -1,13 +1,13 @@
-/** Контакты и соцсети — одно место для футера и при необходимости других блоков */
+import { CONTACTS } from '@/config/contacts'
+
+/** @deprecated Use CONTACTS from @/config/contacts */
 export const SITE_CONTACT = {
-  phoneDisplay: '055 200 09 86',
-  /** Для tel: и WhatsApp */
-  phoneE164: '+994552000986',
-  instagram: 'https://www.instagram.com/royal.matras.az/',
-  tiktok: 'https://www.tiktok.com/@royal_matras',
+  phoneDisplay: CONTACTS.phone,
+  phoneE164: CONTACTS.phoneHref.replace('tel:', ''),
+  instagram: CONTACTS.instagram,
+  tiktok: CONTACTS.tiktok,
 } as const
 
 export function whatsappChatUrl(): string {
-  const n = SITE_CONTACT.phoneE164.replace(/\D/g, '')
-  return `https://wa.me/${n}`
+  return CONTACTS.whatsapp
 }

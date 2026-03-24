@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion'
 import { useLang, translations } from '@/context/lang'
 import Link from 'next/link'
-import { SITE_CONTACT, whatsappChatUrl } from '@/lib/site-contact'
+import { CONTACTS } from '@/config/contacts'
 
 function IconInstagram({ className }: { className?: string }) {
   return (
@@ -23,7 +23,6 @@ function IconTikTok({ className }: { className?: string }) {
 export default function Footer() {
   const { lang } = useLang()
   const tr = translations
-  const telHref = `tel:${SITE_CONTACT.phoneE164.replace(/\s/g, '')}`
 
   return (
     <motion.footer
@@ -33,8 +32,8 @@ export default function Footer() {
       transition={{ duration: 0.25 }}
       className="mt-auto border-t border-white/5 bg-[rgba(5,13,26,0.8)] text-white"
     >
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 py-8 sm:py-10 lg:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 sm:gap-8">
           <div>
             <h3 className="mb-3 text-lg font-bold text-white">
               Royal<span className="text-[#c9a84c]">Az</span>
@@ -68,16 +67,18 @@ export default function Footer() {
           <div>
             <h3 className="mb-3 font-bold text-[rgba(201,168,76,0.85)]">{tr.contactUs[lang]}</h3>
             <a
-              href={telHref}
-              className="mb-3 block text-sm font-semibold text-white/80 hover:text-[#e8c97a]"
+              href={CONTACTS.phoneHref}
+              className="mb-3 block text-sm font-semibold text-white/80 hover:text-[#e8c97a] min-h-[44px] min-w-[44px] inline-flex items-center"
+              aria-label={lang === 'ru' ? 'Позвонить' : lang === 'en' ? 'Call' : 'Zəng edin'}
             >
-              {SITE_CONTACT.phoneDisplay}
+              {CONTACTS.phone}
             </a>
             <a
-              href={whatsappChatUrl()}
+              href={CONTACTS.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-emerald-300 hover:text-emerald-200 mb-4"
+              className="inline-flex items-center gap-2 text-sm text-emerald-300 hover:text-emerald-200 mb-4 min-h-[44px] min-w-[44px]"
+              aria-label="WhatsApp"
             >
               <span aria-hidden>💬</span> WhatsApp
             </a>
@@ -86,7 +87,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3">
               <a
-                href={SITE_CONTACT.instagram}
+                href={CONTACTS.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/60 hover:text-[#e8c97a] transition-colors"
@@ -95,7 +96,7 @@ export default function Footer() {
                 <IconInstagram className="w-7 h-7" />
               </a>
               <a
-                href={SITE_CONTACT.tiktok}
+                href={CONTACTS.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/60 hover:text-[#e8c97a] transition-colors"

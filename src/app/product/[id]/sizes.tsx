@@ -105,7 +105,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
           type="button"
           whileTap={{ scale: 0.98 }}
           onClick={() => toggle(productId)}
-          className={`w-full py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
+          className={`w-full py-3 min-h-[44px] rounded-xl text-sm font-semibold border-2 transition-all ${
             inWishlist
               ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.12)] text-[#e8c97a]'
               : 'border-white/10 bg-white/5 hover:border-[#c9a84c]/40 text-white/80'
@@ -119,7 +119,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
             type="button"
             whileTap={{ scale: 0.98 }}
             onClick={() => handleAdd(addBtnRef.current)}
-            className={`w-full rounded-xl py-3 text-lg transition-all ${
+            className={`w-full rounded-xl py-3 min-h-[44px] text-lg transition-all ${
               added ? 'bg-green-500 text-white' : 'btn-primary'
             }`}
           >
@@ -135,7 +135,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
               handleAdd(orderBtnRef.current)
               window.setTimeout(() => router.push('/cart'), 1400)
             }}
-            className="w-full rounded-xl py-3 text-lg btn-secondary"
+            className="w-full rounded-xl py-3 min-h-[44px] text-lg btn-secondary"
           >
             {tr.orderNow[lang]}
           </motion.button>

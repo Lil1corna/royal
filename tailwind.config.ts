@@ -13,6 +13,8 @@ const config: Config = {
         foreground: "var(--foreground)",
       },
       fontFamily: {
+        sans: ['var(--font-jost)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-cormorant)', 'Georgia', 'serif'],
         cormorant: ['var(--font-cormorant)', 'serif'],
         jost: ['var(--font-jost)', 'sans-serif'],
       },
