@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 export default async function AdminPage() {
@@ -43,7 +44,7 @@ export default async function AdminPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Panel</h1>
         <div className="flex gap-3">
-          <a href="/admin/orders"
+          <Link href="/admin/orders"
             className="relative btn-admin btn-icon-arrow px-6 py-2">
             Sifarisler <span className="arrow">→</span>
             {newOrders && newOrders.length > 0 && (
@@ -51,15 +52,15 @@ export default async function AdminPage() {
                 {newOrders.length}
               </span>
             )}
-          </a>
-          <a href="/admin/users"
+          </Link>
+          <Link href="/admin/users"
             className="btn-secondary btn-icon-arrow px-6 py-2">
             Staff <span className="arrow">→</span>
-          </a>
-          <a href="/admin/products/new"
+          </Link>
+          <Link href="/admin/products/new"
             className="btn-primary btn-icon-arrow px-6 py-2">
             Yeni mehsul <span className="arrow">→</span>
-          </a>
+          </Link>
         </div>
       </div>
       <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-white/10 bg-transparent">
@@ -86,12 +87,12 @@ export default async function AdminPage() {
                 </span>
               </td>
               <td className="p-3 border-b border-white/10">
-                <a
+                <Link
                   href={'/admin/products/' + p.id}
                   className="text-[rgba(201,168,76,0.8)] text-[12px] font-semibold tracking-[0.06em] uppercase hover:text-[#e8c97a] hover:underline"
                 >
                   Edit
-                </a>
+                </Link>
               </td>
             </tr>
           ))}

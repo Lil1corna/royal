@@ -9,9 +9,6 @@ import AboutSection from '@/components/about-section'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 const ITEMS_PER_PAGE = 12
-// В дизайне есть статичное фото с продуктами, но пользователь просит карточки настоящими
-// (каждая карточка ведет на отдельную страницу товара).
-const SHOW_INTERACTIVE_CATALOG = true
 
 type Product = {
   id: string
@@ -253,90 +250,87 @@ export default function CatalogClient({ products }: { products: Product[] }) {
         </div>
       </div>
 
-      {/* Интерактивный каталог (поиск/фильтр/карточки). */}
-      {SHOW_INTERACTIVE_CATALOG && (
-        <>
-          <div className="w-full bg-[#061226] py-10">
-            <div id="catalog-grid" className="scroll-mt-28 max-w-6xl mx-auto px-6">
-              <h1 className="text-3xl font-bold mb-6 text-white tracking-tight">
-                {tr.catalog[lang]}
-              </h1>
+      <div className="w-full bg-[#061226] py-10">
+        <div id="catalog-grid" className="scroll-mt-28 max-w-6xl mx-auto px-6">
+          <h1 className="text-3xl font-bold mb-6 text-white tracking-tight">
+            {tr.catalog[lang]}
+          </h1>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <input
-                  type="search"
-                  placeholder={tr.searchPlaceholder[lang]}
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value)
-                    setPage(1)
-                  }}
-                  className="ds-input flex-1"
-                />
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => {
-                    setCategoryFilter(e.target.value)
-                    setPage(1)
-                  }}
-                  className="ds-input min-w-[160px]"
-                >
-                  <option value="">{tr.allCategories[lang]}</option>
-                  {CATEGORY_KEYS.map((key) => (
-                    <option key={key} value={key}>
-                      {tr.categories[key]?.[lang] || key}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <motion.div
-                key={`${page}-${categoryFilter}-${searchLower}`}
-                className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-                variants={gridContainerVariants}
-                initial="hidden"
-                animate="show"
-              >
-                {paginatedProducts.map((p) => (
-                  <ParallaxProductCard
-                    key={p.id}
-                    p={p}
-                    lang={lang}
-                    tr={tr}
-                    lowPower={lowPower}
-                    gridItemVariants={gridItemVariants}
-                  />
-                ))}
-              </motion.div>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <input
+              type="search"
+              placeholder={tr.searchPlaceholder[lang]}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
+              className="ds-input flex-1"
+            />
+            <select
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value)
+                setPage(1)
+              }}
+              className="ds-input min-w-[160px]"
+            >
+              <option value="">{tr.allCategories[lang]}</option>
+              {CATEGORY_KEYS.map((key) => (
+                <option key={key} value={key}>
+                  {tr.categories[key]?.[lang] || key}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {totalPages > 1 && (
-            <div className="w-full bg-[#061226] pb-10">
-              <div className="mt-8 flex justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
-                  className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
-                >
-                  {tr.prevPage[lang]}
-                </button>
-                <span className="flex items-center px-4 font-medium text-white/90">
-                  {page} / {totalPages}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page >= totalPages}
-                  className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
-                >
-                  {tr.nextPage[lang]}
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+          {/* CATALOG PRODUCT LIST — do not remove even if appears empty statically.
+              Products are loaded asynchronously from the API at runtime. */}
+          <motion.div
+            key={`${page}-${categoryFilter}-${searchLower}`}
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            variants={gridContainerVariants}
+            initial="hidden"
+            animate="show"
+          >
+            {paginatedProducts.map((p) => (
+              <ParallaxProductCard
+                key={p.id}
+                p={p}
+                lang={lang}
+                tr={tr}
+                lowPower={lowPower}
+                gridItemVariants={gridItemVariants}
+              />
+            ))}
+          </motion.div>
+        </div>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="w-full bg-[#061226] pb-10">
+          <div className="mt-8 flex justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+            >
+              {tr.prevPage[lang]}
+            </button>
+            <span className="flex items-center px-4 font-medium text-white/90">
+              {page} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+            >
+              {tr.nextPage[lang]}
+            </button>
+          </div>
+        </div>
       )}
     </main>
   )

@@ -1,7 +1,14 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+type ProductSizeDraft = {
+  size: string
+  price: string
+  in_stock: boolean
+}
 
 // Отключаем static generation для admin страниц
 export const dynamic = 'force-dynamic'
@@ -17,7 +24,7 @@ export default function NewProduct() {
     discount_pct: '0',
     in_stock: true,
   })
-  const [sizes, setSizes] = useState([{ size: '80x200', price: '', in_stock: true }])
+  const [sizes, setSizes] = useState<ProductSizeDraft[]>([{ size: '80x200', price: '', in_stock: true }])
   const [images, setImages] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
 
@@ -45,7 +52,7 @@ export default function NewProduct() {
 
   const addSize = () => setSizes([...sizes, { size: '', price: '', in_stock: true }])
   const removeSize = (i: number) => setSizes(sizes.filter((_, idx) => idx !== i))
-  const updateSize = (i: number, field: string, value: any) => {
+  const updateSize = (i: number, field: keyof ProductSizeDraft, value: string | boolean) => {
     setSizes(sizes.map((s, idx) => idx === i ? { ...s, [field]: value } : s))
   }
 
@@ -102,7 +109,7 @@ export default function NewProduct() {
   return (
     <main className="p-8 max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</a>
+        <Link href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Yeni Mehsul</h1>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 ds-card-glass p-6 rounded-2xl">
@@ -193,7 +200,7 @@ export default function NewProduct() {
             <div className="grid grid-cols-4 gap-2">
               {previews.map((src, i) => (
                 <div key={i} className="relative group">
-                  <img src={src} className="w-full aspect-square object-cover rounded-lg" />
+                  <Image src={src} alt={`Product preview ${i + 1}`} width={200} height={200} className="w-full aspect-square object-cover rounded-lg" />
                   <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 rounded-lg flex items-center justify-center gap-1 transition-opacity">
                     <button type="button" onClick={() => moveImage(i, 'left')}
                       className="bg-white text-black w-7 h-7 rounded-full text-sm">

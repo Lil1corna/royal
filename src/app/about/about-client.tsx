@@ -113,8 +113,6 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
   const { lang } = useLang()
   const tr = translations
   const [tagIndex, setTagIndex] = useState(0)
-  // Initialize hasMounted as true since we're client-side only
-  const [hasMounted, setHasMounted] = useState(true)
 
   const taglines = useMemo(
     () => [
@@ -288,7 +286,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                 viewBox="0 0 128 128"
                 className="drop-shadow-[0_0_25px_rgba(201,168,76,0.18)]"
                 initial={{ opacity: 0 }}
-                animate={hasMounted ? { opacity: 1 } : undefined}
+                  animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
               >
                 <motion.circle
@@ -300,7 +298,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                   strokeWidth="1.5"
                   strokeDasharray="327"
                   initial={{ strokeDashoffset: 327 }}
-                  animate={hasMounted ? { strokeDashoffset: 0 } : undefined}
+                  animate={{ strokeDashoffset: 0 }}
                   transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] as const, delay: 0.15 }}
                 />
                 <motion.path
@@ -312,7 +310,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                   strokeLinejoin="round"
                   strokeDasharray="220"
                   initial={{ strokeDashoffset: 220 }}
-                  animate={hasMounted ? { strokeDashoffset: 0 } : undefined}
+                  animate={{ strokeDashoffset: 0 }}
                   transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] as const, delay: 0.25 }}
                 />
               </motion.svg>
@@ -403,6 +401,11 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
           <div className="mx-auto max-w-6xl">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
               {stats.map((s, i) => {
+                const entry = (tr as Record<string, unknown>)[s.labelKey]
+                const translated =
+                  typeof entry === 'object' && entry !== null
+                    ? (entry as { az?: string; ru?: string; en?: string })[lang]
+                    : undefined
                 const label: string =
                   s.labelKey === 'matrasModels'
                     ? lang === 'ru'
@@ -410,7 +413,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                       : lang === 'en'
                         ? 'Mattress models'
                         : 'Matras modeli'
-                    : ((tr as any)[s.labelKey]?.[lang] as string | undefined) ?? s.labelKey
+                    : translated ?? s.labelKey
 
                 return (
                   <CountUpStat

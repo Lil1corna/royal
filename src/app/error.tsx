@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useLang, translations } from '@/context/lang'
 
 export default function Error({
@@ -23,9 +24,9 @@ export default function Error({
         >
           {tr.tryAgain[lang]} <span className="arrow">→</span>
         </button>
-        <a href="/" className="btn-secondary btn-icon-arrow px-6 py-2">
+        <Link href="/" className="btn-secondary btn-icon-arrow px-6 py-2">
           {tr.backToCatalog[lang]} <span className="arrow">→</span>
-        </a>
+        </Link>
       </div>
     </main>
   )

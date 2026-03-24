@@ -16,12 +16,13 @@ export default function PagePreloader() {
     try {
       if (sessionStorage.getItem(STORAGE_KEY)) return
       sessionStorage.setItem(STORAGE_KEY, '1')
-      setShow(true)
-      const t = window.setTimeout(() => setShow(false), 2200)
-      return () => clearTimeout(t)
-    } catch {
-      setShow(false)
-    }
+      const t = window.setTimeout(() => setShow(true), 0)
+      const t2 = window.setTimeout(() => setShow(false), 2200)
+      return () => {
+        clearTimeout(t)
+        clearTimeout(t2)
+      }
+    } catch {}
   }, [reduceMotion, lowPower])
 
   if (reduceMotion || lowPower) return null

@@ -18,12 +18,12 @@ export default function SignInPage() {
       try {
         const supabase = createClient()
         
-        // Use production URL for Netlify deployment
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+        // Always use the actual runtime origin to avoid stale env domain mismatch.
+        // A wrong NEXT_PUBLIC_SITE_URL causes Google redirect_uri_mismatch.
+        const baseUrl = window.location.origin
         const redirectTo = `${baseUrl}/auth/callback`
         
         setDebugInfo(`Base URL: ${baseUrl}, Redirect: ${redirectTo}`)
-        console.log('[Sign In] Starting OAuth flow', { baseUrl, redirectTo })
         
         const { data, error: err } = await supabase.auth.signInWithOAuth({
           provider: 'google',
@@ -44,7 +44,6 @@ export default function SignInPage() {
         }
         
         if (data.url) {
-          console.log('[Sign In] Redirecting to Google OAuth', { url: data.url })
           setIsRedirecting(true)
           setDebugInfo(prev => `${prev}\nRedirect URL: ${data.url}`)
           

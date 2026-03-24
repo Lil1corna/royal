@@ -24,16 +24,10 @@ export default function WishlistPage() {
   const tr = translations
   const { ids, toggle } = useWishlist()
   const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
   const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
-    if (ids.length === 0) {
-      setProducts([])
-      setLoading(false)
-      return
-    }
-    setLoading(true)
+    if (ids.length === 0) return
     void supabase
       .from('products')
       .select('id, name_az, name_ru, name_en, price, discount_pct, image_urls, in_stock')
@@ -43,11 +37,10 @@ export default function WishlistPage() {
         const list = (data || []) as Product[]
         list.sort((a, b) => (order.get(a.id) ?? 99) - (order.get(b.id) ?? 99))
         setProducts(list)
-        setLoading(false)
       })
   }, [ids, supabase])
 
-  if (loading) {
+  if (ids.length > 0 && products.length === 0) {
     return (
       <main className="p-8 max-w-4xl mx-auto text-center text-white/60">
         {tr.loading[lang]}…

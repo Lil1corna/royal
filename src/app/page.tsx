@@ -18,6 +18,7 @@ type Product = {
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchProducts() {
@@ -31,11 +32,14 @@ export default function Home() {
 
         if (error) {
           console.error('Supabase error:', error)
+          setLoadError(error.message)
         } else {
           setProducts(data || [])
+          setLoadError(null)
         }
       } catch (error) {
         console.error('Error fetching products:', error)
+        setLoadError(error instanceof Error ? error.message : 'Failed to load products')
       } finally {
         setLoading(false)
       }
@@ -48,6 +52,28 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-white text-xl">Yüklənir...</div>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-red-300 font-semibold mb-2">Məhsullar yüklənmədi</p>
+          <p className="text-white/60 text-sm">{loadError}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-white font-semibold mb-2">Məhsul tapılmadı</p>
+          <p className="text-white/60 text-sm">Kataloq hazırda boşdur.</p>
+        </div>
       </div>
     )
   }

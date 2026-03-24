@@ -1,15 +1,22 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
+import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
+
+type UserRow = {
+  id: string
+  email: string
+  role: string
+}
 
 export default function EditUser() {
   const router = useRouter()
   const params = useParams()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const [loading, setLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<UserRow | null>(null)
   const [role, setRole] = useState('customer')
   const [toast, setToast] = useState<ToastState | null>(null)
 
@@ -31,7 +38,7 @@ export default function EditUser() {
       }
     }
     load()
-  }, [params.id])
+  }, [params.id, supabase])
 
   const handleSave = async () => {
     setLoading(true)
@@ -53,7 +60,7 @@ export default function EditUser() {
   return (
     <main className="p-8 max-w-md mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/admin/users" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</a>
+        <Link href="/admin/users" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Rol Deyis</h1>
       </div>
       <ToastMessage toast={toast} className="mb-4" />

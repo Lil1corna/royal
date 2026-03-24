@@ -2,7 +2,6 @@
 import { motion } from 'framer-motion'
 import { useLang, translations } from '@/context/lang'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { SITE_CONTACT, whatsappChatUrl } from '@/lib/site-contact'
 
 function IconInstagram({ className }: { className?: string }) {
@@ -24,8 +23,6 @@ function IconTikTok({ className }: { className?: string }) {
 export default function Footer() {
   const { lang } = useLang()
   const tr = translations
-  const pathname = usePathname()
-
   const telHref = `tel:${SITE_CONTACT.phoneE164.replace(/\s/g, '')}`
 
   return (

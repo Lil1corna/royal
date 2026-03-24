@@ -36,7 +36,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 }
 
-export default async function ProductPage(props: any) {
+export default async function ProductPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
   const cookieStore = await cookies()
   const supabase = createServerClient(

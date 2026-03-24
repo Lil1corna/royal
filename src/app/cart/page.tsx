@@ -1,6 +1,8 @@
 'use client'
 import { motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useCart } from '@/context/cart'
 import { useLang, translations } from '@/context/lang'
 import { createClient } from '@/lib/supabase'
@@ -185,7 +187,7 @@ export default function CartPage() {
       <main className="p-8 max-w-2xl mx-auto text-center">
         <div className="text-6xl mb-4">🛒</div>
         <h1 className="text-2xl font-bold mb-2">{tr.cartEmpty[lang]}</h1>
-        <a href="/" className="text-[#e8c97a] hover:underline">{tr.backToCatalog[lang]}</a>
+        <Link href="/" className="text-[#e8c97a] hover:underline">{tr.backToCatalog[lang]}</Link>
       </main>
     )
   }
@@ -193,7 +195,7 @@ export default function CartPage() {
   return (
     <main className="p-8 max-w-5xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/" className="text-white/60 hover:text-white">{tr.back[lang]}</a>
+        <Link href="/" className="text-white/60 hover:text-white">{tr.back[lang]}</Link>
         <h1 className="text-3xl font-bold">{tr.cart[lang]}</h1>
       </div>
       <ToastMessage toast={toast} className="mb-5" />
@@ -209,7 +211,7 @@ export default function CartPage() {
                 className="flex gap-4 border rounded-xl p-4 card-soft"
               >
                 {item.image && (
-                  <img src={item.image} className="w-20 h-20 object-cover rounded-lg" />
+                  <Image src={item.image} alt={item.name} width={80} height={80} className="w-20 h-20 object-cover rounded-lg" />
                 )}
                 <div className="flex-1">
                   <div className="font-semibold">{item.name}</div>

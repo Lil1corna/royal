@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
-import { useRef } from 'react'
+import { useState } from 'react'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 /**
@@ -13,7 +13,10 @@ function CurtainOverlay() {
   const pathname = usePathname()
   const reduce = useReducedMotion()
   const lowPower = useLowPowerMotion()
-  const hasNavigated = useRef(false)
+  const [hasNavigated, setHasNavigated] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return sessionStorage.getItem('royalaz_has_navigated') === '1'
+  })
 
   if (reduce || lowPower) return null
 
@@ -28,14 +31,19 @@ function CurtainOverlay() {
           'linear-gradient(168deg, #fde68a 0%, #fbbf24 22%, #d97706 55%, #92400e 92%, #451a03 100%)',
         boxShadow: 'inset 0 -80px 120px rgba(0,0,0,0.12)',
       }}
-      initial={{ scaleY: hasNavigated.current ? 1 : 0 }}
+      initial={{ scaleY: hasNavigated ? 1 : 0 }}
       animate={{ scaleY: 0 }}
       transition={{
         duration: 0.62,
         ease: [0.22, 1, 0.36, 1],
       }}
       onAnimationComplete={() => {
-        hasNavigated.current = true
+        if (!hasNavigated) {
+          setHasNavigated(true)
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('royalaz_has_navigated', '1')
+          }
+        }
       }}
     />
   )

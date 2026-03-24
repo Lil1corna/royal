@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
 
 export default function InviteUser() {
@@ -42,9 +43,9 @@ export default function InviteUser() {
         <p className="text-sm text-neutral-400 mb-6">
           Shexse email gelecek. Ilk girisden sonra rol avtomatik teyin olunacaq.
         </p>
-        <a href="/admin/users" className="ds-btn-primary inline-block px-6 py-2">
+        <Link href="/admin/users" className="ds-btn-primary inline-block px-6 py-2">
           Geri qayit
-        </a>
+        </Link>
       </main>
     )
   }
@@ -52,7 +53,7 @@ export default function InviteUser() {
   return (
     <main className="p-8 max-w-md mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/admin/users" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</a>
+        <Link href="/admin/users" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Yeni Admin</h1>
       </div>
       <ToastMessage toast={toast} className="mb-4" />

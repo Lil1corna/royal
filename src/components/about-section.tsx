@@ -1,12 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useLang, translations } from '@/context/lang'
+import { useLang } from '@/context/lang'
 import Link from 'next/link'
 
 export default function AboutSection() {
   const { lang } = useLang()
-  const tr = translations
 
   const storyParagraphs =
     lang === 'ru'

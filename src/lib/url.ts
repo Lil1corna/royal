@@ -39,5 +39,8 @@ export function getBaseUrl(request?: Request): string {
   if (netlifyPrimary && /^https?:\/\//i.test(netlifyPrimary)) {
     return trim(netlifyPrimary)
   }
-  return 'http://localhost:3000'
+  if (process.env.NETLIFY_SITE_NAME) {
+    return `https://${process.env.NETLIFY_SITE_NAME}.netlify.app`
+  }
+  return 'https://example.com'
 }

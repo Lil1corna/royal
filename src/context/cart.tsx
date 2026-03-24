@@ -24,12 +24,11 @@ const CartCtx = createContext<CartContext>({
 })
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
-
-  useEffect(() => {
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') return []
     const saved = localStorage.getItem('royalaz_cart')
-    if (saved) setItems(JSON.parse(saved))
-  }, [])
+    return saved ? (JSON.parse(saved) as CartItem[]) : []
+  })
 
   useEffect(() => {
     localStorage.setItem('royalaz_cart', JSON.stringify(items))

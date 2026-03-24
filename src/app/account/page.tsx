@@ -1,4 +1,6 @@
 import { redirect } from 'next/navigation'
+import Image from 'next/image'
+import Link from 'next/link'
 import { createServerSupabase } from '@/lib/supabase-server'
 import AccountSettings from './account-settings'
 import AccountOrdersSection from '@/components/account-orders-section'
@@ -44,15 +46,15 @@ export default async function AccountPage() {
   return (
     <main className="p-8 max-w-4xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/" className="text-white/60 hover:text-white">
+        <Link href="/" className="text-white/60 hover:text-white">
           Geri
-        </a>
+        </Link>
         <h1 className="text-3xl font-bold text-white">Kabinet</h1>
       </div>
 
       <div className="card-soft p-6 mb-8 flex items-center gap-4 border border-white/10">
         {avatarUrl ? (
-          <img src={avatarUrl} alt="avatar" className="w-14 h-14 rounded-full object-cover border border-white/10" />
+          <Image src={avatarUrl} alt="avatar" width={56} height={56} className="w-14 h-14 rounded-full object-cover border border-white/10" />
         ) : (
           <div className="w-14 h-14 bg-[#050d1a] text-white rounded-full flex items-center justify-center text-xl font-bold border border-white/10">
             {user.email?.[0].toUpperCase()}
@@ -64,12 +66,12 @@ export default async function AccountPage() {
           <div className="text-xs text-white/60 mt-1">{profile?.role || 'customer'}</div>
         </div>
         {isStaff && (
-          <a
+          <Link
             href="/admin"
             className="ml-auto btn-secondary text-sm"
           >
             Admin Panel
-          </a>
+          </Link>
         )}
       </div>
 

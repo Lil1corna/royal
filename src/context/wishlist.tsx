@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 
 const STORAGE = 'royalaz_wishlist'
 
@@ -14,17 +14,16 @@ type WishlistContextValue = {
 const WishlistCtx = createContext<WishlistContextValue | null>(null)
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
-  const [ids, setIds] = useState<string[]>([])
-
-  useEffect(() => {
+  const [ids, setIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return []
     try {
       const raw = localStorage.getItem(STORAGE)
       const parsed = raw ? JSON.parse(raw) : []
-      setIds(Array.isArray(parsed) ? parsed.filter((x: unknown) => typeof x === 'string') : [])
+      return Array.isArray(parsed) ? parsed.filter((x: unknown): x is string => typeof x === 'string') : []
     } catch {
-      setIds([])
+      return []
     }
-  }, [])
+  })
 
   const toggle = useCallback(
     (productId: string) => {

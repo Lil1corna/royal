@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import type { Icon, LeafletMouseEvent, Map as LeafletMap, Marker } from 'leaflet'
 import { useLang, translations } from '@/context/lang'
 
 export type AddressMapProps = {
@@ -18,21 +19,23 @@ export default function AddressMap({
 }: AddressMapProps) {
   const { lang } = useLang()
   const tr = translations
+
+  type SuggestionItem = { lat: string; lon: string; display_name: string }
   const mapRef = useRef<{
-    map: any
-    L: any
-    icon: any
+    map: LeafletMap
+    L: typeof import('leaflet')
+    icon: Icon
   } | null>(null)
-  const markerRef = useRef<any>(null)
+  const markerRef = useRef<Marker | null>(null)
   const mapDivRef = useRef<HTMLDivElement>(null)
   const [search, setSearch] = useState('')
-  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [suggestions, setSuggestions] = useState<SuggestionItem[]>([])
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState('')
   const onSelectRef = useRef(onSelect)
   onSelectRef.current = onSelect
 
-  const placeMarker = (lat: number, lng: number, addr: string, map: any, L: any, icon: any) => {
+  const placeMarker = (lat: number, lng: number, addr: string, map: LeafletMap, L: typeof import('leaflet'), icon: Icon) => {
     if (markerRef.current) markerRef.current.remove()
     markerRef.current = L.marker([lat, lng], { icon }).addTo(map)
     map.setView([lat, lng], 16)
@@ -61,7 +64,7 @@ export default function AddressMap({
         iconSize: [25, 41],
         iconAnchor: [12, 41],
       })
-      map.on('click', async (e: any) => {
+      map.on('click', async (e: LeafletMouseEvent) => {
         const { lat, lng } = e.latlng
         const res = await fetch(
           `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=az`
@@ -101,12 +104,12 @@ export default function AddressMap({
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(search + ' Baku Azerbaijan')}&format=json&limit=5&accept-language=az`
     )
-    const data = await res.json()
+    const data = (await res.json()) as SuggestionItem[]
     setSuggestions(data)
     setLoading(false)
   }
 
-  const selectSuggestion = (item: any) => {
+  const selectSuggestion = (item: SuggestionItem) => {
     const lat = parseFloat(item.lat)
     const lng = parseFloat(item.lon)
     const r = mapRef.current

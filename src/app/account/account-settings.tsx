@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useLang, translations } from '@/context/lang'
@@ -68,37 +69,14 @@ export default function AccountSettings({
   const [toast, setToast] = useState<ToastState | null>(null)
   const [avatarChecking, setAvatarChecking] = useState(false)
   const [avatarReachable, setAvatarReachable] = useState<boolean | null>(null)
-  const [mapKey, setMapKey] = useState(0)
 
   const previewAvatar = avatarUrl.trim()
   const avatarValid = /^https?:\/\/.+/i.test(previewAvatar)
 
   useEffect(() => {
-    setName(initialName)
-    setPhone(formatAzPhone(initialPhone || ''))
-    setAddress(initialAddress)
-    setAddressExtra(initialAddressExtra)
-    setShippingLat(initialShippingLat)
-    setShippingLng(initialShippingLng)
-    setAvatarUrl(initialAvatarUrl)
-    setMapKey((k) => k + 1)
-  }, [
-    initialName,
-    initialPhone,
-    initialAddress,
-    initialAddressExtra,
-    initialShippingLat,
-    initialShippingLng,
-    initialAvatarUrl,
-  ])
-
-  useEffect(() => {
-    if (!previewAvatar || !avatarValid) {
-      setAvatarReachable(null)
-      return
-    }
-    setAvatarChecking(true)
-    const img = new Image()
+    if (!previewAvatar || !avatarValid) return
+    const startCheck = window.setTimeout(() => setAvatarChecking(true), 0)
+    const img = new window.Image()
     const done = (ok: boolean) => {
       setAvatarReachable(ok)
       setAvatarChecking(false)
@@ -107,6 +85,7 @@ export default function AccountSettings({
     img.onerror = () => done(false)
     img.referrerPolicy = 'no-referrer'
     img.src = previewAvatar
+    return () => clearTimeout(startCheck)
   }, [previewAvatar, avatarValid])
 
   const showToast = (type: 'success' | 'error', message: string) => {
@@ -202,7 +181,6 @@ export default function AccountSettings({
         <p className="text-xs text-white/60 mb-3">{tr.addressProfileHint[lang]}</p>
 
         <AddressMap
-          key={mapKey}
           initialLat={initialShippingLat}
           initialLng={initialShippingLng}
           initialAddress={initialAddress}
@@ -252,9 +230,11 @@ export default function AccountSettings({
         />
         <div className="mb-4">
           {avatarValid ? (
-            <img
+            <Image
               src={previewAvatar}
               alt="avatar preview"
+              width={64}
+              height={64}
               className="w-16 h-16 rounded-full object-cover border"
               referrerPolicy="no-referrer"
             />
@@ -271,7 +251,9 @@ export default function AccountSettings({
                   : lang === 'en'
                     ? 'Checking…'
                     : 'Yoxlanır…'
-                : avatarReachable === false
+                : (!previewAvatar || !avatarValid)
+                  ? ''
+                  : avatarReachable === false
                   ? tr.avatarNotReachable[lang]
                   : ''}
             </div>

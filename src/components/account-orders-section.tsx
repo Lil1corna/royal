@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import Image from 'next/image'
+import Link from 'next/link'
 import OrderStatusTimeline from '@/components/order-status-timeline'
 import { deliveryModeLabel, type DeliveryMode } from '@/lib/delivery'
 import { useLang, translations } from '@/context/lang'
@@ -100,9 +102,9 @@ export default function AccountOrdersSection({
       <div className="text-center py-16 ds-card-glass rounded-2xl">
         <div className="text-5xl mb-4">📦</div>
         <p className="text-neutral-300 mb-4">{tr.noOrdersYet[lang]}</p>
-        <a href="/" className="ds-btn-primary inline-block px-6 py-2">
+        <Link href="/" className="ds-btn-primary inline-block px-6 py-2">
           {tr.startShopping[lang]}
-        </a>
+        </Link>
       </div>
     )
   }
@@ -146,9 +148,11 @@ export default function AccountOrdersSection({
             {order.order_items?.map((item) => (
               <div key={item.id} className="flex items-center gap-2 bg-white/10 rounded-lg p-2 border border-white/20">
                 {item.products?.image_urls?.[0] && (
-                  <img
+                  <Image
                     src={item.products.image_urls[0]}
-                    alt=""
+                    alt={item.products?.name_ru || 'Product image'}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 object-cover rounded-lg"
                   />
                 )}

@@ -10,15 +10,13 @@ export async function GET(request: NextRequest) {
 
   const baseUrl = getBaseUrl(request)
 
-  console.log('[Auth Callback] Starting OAuth callback', { code: code ? 'present' : 'missing', next, baseUrl })
-
   if (!code) {
     console.error('[Auth Callback] No code provided')
     return NextResponse.redirect(`${baseUrl}/auth/error?message=No+code`)
   }
 
   // Create response object that we'll use to set cookies
-  let response = NextResponse.redirect(`${baseUrl}${next}`)
+  const response = NextResponse.redirect(`${baseUrl}${next}`)
   
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,17 +33,12 @@ export async function GET(request: NextRequest) {
     }
   )
 
-  const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
+  const { error } = await supabase.auth.exchangeCodeForSession(code)
   
   if (error) {
     console.error('[Auth Callback] Session exchange failed:', error)
     return NextResponse.redirect(`${baseUrl}/auth/error?message=${encodeURIComponent(error.message)}`)
   }
-
-  console.log('[Auth Callback] Session exchange successful', { 
-    userId: sessionData?.user?.id,
-    email: sessionData?.user?.email 
-  })
 
   // Assign pending staff role after first successful sign-in
   try {

@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 
 export default function EditProduct() {
@@ -143,7 +145,7 @@ export default function EditProduct() {
   return (
     <main className="p-8 max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <a href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</a>
+        <Link href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Mehsulu Redakte Et</h1>
       </div>
       <form onSubmit={handleSave} className="flex flex-col gap-4 ds-card-glass p-6 rounded-2xl">
@@ -209,7 +211,7 @@ export default function EditProduct() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {existingUrls.map((src, i) => (
                   <div key={`${src}-${i}`} className="relative group border border-white/20 rounded-lg overflow-hidden bg-black/40">
-                    <img src={src} alt="" className="w-full aspect-square object-cover" />
+                    <Image src={src} alt={`Existing product image ${i + 1}`} width={200} height={200} className="w-full aspect-square object-cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
                       <button type="button" onClick={() => moveExisting(i, 'left')}
                         className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === 0}>{'<'}</button>
@@ -241,7 +243,7 @@ export default function EditProduct() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {newPreviews.map((src, i) => (
                   <div key={src} className="relative group border border-white/20 rounded-lg overflow-hidden bg-black/40">
-                    <img src={src} alt="" className="w-full aspect-square object-cover" />
+                    <Image src={src} alt={`New product image ${i + 1}`} width={200} height={200} className="w-full aspect-square object-cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
                       <button type="button" onClick={() => moveNew(i, 'left')}
                         className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === 0}>{'<'}</button>

@@ -1,5 +1,6 @@
 'use client'
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
 function AuthErrorContent() {
@@ -12,12 +13,12 @@ function AuthErrorContent() {
       <h1 className="text-2xl font-bold mb-2 text-white">Giris ugursuz oldu</h1>
       <p className="text-neutral-300 mb-6 text-center max-w-md">{message}</p>
       <div className="flex gap-4">
-        <a href="/auth/signin" className="btn-primary btn-icon-arrow px-6 py-2">
+        <Link href="/auth/signin" className="btn-primary btn-icon-arrow px-6 py-2">
           Yeniden cəhd et <span className="arrow">→</span>
-        </a>
-        <a href="/" className="btn-secondary btn-icon-arrow px-6 py-2">
+        </Link>
+        <Link href="/" className="btn-secondary btn-icon-arrow px-6 py-2">
           Ana səhifə <span className="arrow">→</span>
-        </a>
+        </Link>
       </div>
     </main>
   )

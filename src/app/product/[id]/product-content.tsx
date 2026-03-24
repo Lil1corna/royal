@@ -1,5 +1,6 @@
 'use client'
 import { useLang, translations } from '@/context/lang'
+import Link from 'next/link'
 import ProductGallery from './gallery'
 import SizeSelector from './sizes'
 
@@ -36,12 +37,12 @@ export default function ProductContent({
 
   return (
     <main className="mx-auto max-w-6xl p-8 text-white">
-      <a
+      <Link
         href="/"
         className="mb-6 inline-block font-medium text-[#c9a84c] underline-offset-4 hover:text-[#e8c97a] hover:underline"
       >
         ← {tr.backToCatalogBtn[lang]}
-      </a>
+      </Link>
       <p className="text-sm text-white/60 mb-1">{cat}</p>
       <h1 className="text-3xl font-bold mb-8 font-serif">{name}</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
