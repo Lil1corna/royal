@@ -111,7 +111,7 @@ export default function InviteUser() {
           <div className="relative">
             <button
               type="button"
-              className="ds-input w-full min-h-[44px] flex items-center justify-between gap-3"
+              className="ds-input w-full min-h-[44px] flex items-center justify-between gap-3 bg-[#050d1a]/95 backdrop-blur-0"
               onClick={() => setOpenRolePicker((v) => !v)}
               aria-expanded={openRolePicker}
             >
@@ -127,7 +127,7 @@ export default function InviteUser() {
             </button>
 
             {openRolePicker && (
-              <div className="absolute left-0 right-0 mt-2 z-[200] ds-card-glass rounded-xl p-2 max-h-[18rem] overflow-auto">
+              <div className="absolute left-0 right-0 mt-2 z-[200] bg-[#050d1a]/92 backdrop-blur-0 border border-white/10 rounded-xl p-2 max-h-[18rem] overflow-auto">
                 {roleKeys.map((rk) => {
                   const role = ROLES[rk]
                   const active = role.key === roleDbKey
@@ -151,8 +151,8 @@ export default function InviteUser() {
                     <button
                       key={rk}
                       type="button"
-                      className={`w-full text-left px-3 py-2 rounded-lg min-h-[44px] flex items-start gap-3 ${
-                        active ? 'bg-white/10' : 'hover:bg-white/5'
+                      className={`w-full text-left px-3 py-2 rounded-lg min-h-[44px] flex items-start gap-3 bg-white/5 ${
+                        active ? 'bg-white/12' : 'hover:bg-white/10'
                       }`}
                       onClick={() => {
                         setRoleDbKey(role.key)
