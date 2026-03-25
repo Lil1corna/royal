@@ -103,19 +103,39 @@ export default function NewProduct() {
       }
     }
 
-    const { data: product, error } = await supabase
+    const payload = {
+      ...form,
+      price: parseFloat(form.price),
+      discount_pct: parseFloat(form.discount_pct),
+      image_urls: imageUrls,
+    }
+
+    const isMissingDescriptionColumn = (message: string) => {
+      const m = message.toLowerCase()
+      return m.includes('description') && (m.includes('does not exist') || m.includes('unknown column') || m.includes('column'))
+    }
+
+    let { data: product, error } = await supabase
       .from('products')
-      .insert([{
-        ...form,
-        price: parseFloat(form.price),
-        discount_pct: parseFloat(form.discount_pct),
-        image_urls: imageUrls,
-      }])
+      .insert([payload])
       .select()
       .single()
 
     if (error) {
-      alert('Xeta: ' + error.message)
+      // In case DB column `description` is not migrated yet.
+      if (isMissingDescriptionColumn(error.message)) {
+        const { description: droppedDesc, ...payloadWithoutDesc } = payload
+        void droppedDesc
+        ;({ data: product, error } = await supabase
+          .from('products')
+          .insert([payloadWithoutDesc])
+          .select()
+          .single())
+      }
+    }
+
+    if (error || !product) {
+      alert('Xeta: ' + (error?.message || 'Unknown error'))
       setLoading(false)
       return
     }

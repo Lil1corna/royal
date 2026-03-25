@@ -146,15 +146,32 @@ export default function EditProduct() {
       const uploadedUrls = await uploadNewFiles()
       const image_urls = [...existingUrls, ...uploadedUrls]
 
-      const { error } = await supabase
+      const payload = {
+        ...form,
+        price: parseFloat(form.price),
+        discount_pct: parseFloat(form.discount_pct),
+        image_urls,
+      }
+
+      const isMissingDescriptionColumn = (message: string) => {
+        const m = message.toLowerCase()
+        return m.includes('description') && (m.includes('does not exist') || m.includes('unknown column') || m.includes('column'))
+      }
+
+      let { error } = await supabase
         .from('products')
-        .update({
-          ...form,
-          price: parseFloat(form.price),
-          discount_pct: parseFloat(form.discount_pct),
-          image_urls,
-        })
+        .update(payload)
         .eq('id', productId)
+
+      // If DB column `description` is not migrated yet, retry without it.
+      if (error && isMissingDescriptionColumn(error.message)) {
+        const { description: droppedDesc, ...payloadWithoutDesc } = payload
+        void droppedDesc
+        ;({ error } = await supabase
+          .from('products')
+          .update(payloadWithoutDesc)
+          .eq('id', productId))
+      }
 
       newPreviews.forEach((url) => URL.revokeObjectURL(url))
 

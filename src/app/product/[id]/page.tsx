@@ -61,7 +61,8 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
     .single()
 
   // If `description` column doesn't exist yet, keep product page working.
-  let resolvedProduct = product
+  // We cast because the first query includes `description`, while the fallback query omits it.
+  let resolvedProduct: any = product
   if (!resolvedProduct && productError && /description/i.test(productError.message)) {
     const { data: productWithoutDesc } = await supabase
       .from('products')
