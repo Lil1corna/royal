@@ -12,6 +12,7 @@ export default function InviteUser() {
   const [email, setEmail] = useState('')
   const [roleDbKey, setRoleDbKey] = useState(ROLES.ADMIN.key)
   const [done, setDone] = useState(false)
+  const [updatedExisting, setUpdatedExisting] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
   const [openRolePicker, setOpenRolePicker] = useState(false)
   const { lang } = useLang()
@@ -58,12 +59,18 @@ export default function InviteUser() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, role: roleDbKey }),
     })
-    const data = (await res.json()) as { ok?: boolean; error?: string }
+    const data = (await res.json()) as { ok?: boolean; error?: string; updated?: boolean }
 
     if (!res.ok || !data.ok) {
       showToast('error', 'Xeta: ' + (data.error || 'Invite gonderilmedi'))
     } else {
-      showToast('success', 'Davet mektubu gonderildi')
+      setUpdatedExisting(Boolean(data.updated))
+      showToast(
+        'success',
+        data.updated
+          ? 'Rol yeniləndi'
+          : 'Davet mektubu gonderildi'
+      )
       setDone(true)
     }
     setLoading(false)
@@ -124,11 +131,19 @@ export default function InviteUser() {
     return (
       <main className="p-8 max-w-md mx-auto text-center">
         <div className="text-5xl mb-4">✓</div>
-        <h2 className="text-2xl font-bold mb-2 text-white">Davet gonderildi!</h2>
+        <h2 className="text-2xl font-bold mb-2 text-white">
+          {updatedExisting ? 'Rol yeniləndi!' : 'Davet gonderildi!'}
+        </h2>
         <p className="text-neutral-300 mb-6">{email} — {selectedRole.label[lang]}</p>
-        <p className="text-sm text-neutral-400 mb-6">
-          Shexse email gelecek. Ilk girisden sonra rol avtomatik teyin olunacaq.
-        </p>
+        {updatedExisting ? (
+          <p className="text-sm text-neutral-400 mb-6">
+            Qeydiyyatdan keçmiş istifadəçiyə rol dərhal tətbiq edildi.
+          </p>
+        ) : (
+          <p className="text-sm text-neutral-400 mb-6">
+            Şəxsin e-mailinə dəvət məktubu göndəriləcək. İlk girişdən sonra rol avtomatik təyin olunacaq.
+          </p>
+        )}
         <Link href="/admin/users" className="ds-btn-primary inline-block px-6 py-2">
           Geri qayit
         </Link>

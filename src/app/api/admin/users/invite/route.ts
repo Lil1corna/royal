@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or role' }, { status: 400 })
     }
 
+    const roleKey = normalizeDbRoleToRoleKey(role)
+    const normalizedRoleDbKey = ROLES[roleKey].key
+
     const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -79,12 +82,56 @@ export async function POST(request: NextRequest) {
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
+    // If the user already exists in our app (users table), update role immediately.
+    const { data: existingUserRows, error: existingUsersError } = await admin
+      .from('users')
+      .select('id')
+      .eq('email', email)
+
+    if (existingUsersError) {
+      return NextResponse.json({ error: existingUsersError.message }, { status: 400 })
+    }
+
+    const existingUserId = existingUserRows?.[0]?.id
+    if (existingUserId) {
+      const { error: updateError } = await admin
+        .from('users')
+        .update({ role: normalizedRoleDbKey })
+        .eq('id', existingUserId)
+
+      if (updateError) {
+        return NextResponse.json({ error: updateError.message }, { status: 400 })
+      }
+
+      // Mark any pending invite as accepted so auth callback won't override it.
+      const { error: pendingError } = await admin
+        .from('pending_staff_invites')
+        .upsert(
+          {
+            email,
+            role: normalizedRoleDbKey,
+            invited_by: user.id,
+            status: 'accepted',
+            accepted_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: 'email' }
+        )
+
+      if (pendingError) {
+        return NextResponse.json({ error: pendingError.message }, { status: 400 })
+      }
+
+      return NextResponse.json({ ok: true, updated: true })
+    }
+
+    // Otherwise: send an invite email; role will be applied after first auth callback.
     const baseUrl = getBaseUrl(request)
     const redirectTo = `${baseUrl}/auth/callback?next=/account`
 
     const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
       redirectTo,
-      data: { invited_role: role },
+      data: { invited_role: normalizedRoleDbKey },
     })
 
     if (inviteError) {
@@ -96,7 +143,7 @@ export async function POST(request: NextRequest) {
       .upsert(
         {
           email,
-          role,
+          role: normalizedRoleDbKey,
           invited_by: user.id,
           status: 'pending',
           accepted_at: null,
@@ -109,7 +156,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: pendingError.message }, { status: 400 })
     }
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, updated: false })
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'Unexpected error' },
