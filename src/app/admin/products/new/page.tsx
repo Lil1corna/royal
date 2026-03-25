@@ -200,18 +200,26 @@ export default function NewProduct() {
             <div className="grid grid-cols-4 gap-2">
               {previews.map((src, i) => (
                 <div key={i} className="relative group">
-                  <Image src={src} alt={`Product preview ${i + 1}`} width={200} height={200} className="w-full aspect-square object-cover rounded-lg" />
-                  <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 rounded-lg flex items-center justify-center gap-1 transition-opacity">
+                      <Image
+                        src={src}
+                        alt={`Product preview ${i + 1}`}
+                        width={200}
+                        height={200}
+                        className="w-full aspect-square object-cover rounded-lg"
+                        sizes="(max-width: 640px) 25vw, 200px"
+                        loading="lazy"
+                      />
+                  <div className="absolute inset-0 bg-black bg-opacity-40 opacity-100 md:opacity-0 md:group-hover:opacity-100 rounded-lg flex items-center justify-center gap-1 transition-opacity">
                     <button type="button" onClick={() => moveImage(i, 'left')}
-                      className="bg-white text-black w-7 h-7 rounded-full text-sm">
+                      className="bg-white text-black w-11 h-11 min-h-[44px] min-w-[44px] rounded-full text-sm">
                       {'<'}
                     </button>
                     <button type="button" onClick={() => removeImage(i)}
-                      className="bg-red-500 text-white w-7 h-7 rounded-full text-sm">
+                      className="bg-red-500 text-white w-11 h-11 min-h-[44px] min-w-[44px] rounded-full text-sm">
                       X
                     </button>
                     <button type="button" onClick={() => moveImage(i, 'right')}
-                      className="bg-white text-black w-7 h-7 rounded-full text-sm">
+                      className="bg-white text-black w-11 h-11 min-h-[44px] min-w-[44px] rounded-full text-sm">
                       {'>'}
                     </button>
                   </div>

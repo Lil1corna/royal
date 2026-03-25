@@ -153,6 +153,8 @@ export default function AccountOrdersSection({
                     alt={item.products?.name_ru || 'Product image'}
                     width={40}
                     height={40}
+                    sizes="40px"
+                    loading="lazy"
                     className="w-10 h-10 object-cover rounded-lg"
                   />
                 )}

@@ -33,7 +33,7 @@ export default function Footer() {
       className="mt-auto border-t border-white/5 bg-[rgba(5,13,26,0.8)] text-white"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 py-8 sm:py-10 lg:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           <div>
             <h3 className="mb-3 text-lg font-bold text-white">
               Royal<span className="text-[#c9a84c]">Az</span>

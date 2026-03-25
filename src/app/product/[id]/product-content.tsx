@@ -45,7 +45,7 @@ export default function ProductContent({
       </Link>
       <p className="text-sm text-white/60 mb-1">{cat}</p>
       <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-8 font-serif">{name}</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
         <ProductGallery images={product.image_urls || []} />
         <SizeSelector
           sizes={sizes}

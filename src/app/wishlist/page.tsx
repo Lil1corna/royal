@@ -24,26 +24,66 @@ export default function WishlistPage() {
   const tr = translations
   const { ids, toggle } = useWishlist()
   const [products, setProducts] = useState<Product[]>([])
+  const [loadingProducts, setLoadingProducts] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
-    if (ids.length === 0) return
-    void supabase
-      .from('products')
-      .select('id, name_az, name_ru, name_en, price, discount_pct, image_urls, in_stock')
-      .in('id', ids)
-      .then(({ data }) => {
+    if (ids.length === 0) {
+      setProducts([])
+      setLoadError(null)
+      setLoadingProducts(false)
+      return
+    }
+
+    let cancelled = false
+    setLoadingProducts(true)
+    setLoadError(null)
+
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('id, name_az, name_ru, name_en, price, discount_pct, image_urls, in_stock')
+          .in('id', ids)
+
+        if (error) throw error
+
         const order = new Map(ids.map((id, i) => [id, i]))
         const list = (data || []) as Product[]
         list.sort((a, b) => (order.get(a.id) ?? 99) - (order.get(b.id) ?? 99))
-        setProducts(list)
-      })
+
+        if (!cancelled) setProducts(list)
+      } catch (e) {
+        if (cancelled) return
+        const msg = e instanceof Error ? e.message : String(e)
+        setLoadError(msg)
+      } finally {
+        if (!cancelled) setLoadingProducts(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
   }, [ids, supabase])
 
-  if (ids.length > 0 && products.length === 0) {
+  if (ids.length > 0 && loadingProducts) {
     return (
       <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto text-center text-white/60">
         {tr.loading[lang]}…
+      </main>
+    )
+  }
+
+  if (ids.length > 0 && loadError) {
+    return (
+      <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto text-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">{tr.error[lang]}</h1>
+        <p className="text-sm text-white/60 mb-4">{loadError}</p>
+        <Link href="/" className="text-[#e8c97a] font-medium hover:underline">
+          {tr.backToCatalog[lang]}
+        </Link>
       </main>
     )
   }
@@ -68,7 +108,7 @@ export default function WishlistPage() {
         </Link>
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{tr.wishlist[lang]}</h1>
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {products.map((p, i) => {
           const name =
             lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
@@ -90,7 +130,15 @@ export default function WishlistPage() {
                 className="shrink-0 relative w-24 h-24 rounded-lg overflow-hidden bg-white/5 border border-white/10"
               >
                 {img ? (
-                  <Image src={img} alt={name} fill className="object-cover" sizes="96px" />
+                  <Image
+                    src={img}
+                    alt={name}
+                    fill
+                    className="object-cover"
+                    sizes="96px"
+                    priority={i === 0}
+                    loading={i === 0 ? undefined : 'lazy'}
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-2xl">🛏</div>
                 )}

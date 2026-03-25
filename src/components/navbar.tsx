@@ -1,6 +1,6 @@
 'use client'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useLang, translations } from '@/context/lang'
 import { useCart } from '@/context/cart'
@@ -140,6 +140,15 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const lowPower = useLowPowerMotion()
 
+  useEffect(() => {
+    if (!mobileOpen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [mobileOpen])
+
   return (
     <motion.nav
       initial={lowPower ? false : { y: -12, opacity: 0 }}
@@ -171,14 +180,14 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
           )}
         </Link>
 
-        <div className="hidden lg:flex items-center gap-1.5 flex-wrap justify-end">
+        <div className="hidden md:flex items-center gap-1.5 flex-wrap justify-end">
           <NavLinks userEmail={userEmail} />
         </div>
 
         <motion.button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white shadow-sm lg:hidden"
+        className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white shadow-sm md:hidden"
         aria-label="Menu"
         whileTap={lowPower ? undefined : { scale: 0.95 }}
       >
@@ -192,7 +201,7 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
         {mobileOpen && (
           <>
             <motion.div
-              className={`fixed inset-0 z-40 bg-black/45 lg:hidden ${lowPower ? '' : 'backdrop-blur-sm'}`}
+              className={`fixed inset-0 z-[99] bg-black/45 md:hidden ${lowPower ? '' : 'backdrop-blur-sm'}`}
               onClick={() => setMobileOpen(false)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -200,7 +209,7 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
               transition={{ duration: lowPower ? 0.12 : 0.2 }}
             />
             <motion.div
-              className={`fixed right-0 top-0 z-50 flex h-full w-[min(100%,20rem)] flex-col gap-5 border-l border-white/10 bg-[rgba(5,13,26,0.95)] p-5 text-white shadow-2xl lg:hidden ${lowPower ? '' : 'backdrop-blur-xl'}`}
+              className={`fixed right-0 top-0 z-[100] flex h-full w-[min(100%,20rem)] flex-col gap-5 border-l border-white/10 bg-[rgba(5,13,26,0.95)] p-5 text-white shadow-2xl md:hidden ${lowPower ? '' : 'backdrop-blur-xl'}`}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}

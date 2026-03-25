@@ -20,17 +20,19 @@
     font-family: var(--font-jost), system-ui, sans-serif;
     color: rgba(255, 255, 255, 0.85);
     background: #050d1a;
+    text-size-adjust: 100%;
   }
 }
 
 @layer components {
   /* Aurora Background */
   .aurora-container {
-    position: absolute;
+    position: fixed;
     inset: 0;
     background: #050d1a;
     overflow: hidden;
-    z-index: 0;
+    z-index: -1;
+    pointer-events: none;
   }
 
   /* BASE DEEP BACKGROUND */

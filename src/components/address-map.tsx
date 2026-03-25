@@ -31,6 +31,7 @@ export default function AddressMap({
   const [search, setSearch] = useState('')
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([])
   const [loading, setLoading] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [selected, setSelected] = useState('')
   const onSelectRef = useRef(onSelect)
   onSelectRef.current = onSelect
@@ -66,12 +67,24 @@ export default function AddressMap({
       })
       map.on('click', async (e: LeafletMouseEvent) => {
         const { lat, lng } = e.latlng
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=az`
-        )
-        const data = await res.json()
-        const addr = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`
-        placeMarker(lat, lng, addr, map, L, icon)
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=az`
+          )
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          const addr = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+          placeMarker(lat, lng, addr, map, L, icon)
+        } catch {
+          if (cancelled) return
+          setFetchError(
+            lang === 'ru'
+              ? 'Не удалось получить адрес по клику на карте'
+              : lang === 'en'
+                ? 'Failed to get address from map click'
+                : 'Xəritədə klikdən ünvan alınmadı'
+          )
+        }
       })
       mapRef.current = { map, L, icon }
 
@@ -101,12 +114,27 @@ export default function AddressMap({
   const handleSearch = async () => {
     if (!search.trim()) return
     setLoading(true)
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(search + ' Baku Azerbaijan')}&format=json&limit=5&accept-language=az`
-    )
-    const data = (await res.json()) as SuggestionItem[]
-    setSuggestions(data)
-    setLoading(false)
+    setFetchError(null)
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(search + ' Baku Azerbaijan')}&format=json&limit=5&accept-language=az`
+      )
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = (await res.json()) as SuggestionItem[]
+      setSuggestions(data)
+    } catch {
+      setFetchError(
+        lang === 'ru'
+          ? 'Не удалось выполнить поиск адреса'
+          : lang === 'en'
+            ? 'Failed to search address'
+            : 'Ünvan axtarışı alınmadı'
+      )
+      setSuggestions([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const selectSuggestion = (item: SuggestionItem) => {
@@ -136,6 +164,11 @@ export default function AddressMap({
           {loading ? '...' : tr.mapSearchBtn[lang]}
         </button>
       </div>
+      {fetchError && (
+        <p className="text-xs text-red-300/90 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+          {fetchError}
+        </p>
+      )}
       {suggestions.length > 0 && (
         <div className="border border-white/10 bg-white/5 rounded-lg max-h-40 overflow-y-auto">
           {suggestions.map((s, i) => (

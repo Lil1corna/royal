@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/context/cart'
@@ -48,6 +48,7 @@ export default function CartPage() {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('courier')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   /** Сохранённый в профиле адрес (если есть) */
   const [profileSaved, setProfileSaved] = useState<{
     line: string
@@ -84,9 +85,16 @@ export default function CartPage() {
   const grandTotal = subtotal + shippingFee
 
   const showToast = (type: 'success' | 'error', message: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
     setToast({ type, message })
-    setTimeout(() => setToast(null), 2600)
+    toastTimerRef.current = setTimeout(() => setToast(null), 2600)
   }
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    }
+  }, [])
 
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -199,7 +207,7 @@ export default function CartPage() {
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">{tr.cart[lang]}</h1>
       </div>
       <ToastMessage toast={toast} className="mb-5" />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
         <div>
           <div className="flex flex-col gap-3 mb-6">
             {items.map((item, i) => (
@@ -218,7 +226,8 @@ export default function CartPage() {
                     height={80}
                     className="w-20 h-20 object-cover rounded-lg shrink-0"
                     sizes="80px"
-                    loading="lazy"
+                    priority={i === 0}
+                    loading={i === 0 ? undefined : 'lazy'}
                   />
                 )}
                 <div className="flex-1 min-w-0">

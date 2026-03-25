@@ -1,12 +1,14 @@
 'use client'
 import Image from 'next/image'
 import { useSpring, useTransform, motion, useMotionValue } from 'framer-motion'
-import { useCallback, useRef, useState, type MouseEvent } from 'react'
+import { useCallback, useRef, useState, type MouseEvent, type TouchEvent } from 'react'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 export default function ProductGallery({ images }: { images: string[] }) {
   const [active, setActive] = useState(0)
   const mainRef = useRef<HTMLDivElement>(null)
+  const touchStartX = useRef<number | null>(null)
+  const touchStartY = useRef<number | null>(null)
   const lowPower = useLowPowerMotion()
 
   const mx = useMotionValue(0.5)
@@ -32,6 +34,36 @@ export default function ProductGallery({ images }: { images: string[] }) {
     my.set(0.5)
   }, [mx, my])
 
+  const onTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+    const t = e.touches[0]
+    touchStartX.current = t.clientX
+    touchStartY.current = t.clientY
+  }
+
+  const onTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
+    const startX = touchStartX.current
+    const startY = touchStartY.current
+    touchStartX.current = null
+    touchStartY.current = null
+
+    if (startX == null || startY == null) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - startX
+    const dy = t.clientY - startY
+
+    const absDx = Math.abs(dx)
+    const absDy = Math.abs(dy)
+    const threshold = 40
+
+    // Detect horizontal swipe with enough distance and not too much vertical movement.
+    if (absDx < threshold || absDx < absDy) return
+
+    setActive((prev) => {
+      if (dx < 0) return Math.min(prev + 1, images.length - 1)
+      return Math.max(prev - 1, 0)
+    })
+  }
+
   if (images.length === 0) {
     return (
       <div className="aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/30 text-8xl">
@@ -48,6 +80,8 @@ export default function ProductGallery({ images }: { images: string[] }) {
         style={{ perspective: lowPower ? undefined : 1100 }}
         onMouseMove={lowPower ? undefined : onMove}
         onMouseLeave={lowPower ? undefined : onLeave}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
       >
         <motion.div
           className="h-full w-full will-change-transform"
@@ -70,6 +104,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
               unoptimized
               priority={active === 0}
+              loading={active === 0 ? undefined : 'lazy'}
             />
           </div>
         </motion.div>

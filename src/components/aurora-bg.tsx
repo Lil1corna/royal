@@ -2,7 +2,10 @@
 
 export default function AuroraBg({ className }: { className?: string }) {
   return (
-    <div className={`aurora-container ${className || ''}`} aria-hidden="true">
+    <div
+      className={`aurora-container fixed inset-0 z-[-1] pointer-events-none ${className || ''}`}
+      aria-hidden="true"
+    >
       <div className="aurora-blob blob-1" />
       <div className="aurora-blob blob-2" />
       <div className="aurora-blob blob-3" />

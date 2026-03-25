@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -67,6 +67,7 @@ export default function AccountSettings({
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [avatarChecking, setAvatarChecking] = useState(false)
   const [avatarReachable, setAvatarReachable] = useState<boolean | null>(null)
 
@@ -89,11 +90,18 @@ export default function AccountSettings({
   }, [previewAvatar, avatarValid])
 
   const showToast = (type: 'success' | 'error', message: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
     setToast({ type, message })
-    setTimeout(() => setToast(null), 2800)
+    toastTimerRef.current = setTimeout(() => setToast(null), 2800)
   }
 
   const fullAddressLine = [address.trim(), addressExtra.trim()].filter(Boolean).join(', ')
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    }
+  }, [])
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -235,6 +243,8 @@ export default function AccountSettings({
               alt="avatar preview"
               width={64}
               height={64}
+              sizes="64px"
+              priority
               className="w-16 h-16 rounded-full object-cover border"
               referrerPolicy="no-referrer"
             />

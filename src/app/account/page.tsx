@@ -54,7 +54,15 @@ export default async function AccountPage() {
 
       <div className="card-soft p-6 mb-8 flex items-center gap-4 border border-white/10">
         {avatarUrl ? (
-          <Image src={avatarUrl} alt="avatar" width={56} height={56} className="w-14 h-14 rounded-full object-cover border border-white/10" />
+          <Image
+            src={avatarUrl}
+            alt="avatar"
+            width={56}
+            height={56}
+            sizes="56px"
+            priority
+            className="w-14 h-14 rounded-full object-cover border border-white/10"
+          />
         ) : (
           <div className="w-14 h-14 bg-[#050d1a] text-white rounded-full flex items-center justify-center text-xl font-bold border border-white/10">
             {user.email?.[0].toUpperCase()}

@@ -211,14 +211,22 @@ export default function EditProduct() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {existingUrls.map((src, i) => (
                   <div key={`${src}-${i}`} className="relative group border border-white/20 rounded-lg overflow-hidden bg-black/40">
-                    <Image src={src} alt={`Existing product image ${i + 1}`} width={200} height={200} className="w-full aspect-square object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
+                    <Image
+                      src={src}
+                      alt={`Existing product image ${i + 1}`}
+                      width={200}
+                      height={200}
+                      className="w-full aspect-square object-cover"
+                      sizes="(max-width: 640px) 25vw, 200px"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
                       <button type="button" onClick={() => moveExisting(i, 'left')}
-                        className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === 0}>{'<'}</button>
+                        className="bg-white/90 text-black w-11 h-11 min-h-[44px] min-w-[44px] rounded-full text-sm hover:bg-white" disabled={i === 0}>{'<'}</button>
                       <button type="button" onClick={() => removeExisting(i)}
-                        className="bg-red-500 text-white w-8 h-8 rounded-full text-sm hover:bg-red-600">X</button>
+                        className="bg-red-500 text-white w-11 h-11 min-h-[44px] min-w-[44px] rounded-full text-sm hover:bg-red-600">X</button>
                       <button type="button" onClick={() => moveExisting(i, 'right')}
-                        className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === existingUrls.length - 1}>{'>'}</button>
+                        className="bg-white/90 text-black w-11 h-11 min-h-[44px] min-w-[44px] rounded-full text-sm hover:bg-white" disabled={i === existingUrls.length - 1}>{'>'}</button>
                     </div>
                     {i === 0 && (
                       <span className="absolute top-1 left-1 bg-amber-500 text-black text-[10px] px-1 rounded font-semibold">Ana</span>
@@ -243,14 +251,22 @@ export default function EditProduct() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {newPreviews.map((src, i) => (
                   <div key={src} className="relative group border border-white/20 rounded-lg overflow-hidden bg-black/40">
-                    <Image src={src} alt={`New product image ${i + 1}`} width={200} height={200} className="w-full aspect-square object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
+                    <Image
+                      src={src}
+                      alt={`New product image ${i + 1}`}
+                      width={200}
+                      height={200}
+                      className="w-full aspect-square object-cover"
+                      sizes="(max-width: 640px) 25vw, 200px"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
                       <button type="button" onClick={() => moveNew(i, 'left')}
-                        className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === 0}>{'<'}</button>
+                        className="bg-white/90 text-black w-11 h-11 min-h-[44px] min-w-[44px] rounded-full text-sm hover:bg-white" disabled={i === 0}>{'<'}</button>
                       <button type="button" onClick={() => removeNew(i)}
-                        className="bg-red-500 text-white w-8 h-8 rounded-full text-sm hover:bg-red-600">X</button>
+                        className="bg-red-500 text-white w-11 h-11 min-h-[44px] min-w-[44px] rounded-full text-sm hover:bg-red-600">X</button>
                       <button type="button" onClick={() => moveNew(i, 'right')}
-                        className="bg-white/90 text-black w-8 h-8 rounded-full text-sm hover:bg-white" disabled={i === newPreviews.length - 1}>{'>'}</button>
+                        className="bg-white/90 text-black w-11 h-11 min-h-[44px] min-w-[44px] rounded-full text-sm hover:bg-white" disabled={i === newPreviews.length - 1}>{'>'}</button>
                     </div>
                   </div>
                 ))}

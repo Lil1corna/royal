@@ -25,19 +25,24 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="az" className={`${jost.variable} ${cormorant.variable} ${dmSans.variable} overflow-x-hidden`}>
+    <html
+      lang="az"
+      className={`${jost.variable} ${cormorant.variable} ${dmSans.variable} overflow-x-hidden scroll-smooth`}
+    >
       <head>
         <link
           rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-transparent antialiased overflow-x-hidden">
+      <body className="min-h-screen flex flex-col bg-transparent antialiased overflow-x-hidden isolate">
         <Providers>
-          <AuroraBg className="fixed" />
-          <NavbarWrapper />
-          <PageTransition className="flex-1">{children}</PageTransition>
-          <Footer />
+          <AuroraBg />
+          <div className="relative z-[1] flex flex-col min-h-screen">
+            <NavbarWrapper />
+            <PageTransition className="flex-1">{children}</PageTransition>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>
