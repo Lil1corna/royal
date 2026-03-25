@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
@@ -24,6 +24,30 @@ export default function EditUser() {
   const [editorRoleKey, setEditorRoleKey] = useState<RoleKey | null>(null)
   const [toast, setToast] = useState<ToastState | null>(null)
   const { lang } = useLang()
+
+  const roleButtonRef = useRef<HTMLButtonElement>(null)
+  const roleDropdownRef = useRef<HTMLDivElement>(null)
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null)
+
+  const updateDropdownPosition = () => {
+    const btn = roleButtonRef.current
+    if (!btn) return
+
+    const rect = btn.getBoundingClientRect()
+    const gap = 8
+    const maxHeight = 288 // 18rem @ 16px root
+
+    let top = rect.bottom + gap
+    if (top + maxHeight > window.innerHeight - gap) {
+      top = Math.max(gap, rect.top - gap - maxHeight)
+    }
+
+    setDropdownPos({
+      top,
+      left: rect.left,
+      width: rect.width,
+    })
+  }
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ type, message })
@@ -65,6 +89,32 @@ export default function EditUser() {
     }
     loadEditorRole()
   }, [supabase])
+
+  useLayoutEffect(() => {
+    if (!openRolePicker) return
+    updateDropdownPosition()
+
+    const onResizeOrScroll = () => updateDropdownPosition()
+    window.addEventListener('resize', onResizeOrScroll)
+    window.addEventListener('scroll', onResizeOrScroll, true)
+    return () => {
+      window.removeEventListener('resize', onResizeOrScroll)
+      window.removeEventListener('scroll', onResizeOrScroll, true)
+    }
+  }, [openRolePicker])
+
+  useEffect(() => {
+    if (!openRolePicker) return
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as Node | null
+      if (!t) return
+      if (roleButtonRef.current?.contains(t)) return
+      if (roleDropdownRef.current?.contains(t)) return
+      setOpenRolePicker(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [openRolePicker])
 
   const roleKeys = Object.keys(ROLES) as RoleKey[]
   const targetRoleKey = getRoleKeyFromRoleDbKey(roleDbKey)
@@ -115,6 +165,7 @@ export default function EditUser() {
               onClick={() => setOpenRolePicker((v) => !v)}
               aria-expanded={openRolePicker}
               disabled={!canAssign}
+              ref={roleButtonRef}
             >
               <div className="flex flex-col items-start min-w-0">
                 <div className="font-bold text-white/90 truncate">
@@ -128,7 +179,20 @@ export default function EditUser() {
             </button>
 
             {openRolePicker && canAssign && (
-              <div className="absolute left-0 right-0 mt-2 z-[200] bg-[#050d1a] backdrop-blur-0 border border-white/10 rounded-xl p-2 max-h-[18rem] overflow-auto">
+              <div
+                ref={roleDropdownRef}
+                className="z-[200] bg-[#050d1a] backdrop-blur-0 border border-white/10 rounded-xl p-2 max-h-[18rem] overflow-auto shadow-[0_25px_80px_rgba(0,0,0,0.65)]"
+                style={
+                  dropdownPos
+                    ? {
+                        position: 'fixed',
+                        top: dropdownPos.top,
+                        left: dropdownPos.left,
+                        width: dropdownPos.width,
+                      }
+                    : undefined
+                }
+              >
                 {roleKeys.map((rk) => {
                   const role = ROLES[rk]
                   const active = rk === targetRoleKey
