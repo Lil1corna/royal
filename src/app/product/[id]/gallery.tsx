@@ -3,13 +3,15 @@ import Image from 'next/image'
 import { useSpring, useTransform, motion, useMotionValue } from 'framer-motion'
 import { useCallback, useRef, useState, type MouseEvent, type TouchEvent } from 'react'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 export default function ProductGallery({ images }: { images: string[] }) {
   const [active, setActive] = useState(0)
   const mainRef = useRef<HTMLDivElement>(null)
   const touchStartX = useRef<number | null>(null)
   const touchStartY = useRef<number | null>(null)
-  const lowPower = useLowPowerMotion()
+  const isMobile = useIsMobile()
+  const lowPower = useLowPowerMotion() || isMobile
 
   const mx = useMotionValue(0.5)
   const my = useMotionValue(0.5)

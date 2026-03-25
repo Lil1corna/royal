@@ -16,6 +16,7 @@ import {
   type DeliveryMode,
 } from '@/lib/delivery'
 import { buildProfileAddressLine, metaCoord } from '@/lib/profile-address'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
 
@@ -60,6 +61,7 @@ export default function CartPage() {
   const [mapResetKey, setMapResetKey] = useState(0)
   const router = useRouter()
   const supabase = createClient()
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data: { user } }) => {
@@ -215,7 +217,11 @@ export default function CartPage() {
                 key={i}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.16, delay: i * 0.03 }}
+                transition={
+                  isMobile
+                    ? { duration: 0.15, ease: 'easeOut', delay: 0 }
+                    : { duration: 0.16, delay: i * 0.03 }
+                }
                 className="flex gap-4 border rounded-xl p-4 card-soft items-center"
               >
                 {item.image && (

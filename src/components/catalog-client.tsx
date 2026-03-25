@@ -7,6 +7,7 @@ import { useLang, translations } from '@/context/lang'
 import CinematicHero from '@/components/cinematic-hero'
 import AboutSection from '@/components/about-section'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const ITEMS_PER_PAGE = 12
 
@@ -64,7 +65,23 @@ const catalogGridItemLight = {
   },
 }
 
-function ParallaxProductCard({
+const catalogGridContainerMobile = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] as const, staggerChildren: 0 },
+  },
+}
+
+const catalogGridItemMobile = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] as const },
+  },
+}
+
+function ParallaxProductCardDesktop({
   p,
   lang,
   tr,
@@ -196,12 +213,143 @@ function ParallaxProductCard({
   )
 }
 
+function ParallaxProductCardMobile({
+  p,
+  lang,
+  tr,
+  lowPower,
+  gridItemVariants,
+  priority = false,
+}: {
+  p: Product
+  lang: 'az' | 'ru' | 'en'
+  tr: typeof translations
+  lowPower: boolean
+  gridItemVariants: Variants
+  priority?: boolean
+}) {
+  const name = lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
+  const cat = tr.categories[p.category]?.[lang] || p.category
+  const discountedPrice =
+    p.discount_pct > 0 ? (p.price * (1 - p.discount_pct / 100)).toFixed(0) : null
+
+  const [imgFailed, setImgFailed] = useState(false)
+  const primaryImage = p.image_urls?.[0]?.trim()
+  const showProductImage = Boolean(primaryImage) && !imgFailed
+
+  return (
+    <motion.div
+      variants={gridItemVariants}
+      whileHover={
+        lowPower
+          ? undefined
+          : {
+              y: -6,
+              transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const },
+            }
+      }
+    >
+      <Link
+        href={'/product/' + p.id}
+        className={[
+          'group block ds-card-glass transform-gpu transition-shadow transition-transform duration-300',
+          !p.in_stock ? 'opacity-60' : '',
+        ].join(' ')}
+      >
+        <motion.div
+          className="relative aspect-[4/3] overflow-hidden bg-[rgba(255,255,255,0.03)]"
+          whileHover={lowPower ? undefined : { scale: 1.035 }}
+          transition={{ duration: 0.35 }}
+        >
+          <motion.div className="absolute inset-0" style={{ y: 0 }}>
+            {showProductImage ? (
+              <Image
+                src={primaryImage!}
+                alt={name}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className={`object-cover scale-110 transition-transform duration-700 ease-out ${
+                  lowPower ? '' : 'group-hover:scale-[1.18]'
+                }`}
+                style={{
+                  filter: 'brightness(0.95) contrast(1.05)',
+                }}
+                unoptimized
+                priority={priority}
+                onError={() => setImgFailed(true)}
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-5xl text-neutral-300">
+                🛏
+              </div>
+            )}
+          </motion.div>
+
+          <div
+            className="product-image-vignette absolute inset-0 pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse 90% 90% at 50% 50%,
+                transparent 50%,
+                rgba(5,13,26,0.35) 100%)`,
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#061226]/80 via-transparent to-transparent pointer-events-none" />
+          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(245,158,11,0.22),transparent_55%),radial-gradient(circle_at_70%_10%,rgba(255,255,255,0.14),transparent_45%)]" />
+          {!p.in_stock && (
+            <div className="absolute top-3 right-3 bg-[rgba(220,53,69,0.1)] border border-[rgba(220,53,69,0.2)] text-[rgba(255,100,100,0.8)] text-[10px] font-semibold px-2 py-1 rounded-full z-10">
+              {tr.outOfStock[lang]}
+            </div>
+          )}
+          {p.discount_pct > 0 && p.in_stock && (
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-[#c9a84c] to-[#e8c97a] text-[#050d1a] text-[10px] font-extrabold px-2 py-1 rounded-full z-10">
+              -{p.discount_pct}%
+            </div>
+          )}
+        </motion.div>
+
+        <motion.div
+          className="border-t border-[rgba(255,255,255,0.08)] bg-[rgba(5,13,26,0.6)] backdrop-blur-sm p-5"
+          style={{ y: 0 }}
+        >
+          <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)] mb-2">
+            {cat}
+          </p>
+          <h2 className="font-serif text-[20px] font-semibold mb-2 text-white group-hover:text-[#e8c97a] transition-colors">
+            {name}
+          </h2>
+          <div className="flex items-center gap-2">
+            {discountedPrice ? (
+              <>
+                <span className="font-serif text-[26px] font-bold text-[#e8c97a]">
+                  {discountedPrice} AZN
+                </span>
+                <span className="text-white/40 text-sm line-through">{p.price} AZN</span>
+              </>
+            ) : (
+              <span className="font-serif text-[26px] font-bold text-[#e8c97a]">{p.price} AZN</span>
+            )}
+          </div>
+        </motion.div>
+      </Link>
+    </motion.div>
+  )
+}
+
 export default function CatalogClient({ products }: { products: Product[] }) {
   const { lang } = useLang()
   const tr = translations
-  const lowPower = useLowPowerMotion()
-  const gridContainerVariants = lowPower ? catalogGridContainerLight : catalogGridContainerHeavy
-  const gridItemVariants = lowPower ? catalogGridItemLight : catalogGridItemHeavy
+  const isMobile = useIsMobile()
+  const lowPower = useLowPowerMotion() || isMobile
+  const gridContainerVariants = isMobile
+    ? catalogGridContainerMobile
+    : lowPower
+      ? catalogGridContainerLight
+      : catalogGridContainerHeavy
+  const gridItemVariants = isMobile
+    ? catalogGridItemMobile
+    : lowPower
+      ? catalogGridItemLight
+      : catalogGridItemHeavy
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [page, setPage] = useState(1)
@@ -234,10 +382,12 @@ export default function CatalogClient({ products }: { products: Product[] }) {
       <div className="w-full bg-[#061226] py-12 sm:py-16 md:py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 md:px-8 lg:px-16 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            whileInView={isMobile ? undefined : { opacity: 1, y: 0 }}
+            viewport={isMobile ? undefined : { once: true, amount: 0.3 }}
+            transition={
+              isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
+            }
           >
             <h2 className="font-serif text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold text-white mb-4 sm:mb-6">
               {lang === 'az' ? 'Keyfiyyət və Rahatlıq' : lang === 'ru' ? 'Качество и Комфорт' : 'Quality & Comfort'}
@@ -298,17 +448,29 @@ export default function CatalogClient({ products }: { products: Product[] }) {
             initial="hidden"
             animate="show"
           >
-            {paginatedProducts.map((p, idx) => (
-              <ParallaxProductCard
-                key={p.id}
-                p={p}
-                lang={lang}
-                tr={tr}
-                lowPower={lowPower}
-                gridItemVariants={gridItemVariants}
-                priority={idx < 4}
-              />
-            ))}
+            {paginatedProducts.map((p, idx) =>
+              isMobile ? (
+                <ParallaxProductCardMobile
+                  key={p.id}
+                  p={p}
+                  lang={lang}
+                  tr={tr}
+                  lowPower={lowPower}
+                  gridItemVariants={gridItemVariants}
+                  priority={idx < 4}
+                />
+              ) : (
+                <ParallaxProductCardDesktop
+                  key={p.id}
+                  p={p}
+                  lang={lang}
+                  tr={tr}
+                  lowPower={lowPower}
+                  gridItemVariants={gridItemVariants}
+                  priority={idx < 4}
+                />
+              )
+            )}
           </motion.div>
         </div>
       </div>

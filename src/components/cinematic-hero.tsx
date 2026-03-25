@@ -1,8 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 export default function CinematicHero() {
+  const isMobile = useIsMobile()
+
   return (
     <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-[#050d1a]">
       {/* Animated Aurora Blobs Behind Image */}
@@ -14,15 +17,12 @@ export default function CinematicHero() {
             left: '15%',
             top: '20%',
           }}
-          animate={{
-            x: [0, 30, 0],
-            y: [0, -20, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          animate={isMobile ? { x: 0, y: 0 } : { x: [0, 30, 0], y: [0, -20, 0] }}
+          transition={
+            isMobile
+              ? { duration: 0.15, ease: 'easeOut' }
+              : { duration: 20, repeat: Infinity, ease: 'easeInOut' }
+          }
         />
         <motion.div
           className="absolute w-[500px] h-[500px] rounded-full blur-[80px] opacity-15"
@@ -31,15 +31,12 @@ export default function CinematicHero() {
             right: '10%',
             top: '30%',
           }}
-          animate={{
-            x: [0, -25, 0],
-            y: [0, 25, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          animate={isMobile ? { x: 0, y: 0 } : { x: [0, -25, 0], y: [0, 25, 0] }}
+          transition={
+            isMobile
+              ? { duration: 0.15, ease: 'easeOut' }
+              : { duration: 25, repeat: Infinity, ease: 'easeInOut' }
+          }
         />
         <motion.div
           className="absolute w-[700px] h-[700px] rounded-full blur-[120px] opacity-40"
@@ -49,24 +46,23 @@ export default function CinematicHero() {
             bottom: '10%',
             transform: 'translateX(-50%)',
           }}
-          animate={{
-            scale: [1, 1.1, 1],
-            y: [0, -15, 0],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          animate={isMobile ? { scale: 1, y: 0 } : { scale: [1, 1.1, 1], y: [0, -15, 0] }}
+          transition={
+            isMobile
+              ? { duration: 0.15, ease: 'easeOut' }
+              : { duration: 30, repeat: Infinity, ease: 'easeInOut' }
+          }
         />
       </div>
 
       {/* Hero Text Content */}
       <div className="relative z-10 w-full max-w-[600px] px-4 sm:px-6 text-center">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={isMobile ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          transition={
+            isMobile ? { duration: 0.15, delay: 0, ease: 'easeOut' } : { duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }
+          }
         >
           <h1
             className="font-serif text-white tracking-[0.08em] leading-[0.95] mb-3 sm:mb-4"
@@ -94,11 +90,13 @@ export default function CinematicHero() {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.8 }}
+        transition={isMobile ? { delay: 0, duration: 0.15, ease: 'easeOut' } : { delay: 1.5, duration: 0.8 }}
       >
         <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          animate={isMobile ? { y: 0 } : { y: [0, 8, 0] }}
+          transition={
+            isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
+          }
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path

@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const STORAGE_KEY = 'royalaz_preloader_seen'
 
 export default function PagePreloader() {
   const reduceMotion = useReducedMotion()
   const lowPower = useLowPowerMotion()
+  const isMobile = useIsMobile()
   const [show, setShow] = useState(false)
 
   useEffect(() => {
@@ -36,7 +38,10 @@ export default function PagePreloader() {
         <motion.div
           className="fixed inset-0 z-[500] flex flex-col items-center justify-center bg-[#0b0f17]"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
+          exit={{
+            opacity: 0,
+            transition: isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+          }}
         >
           <div className="flex items-baseline gap-0.5 mb-6">
             {royal.map((c, i) => (
@@ -44,14 +49,15 @@ export default function PagePreloader() {
                 key={`r-${i}`}
                 className="text-4xl sm:text-5xl font-bold text-white inline-block"
                 style={{ fontFamily: 'DM Sans, system-ui, sans-serif' }}
-                initial={{ opacity: 0, y: 28, rotate: -8 }}
+                initial={isMobile ? { opacity: 0, y: 0, rotate: 0 } : { opacity: 0, y: 28, rotate: -8 }}
                 animate={{ opacity: 1, y: 0, rotate: 0 }}
                 transition={{
-                  delay: 0.05 * i,
-                  duration: 0.45,
-                  type: 'spring',
-                  stiffness: 260,
-                  damping: 20,
+                  delay: isMobile ? 0 : 0.05 * i,
+                  duration: isMobile ? 0.15 : 0.45,
+                  type: isMobile ? undefined : 'spring',
+                  stiffness: isMobile ? undefined : 260,
+                  damping: isMobile ? undefined : 20,
+                  ease: isMobile ? 'easeOut' : undefined,
                 }}
               >
                 {c}
@@ -62,14 +68,15 @@ export default function PagePreloader() {
                 key={`a-${i}`}
                 className="text-4xl sm:text-5xl font-bold text-amber-400 inline-block"
                 style={{ fontFamily: 'DM Sans, system-ui, sans-serif' }}
-                initial={{ opacity: 0, y: 28, scale: 0.5 }}
+                initial={isMobile ? { opacity: 0, y: 0, scale: 1 } : { opacity: 0, y: 28, scale: 0.5 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{
-                  delay: 0.28 + 0.06 * i,
-                  duration: 0.5,
-                  type: 'spring',
-                  stiffness: 220,
-                  damping: 16,
+                  delay: isMobile ? 0 : 0.28 + 0.06 * i,
+                  duration: isMobile ? 0.15 : 0.5,
+                  type: isMobile ? undefined : 'spring',
+                  stiffness: isMobile ? undefined : 220,
+                  damping: isMobile ? undefined : 16,
+                  ease: isMobile ? 'easeOut' : undefined,
                 }}
               >
                 {c}
@@ -85,7 +92,11 @@ export default function PagePreloader() {
               strokeLinecap="round"
               initial={{ pathLength: 0, opacity: 0.4 }}
               animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ delay: 0.35, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+              transition={
+                isMobile
+                  ? { delay: 0, duration: 0.15, ease: 'easeOut' }
+                  : { delay: 0.35, duration: 1.1, ease: [0.22, 1, 0.36, 1] }
+              }
             />
             <defs>
               <linearGradient id="preloaderGold" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -98,7 +109,7 @@ export default function PagePreloader() {
             className="text-sm text-neutral-500"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.9, duration: 0.4 }}
+            transition={isMobile ? { delay: 0, duration: 0.15, ease: 'easeOut' } : { delay: 0.9, duration: 0.4 }}
           >
             Premium yuxu · Bakı
           </motion.p>

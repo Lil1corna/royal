@@ -3,9 +3,11 @@
 import { motion } from 'framer-motion'
 import { useLang } from '@/context/lang'
 import Link from 'next/link'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 export default function AboutSection() {
   const { lang } = useLang()
+  const isMobile = useIsMobile()
 
   const storyParagraphs =
     lang === 'ru'
@@ -56,10 +58,12 @@ export default function AboutSection() {
           {/* Content */}
           <motion.div
             className="about-content flex flex-col justify-center gap-6 lg:gap-7 order-1 max-w-3xl mx-auto"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ staggerChildren: 0.1 }}
+            initial={isMobile ? 'visible' : 'hidden'}
+            whileInView={isMobile ? undefined : 'visible'}
+            viewport={isMobile ? undefined : { once: true, margin: '-80px' }}
+            transition={
+              isMobile ? { duration: 0.15, ease: 'easeOut', staggerChildren: 0 } : { staggerChildren: 0.1 }
+            }
           >
             {/* Section Label */}
             <motion.div

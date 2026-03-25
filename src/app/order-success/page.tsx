@@ -2,22 +2,26 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useLang, translations } from '@/context/lang'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 export default function OrderSuccess() {
   const { lang } = useLang()
   const tr = translations
+  const isMobile = useIsMobile()
 
   return (
     <motion.main
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22 }}
+      transition={isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.22 }}
       className="p-8 max-w-md mx-auto text-center mt-20"
     >
       <motion.div
         initial={{ scale: 0.92 }}
         animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 220, damping: 14 }}
+        transition={
+          isMobile ? { duration: 0.15, ease: 'easeOut' } : { type: 'spring', stiffness: 220, damping: 14 }
+        }
         className="text-6xl mb-4"
       >
         ✅

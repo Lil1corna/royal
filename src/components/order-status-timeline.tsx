@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { ACTIVE_FLOW, type OrderStatus } from '@/lib/order-status'
 import { useLang, translations } from '@/context/lang'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const STEP_ICONS = ['📥', '✓', '🚚', '✨'] as const
 
@@ -15,6 +16,7 @@ function stepIndex(status: OrderStatus): number {
 export default function OrderStatusTimeline({ status }: { status: string }) {
   const { lang } = useLang()
   const tr = translations
+  const isMobile = useIsMobile()
   const s = (status || 'new') as OrderStatus
   const cancelled = s === 'cancelled'
   const currentIdx = cancelled ? -1 : stepIndex(s)
@@ -39,6 +41,7 @@ export default function OrderStatusTimeline({ status }: { status: string }) {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
+            transition={isMobile ? { duration: 0.15, ease: 'easeOut' } : undefined}
             className={`text-xs font-bold px-2.5 py-1 rounded-full ${
               cancelled
                 ? 'bg-red-100 text-red-700'
@@ -81,10 +84,25 @@ export default function OrderStatusTimeline({ status }: { status: string }) {
                     }`}
                     animate={
                       active
-                        ? { scale: [1, 1.06, 1], boxShadow: ['0 0 0 0 rgba(245,158,11,0.35)', '0 0 0 10px rgba(245,158,11,0)', '0 0 0 0 rgba(245,158,11,0)'] }
+                        ? isMobile
+                          ? { scale: 1 }
+                          : {
+                              scale: [1, 1.06, 1],
+                              boxShadow: [
+                                '0 0 0 0 rgba(245,158,11,0.35)',
+                                '0 0 0 10px rgba(245,158,11,0)',
+                                '0 0 0 0 rgba(245,158,11,0)',
+                              ],
+                            }
                         : {}
                     }
-                    transition={active ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
+                    transition={
+                      active
+                        ? isMobile
+                          ? { duration: 0.15, ease: 'easeOut' }
+                          : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
+                        : {}
+                    }
                   >
                     {done ? '✓' : STEP_ICONS[idx]}
                   </motion.div>

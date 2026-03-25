@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useLang, translations } from '@/context/lang'
 import Magnetic from '@/components/magnetic'
 import styles from './about.module.css'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 type Stat = {
   id: string
@@ -14,7 +15,19 @@ type Stat = {
   labelKey: string
 }
 
-function CountUpStat({ value, numberSuffix, label, delayMs = 0 }: { value: number; numberSuffix?: string; label: string; delayMs?: number }) {
+function CountUpStat({
+  value,
+  numberSuffix,
+  label,
+  delayMs = 0,
+  isMobile,
+}: {
+  value: number
+  numberSuffix?: string
+  label: string
+  delayMs?: number
+  isMobile: boolean
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const count = useMotionValue(0)
@@ -27,12 +40,14 @@ function CountUpStat({ value, numberSuffix, label, delayMs = 0 }: { value: numbe
   }, [rounded])
 
   useEffect(() => {
-    if (!isInView) return
+    if (!isInView && !isMobile) return
+    const effectiveDelay = isMobile ? 0 : delayMs
+    const effectiveDuration = isMobile ? 0.15 : 2
     const t = window.setTimeout(() => {
-      animate(count, value, { duration: 2, ease: 'easeOut' })
-    }, delayMs)
+      animate(count, value, { duration: effectiveDuration, ease: 'easeOut' })
+    }, effectiveDelay)
     return () => window.clearTimeout(t)
-  }, [delayMs, isInView, value, count])
+  }, [delayMs, isInView, value, count, isMobile])
 
   return (
     <div ref={ref} className="text-center">
@@ -44,8 +59,12 @@ function CountUpStat({ value, numberSuffix, label, delayMs = 0 }: { value: numbe
       <motion.div
         className={styles.statUnderline}
         initial={{ scaleX: 0 }}
-        animate={{ scaleX: isInView ? 1 : 0 }}
-        transition={{ duration: 0.7, ease: 'easeOut', delay: delayMs / 1000 }}
+        animate={{ scaleX: isMobile ? 1 : isInView ? 1 : 0 }}
+        transition={{
+          duration: isMobile ? 0.15 : 0.7,
+          ease: 'easeOut',
+          delay: isMobile ? 0 : delayMs / 1000,
+        }}
       />
     </div>
   )
@@ -112,6 +131,7 @@ function IconLeaf() {
 export default function AboutClient({ stats }: { stats: Stat[] }) {
   const { lang } = useLang()
   const tr = translations
+  const isMobile = useIsMobile()
   const [tagIndex, setTagIndex] = useState(0)
 
   const taglines = useMemo(
@@ -331,18 +351,29 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
             </motion.p>
 
             <div className="mt-7 relative h-[2.2rem] flex items-center justify-center">
-              <AnimatePresence mode="wait">
+              {isMobile ? (
                 <motion.div
-                  key={tagIndex}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
                   className="text-white/90 text-[18px] font-medium"
                 >
                   {heroTag}
                 </motion.div>
-              </AnimatePresence>
+              ) : (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={tagIndex}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
+                    className="text-white/90 text-[18px] font-medium"
+                  >
+                    {heroTag}
+                  </motion.div>
+                </AnimatePresence>
+              )}
             </div>
 
             <motion.div
@@ -353,8 +384,12 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                 <span className="text-[14px] tracking-[0.08em] uppercase">Scroll</span>
                 <motion.span
                   className="relative w-7 h-7 flex items-center justify-center"
-                  animate={{ y: [0, 6, 0] }}
-                  transition={{ duration: 1.4, repeat: Infinity, ease: [0.22, 1, 0.36, 1] as const }}
+                  animate={isMobile ? { y: 0 } : { y: [0, 6, 0] }}
+                  transition={
+                    isMobile
+                      ? { duration: 0.15, ease: 'easeOut' }
+                      : { duration: 1.4, repeat: Infinity, ease: [0.22, 1, 0.36, 1] as const }
+                  }
                   aria-hidden
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -371,11 +406,13 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
           <div className="mx-auto max-w-5xl">
             <motion.div
               className={styles.glassCard}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-100px' }}
+              initial={isMobile ? 'visible' : 'hidden'}
+              whileInView={isMobile ? undefined : 'visible'}
+              viewport={isMobile ? undefined : { once: true, margin: '-100px' }}
               variants={sectionVariants}
-              transition={{ duration: 0.8 }}
+              transition={
+                isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.8 }
+              }
             >
               <div className={styles.yearBadge} aria-hidden>
                 1998
@@ -422,6 +459,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                     numberSuffix={s.numberSuffix}
                     label={label}
                     delayMs={i * 70}
+                    isMobile={isMobile}
                   />
                 )
               })}
@@ -434,10 +472,10 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
           <div className="mx-auto max-w-6xl">
             <motion.h2
               className="text-center text-white text-2xl sm:text-3xl md:text-[40px] font-serif"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-120px' }}
-              transition={{ duration: 0.7 }}
+              initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+              whileInView={isMobile ? undefined : { opacity: 1, y: 0 }}
+              viewport={isMobile ? undefined : { once: true, margin: '-120px' }}
+              transition={isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.7 }}
             >
               {tr.ourValues?.[lang]}
             </motion.h2>
@@ -447,15 +485,24 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                 <motion.div
                   key={v.title}
                   className={styles.valueCard}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-120px' }}
-                  transition={{ duration: 0.7, delay: idx * 0.15, ease: [0.22, 1, 0.36, 1] as const }}
-                  whileHover={{
-                    y: -8,
-                    borderColor: 'rgba(201,168,76,0.4)',
-                    boxShadow: '0 0 0 1px rgba(201,168,76,0.25), 0 0 42px rgba(201,168,76,0.18)',
-                  }}
+                  initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+                  whileInView={isMobile ? undefined : { opacity: 1, y: 0 }}
+                  viewport={isMobile ? undefined : { once: true, margin: '-120px' }}
+                  transition={
+                    isMobile
+                      ? { duration: 0.15, delay: 0, ease: 'easeOut' }
+                      : { duration: 0.7, delay: idx * 0.15, ease: [0.22, 1, 0.36, 1] as const }
+                  }
+                  whileHover={
+                    isMobile
+                      ? undefined
+                      : {
+                          y: -8,
+                          borderColor: 'rgba(201,168,76,0.4)',
+                          boxShadow:
+                            '0 0 0 1px rgba(201,168,76,0.25), 0 0 42px rgba(201,168,76,0.18)',
+                        }
+                  }
                 >
                   <div className="flex items-center gap-4">
                     <div className={styles.textGold}>{v.icon}</div>
@@ -473,10 +520,10 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
           <div className="mx-auto max-w-6xl">
             <motion.h2
               className="text-white text-[40px] font-serif text-center"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-120px' }}
-              transition={{ duration: 0.7 }}
+              initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+              whileInView={isMobile ? undefined : { opacity: 1, y: 0 }}
+              viewport={isMobile ? undefined : { once: true, margin: '-120px' }}
+              transition={isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.7 }}
             >
               {lang === 'az' ? 'Necə işləyirik?' : lang === 'ru' ? 'Как мы работаем?' : 'How we work?'}
             </motion.h2>
@@ -485,7 +532,7 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
               <motion.div
                 className={styles.timelineLine}
                 initial={{ scaleX: 0 }}
-                animate={{ scaleX: processInView ? 1 : 0 }}
+                animate={{ scaleX: isMobile ? 1 : processInView ? 1 : 0 }}
                 transition={{ duration: 0.9, ease: 'easeOut' }}
               />
 
@@ -494,10 +541,14 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                   <motion.div
                     key={idx}
                     className="text-white"
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-120px' }}
-                    transition={{ duration: 0.65, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] as const }}
+                    initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+                    whileInView={isMobile ? undefined : { opacity: 1, y: 0 }}
+                    viewport={isMobile ? undefined : { once: true, margin: '-120px' }}
+                    transition={
+                      isMobile
+                        ? { duration: 0.15, delay: 0, ease: 'easeOut' }
+                        : { duration: 0.65, delay: idx * 0.12, ease: [0.22, 1, 0.36, 1] as const }
+                    }
                   >
                     <div className="flex items-center gap-4">
                       <div className={styles.stepCircle} aria-hidden>
@@ -521,10 +572,10 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
           <div className="mx-auto max-w-6xl text-center relative z-10">
             <motion.h2
               className="text-white text-[44px] font-serif"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-120px' }}
-              transition={{ duration: 0.7 }}
+              initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+              whileInView={isMobile ? undefined : { opacity: 1, y: 0 }}
+              viewport={isMobile ? undefined : { once: true, margin: '-120px' }}
+              transition={isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.7 }}
             >
               {tr.readyToChange?.[lang]}
             </motion.h2>

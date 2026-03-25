@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 /**
  * Золотой «занавес» при переходе между страницами (поднимается вверх и открывает контент).
@@ -56,6 +57,13 @@ export function PageTransition({
   children: React.ReactNode
   className?: string
 }) {
+  const isMobile = useIsMobile()
+
+  // Mobile: no wrapper animation / overlay. Keep children as-is for zero-cost transitions.
+  if (isMobile) {
+    return <div className={`relative min-w-0 ${className}`}>{children}</div>
+  }
+
   return (
     <div className={`relative min-w-0 ${className}`}>
       <CurtainOverlay />

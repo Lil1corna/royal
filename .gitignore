@@ -16,12 +16,15 @@
 # next.js
 /.next/
 /out/
+/dist/
 
 # production
 /build
 
 # misc
 .DS_Store
+Thumbs.db
+desktop.ini
 *.pem
 
 # debug
@@ -33,9 +36,25 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+.env.local
+.env.production
+.env.*.local
 
 # vercel
 .vercel
+
+# netlify
+.netlify/
+
+# IDE
+.idea/
+.vscode/
+.kiro/
+.cursor/
+.windsurf/
+
+# turbo
+.turbo/
 
 # typescript
 *.tsbuildinfo

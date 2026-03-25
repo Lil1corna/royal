@@ -4,13 +4,15 @@ import { motion } from 'framer-motion'
 import { useLang, translations } from '@/context/lang'
 import Magnetic from '@/components/magnetic'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const PARTICLE_SEEDS = [12, 28, 44, 58, 71, 83, 91, 17, 65, 38, 52, 7]
 
 export default function CatalogHero() {
   const { lang } = useLang()
   const tr = translations
-  const lowPower = useLowPowerMotion()
+  const isMobile = useIsMobile()
+  const lowPower = useLowPowerMotion() || isMobile
 
   return (
     <section className="relative mb-10 overflow-hidden rounded-3xl border border-amber-200/40 bg-gradient-to-br from-[#0b0f17] via-[#141a26] to-[#1a1510] px-6 py-14 sm:py-16">

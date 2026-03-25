@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { useWishlist } from '@/context/wishlist'
 import { useLang, translations } from '@/context/lang'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 type Product = {
   id: string
@@ -27,6 +28,7 @@ export default function WishlistPage() {
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const supabase = useMemo(() => createClient(), [])
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     if (ids.length === 0) {
@@ -122,7 +124,9 @@ export default function WishlistPage() {
               key={p.id}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
+              transition={
+                isMobile ? { duration: 0.15, ease: 'easeOut', delay: 0 } : { delay: i * 0.04 }
+              }
               className="flex flex-col sm:flex-row gap-4 border rounded-xl p-4 card-soft items-stretch sm:items-center"
             >
               <Link

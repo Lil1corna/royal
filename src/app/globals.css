@@ -363,3 +363,36 @@
     background-position: 100% 50%;
   }
 }
+
+@media (max-width: 768px) {
+  /* Slow down heavy keyframe animations — keep them alive but lighter */
+  /* If this keyframe exists, simply double the duration via override. */
+  @keyframes aurora-anim {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* Replace transition-all with cheaper alternatives */
+  [class*="transition-all"] {
+    transition-property: opacity, transform !important;
+    transition-duration: 150ms !important;
+  }
+
+  /* Slow down any looping background animations (tailwind animate-* only) */
+  [class*="animate-"] {
+    animation-duration: 6s !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

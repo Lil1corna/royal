@@ -8,6 +8,7 @@ import { useWishlist } from '@/context/wishlist'
 import { useRouter } from 'next/navigation'
 import Magnetic from '@/components/magnetic'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 type Lang = 'az' | 'ru' | 'en'
 
@@ -139,6 +140,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
 export default function Navbar({ userEmail }: { userEmail?: string | null }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const lowPower = useLowPowerMotion()
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     if (!mobileOpen) return
@@ -151,12 +153,16 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
 
   return (
     <motion.nav
-      initial={lowPower ? false : { y: -12, opacity: 0 }}
+      initial={
+        lowPower ? false : isMobile ? { y: 0, opacity: 0 } : { y: -12, opacity: 0 }
+      }
       animate={{ y: 0, opacity: 1 }}
       transition={
         lowPower
           ? { duration: 0 }
-          : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
+          : isMobile
+            ? { duration: 0.15, ease: 'easeOut' }
+            : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
       }
       className={`sticky top-0 z-50 border-b border-white/5 bg-[rgba(5,13,26,0.85)] text-white shadow-none ${lowPower ? '' : 'backdrop-blur-xl'}`}
     >
@@ -206,7 +212,7 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: lowPower ? 0.12 : 0.2 }}
+              transition={{ duration: lowPower ? 0.12 : isMobile ? 0.15 : 0.2 }}
             />
             <motion.div
               className={`fixed right-0 top-0 z-[100] flex h-full w-[min(100%,20rem)] flex-col gap-5 border-l border-white/10 bg-[rgba(5,13,26,0.95)] p-5 text-white shadow-2xl md:hidden ${lowPower ? '' : 'backdrop-blur-xl'}`}
@@ -216,7 +222,9 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
               transition={
                 lowPower
                   ? { type: 'tween', duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }
-                  : { type: 'spring', damping: 28, stiffness: 280 }
+                  : isMobile
+                    ? { type: 'tween', duration: 0.15, ease: 'easeOut' }
+                    : { type: 'spring', damping: 28, stiffness: 280 }
               }
             >
               <div className="flex justify-between items-center">

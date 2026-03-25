@@ -7,6 +7,7 @@ import { useWishlist } from '@/context/wishlist'
 import { useRouter } from 'next/navigation'
 import { useLang, translations } from '@/context/lang'
 import Magnetic from '@/components/magnetic'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 type Size = {
   id: string
@@ -28,6 +29,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
   const { has, toggle } = useWishlist()
   const { lang } = useLang()
   const tr = translations
+  const isMobile = useIsMobile()
   const inWishlist = has(productId)
   const router = useRouter()
   const [selected, setSelected] = useState<Size | null>(
@@ -98,7 +100,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
+        transition={isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.2 }}
         className="flex flex-col gap-3"
       >
         <motion.button
