@@ -19,7 +19,8 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   )
   const { data: product } = await supabase
     .from('products')
-    .select('name_ru, name_az, name_en, image_urls, description')
+    // description не нужен для metadata; убираем чтобы не ломать страницу при отсутствии колонки
+    .select('name_ru, name_az, name_en, image_urls')
     .eq('id', params.id)
     .single()
   if (!product) return { title: 'RoyalAz' }
@@ -50,18 +51,32 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
     }
   )
 
-  const { data: product } = await supabase
+  const {
+    data: product,
+    error: productError,
+  } = await supabase
     .from('products')
     .select('id, name_ru, name_az, name_en, category, price, discount_pct, image_urls, description')
     .eq('id', params.id)
     .single()
 
-  if (!product) notFound()
+  // If `description` column doesn't exist yet, keep product page working.
+  let resolvedProduct = product
+  if (!resolvedProduct && productError && /description/i.test(productError.message)) {
+    const { data: productWithoutDesc } = await supabase
+      .from('products')
+      .select('id, name_ru, name_az, name_en, category, price, discount_pct, image_urls')
+      .eq('id', params.id)
+      .single()
+    resolvedProduct = productWithoutDesc
+  }
+
+  if (!resolvedProduct) notFound()
 
   const { data: sizes } = await supabase
     .from('product_sizes')
     .select('*')
     .eq('product_id', params.id)
 
-  return <ProductContent product={product} sizes={sizes || []} />
+  return <ProductContent product={resolvedProduct} sizes={sizes || []} />
 }
