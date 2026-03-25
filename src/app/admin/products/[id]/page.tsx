@@ -1,19 +1,25 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
+import { useLang } from '@/context/lang'
+import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 
 export default function EditProduct() {
   const router = useRouter()
   const params = useParams()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const productId = params.id as string
+  const { lang } = useLang()
   const [loading, setLoading] = useState(false)
+  const [canEdit, setCanEdit] = useState(false)
+  const [canDelete, setCanDelete] = useState(false)
   const [form, setForm] = useState({
     name_az: '', name_ru: '', name_en: '',
     category: 'ortopedik',
+    description: '',
     price: '',
     discount_pct: '0',
     in_stock: true,
@@ -36,6 +42,7 @@ export default function EditProduct() {
         name_ru: data.name_ru,
         name_en: data.name_en,
         category: data.category,
+        description: data.description || '',
         price: data.price.toString(),
         discount_pct: data.discount_pct.toString(),
         in_stock: data.in_stock,
@@ -48,6 +55,34 @@ export default function EditProduct() {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    const loadPerms = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user) {
+          setCanEdit(false)
+          setCanDelete(false)
+          return
+        }
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        const roleKey = normalizeDbRoleToRoleKey(profile?.role)
+        const perms = ROLES[roleKey].permissions
+        setCanEdit(perms.includes('manage_products'))
+        setCanDelete(perms.includes('delete_anything'))
+      } catch {
+        setCanEdit(false)
+        setCanDelete(false)
+      }
+    }
+    loadPerms()
+  }, [supabase])
 
   const removeExisting = (index: number) => {
     setExistingUrls((prev) => prev.filter((_, i) => i !== index))
@@ -102,6 +137,10 @@ export default function EditProduct() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!canEdit) {
+      alert('Forbidden')
+      return
+    }
     setLoading(true)
     try {
       const uploadedUrls = await uploadNewFiles()
@@ -130,6 +169,10 @@ export default function EditProduct() {
   }
 
   const handleDelete = async () => {
+    if (!canDelete) {
+      alert('Forbidden')
+      return
+    }
     if (!confirm('Silmek isteyirsiniz?')) return
     const { error } = await supabase
       .from('products')
@@ -148,7 +191,10 @@ export default function EditProduct() {
         <Link href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Mehsulu Redakte Et</h1>
       </div>
-      <form onSubmit={handleSave} className="flex flex-col gap-4 ds-card-glass p-6 rounded-2xl">
+      <form
+        onSubmit={handleSave}
+        className="flex flex-col gap-4 ds-card-glass p-6 rounded-2xl"
+      >
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="ds-label">Ad (AZ)</label>
@@ -165,6 +211,29 @@ export default function EditProduct() {
             <input className="ds-input" value={form.name_en}
               onChange={e => setForm({...form, name_en: e.target.value})} required />
           </div>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <label className="ds-label">
+              {lang === 'az'
+                ? 'Məhsul haqqında ətraflı məlumat'
+                : lang === 'ru'
+                  ? 'Подробное описание товара'
+                  : 'Detailed product description'}
+            </label>
+            <div className="text-xs text-neutral-400 font-medium">
+              {form.description.length}/2000
+            </div>
+          </div>
+          <textarea
+            rows={6}
+            maxLength={2000}
+            placeholder="..."
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            className="ds-input min-h-[44px] resize-y"
+          />
         </div>
 
         <div>
@@ -276,14 +345,19 @@ export default function EditProduct() {
         </div>
 
         <div className="flex gap-4 mt-4">
-          <button type="submit" disabled={loading}
+          <button type="submit" disabled={loading || !canEdit}
             className="flex-1 ds-btn-primary">
             {loading ? 'Saxlanilir...' : 'Saxla'}
           </button>
-          <button type="button" onClick={handleDelete}
-            className="bg-red-600/20 text-red-300 px-6 py-3 rounded-lg hover:bg-red-600/30 border border-red-500/30 transition-colors">
-            Sil
-          </button>
+          {canDelete ? (
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="bg-red-600/20 text-red-300 px-6 py-3 rounded-lg hover:bg-red-600/30 border border-red-500/30 transition-colors"
+            >
+              Sil
+            </button>
+          ) : null}
         </div>
       </form>
     </main>

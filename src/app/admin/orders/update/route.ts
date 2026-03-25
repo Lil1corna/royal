@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ORDER_STATUSES, isOrderStatus } from '@/lib/order-status'
 import { rateLimitAllow } from '@/lib/rate-limit'
 import { captureException } from '@/lib/monitoring'
+import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 import {
   notifyDeliveryWebhook,
   parseMapsLinkFromNotes,
@@ -60,7 +61,10 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (!profile || !['super_admin', 'manager'].includes(profile.role)) {
+    const roleKey = normalizeDbRoleToRoleKey(profile?.role)
+    const perms = ROLES[roleKey].permissions
+
+    if (!profile || !perms.includes('manage_orders')) {
       redirectUrl.searchParams.set('toast', 'forbidden')
       return NextResponse.redirect(redirectUrl)
     }

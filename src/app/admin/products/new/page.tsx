@@ -1,9 +1,11 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useLang } from '@/context/lang'
+import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 type ProductSizeDraft = {
   size: string
   price: string
@@ -15,11 +17,14 @@ export const dynamic = 'force-dynamic'
 
 export default function NewProduct() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
+  const { lang } = useLang()
   const [loading, setLoading] = useState(false)
+  const [canCreate, setCanCreate] = useState(false)
   const [form, setForm] = useState({
     name_az: '', name_ru: '', name_en: '',
     category: 'ortopedik',
+    description: '',
     price: '',
     discount_pct: '0',
     in_stock: true,
@@ -27,6 +32,27 @@ export default function NewProduct() {
   const [sizes, setSizes] = useState<ProductSizeDraft[]>([{ size: '80x200', price: '', in_stock: true }])
   const [images, setImages] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
+
+  useEffect(() => {
+    const loadPerms = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user) return setCanCreate(false)
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        const roleKey = normalizeDbRoleToRoleKey(profile?.role)
+        setCanCreate(ROLES[roleKey].permissions.includes('manage_products'))
+      } catch {
+        setCanCreate(false)
+      }
+    }
+    loadPerms()
+  }, [supabase])
 
   const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -58,6 +84,10 @@ export default function NewProduct() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!canCreate) {
+      alert('Forbidden')
+      return
+    }
     setLoading(true)
 
     const imageUrls: string[] = []
@@ -130,6 +160,29 @@ export default function NewProduct() {
             <input className="ds-input" value={form.name_en}
               onChange={e => setForm({...form, name_en: e.target.value})} required />
           </div>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <label className="ds-label">
+              {lang === 'az'
+                ? 'Məhsul haqqında ətraflı məlumat'
+                : lang === 'ru'
+                  ? 'Подробное описание товара'
+                  : 'Detailed product description'}
+            </label>
+            <div className="text-xs text-neutral-400 font-medium">
+              {form.description.length}/2000
+            </div>
+          </div>
+          <textarea
+            rows={6}
+            maxLength={2000}
+            placeholder="..."
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            className="ds-input min-h-[44px] resize-y"
+          />
         </div>
 
         <div>
@@ -234,7 +287,7 @@ export default function NewProduct() {
           )}
         </div>
 
-        <button type="submit" disabled={loading}
+        <button type="submit" disabled={loading || !canCreate}
           className="ds-btn-primary">
           {loading ? 'Saxlanilir...' : 'Saxla'}
         </button>

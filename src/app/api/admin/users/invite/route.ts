@@ -3,8 +3,23 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { getBaseUrl } from '@/lib/url'
+import { normalizeDbRoleToRoleKey, ROLES } from '@/config/roles'
 
-const ALLOWED_ROLES = new Set(['manager', 'content_manager', 'super_admin'])
+const ALLOWED_ROLES = new Set([
+  // New role keys
+  ROLES.SUPER_ADMIN.key,
+  ROLES.ADMIN.key,
+  ROLES.MODERATOR.key,
+  ROLES.EDITOR.key,
+  ROLES.SUPPORT.key,
+  ROLES.VIEWER.key,
+  ROLES.USER.key,
+
+  // Legacy role keys (backward compatibility)
+  'manager',
+  'content_manager',
+  'customer',
+])
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,7 +60,8 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (!profile || profile.role !== 'super_admin') {
+    const editorRoleKey = normalizeDbRoleToRoleKey(profile?.role)
+    if (editorRoleKey !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

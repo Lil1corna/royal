@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createServerSupabase } from '@/lib/supabase-server'
 import AccountSettings from './account-settings'
 import AccountOrdersSection from '@/components/account-orders-section'
+import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 
 export default async function AccountPage() {
   const supabase = await createServerSupabase()
@@ -23,7 +24,13 @@ export default async function AccountPage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  const isStaff = ['super_admin', 'manager', 'content_manager'].includes(profile?.role)
+  const roleKey = normalizeDbRoleToRoleKey(profile?.role)
+  const perms = ROLES[roleKey].permissions
+  const isStaff =
+    perms.includes('manage_products') ||
+    perms.includes('manage_orders') ||
+    perms.includes('manage_users') ||
+    perms.includes('view_analytics')
   const meta = (user.user_metadata || {}) as {
     phone?: string
     shipping_address?: string

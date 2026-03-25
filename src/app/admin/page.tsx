@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 
 export default async function AdminPage() {
   const cookieStore = await cookies()
@@ -25,9 +26,19 @@ export default async function AdminPage() {
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['super_admin', 'manager', 'content_manager'].includes(profile.role)) {
+  const roleKey = normalizeDbRoleToRoleKey(profile?.role)
+  const perms = ROLES[roleKey].permissions
+
+  const canSeeProductsAdmin =
+    perms.includes('manage_products') || perms.includes('view_analytics')
+
+  if (!profile || !canSeeProductsAdmin) {
     redirect('/')
   }
+
+  const canSeeOrdersAdmin = perms.includes('manage_orders') || perms.includes('view_analytics')
+  const canSeeUsersAdmin = perms.includes('manage_users') || perms.includes('view_analytics')
+  const canCreateProducts = perms.includes('manage_products')
 
   const { data: products } = await supabase
     .from('products')
@@ -44,23 +55,35 @@ export default async function AdminPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Panel</h1>
         <div className="flex gap-3">
-          <Link href="/admin/orders"
-            className="relative btn-admin btn-icon-arrow px-6 py-2">
-            Sifarisler <span className="arrow">→</span>
-            {newOrders && newOrders.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                {newOrders.length}
-              </span>
-            )}
-          </Link>
-          <Link href="/admin/users"
-            className="btn-secondary btn-icon-arrow px-6 py-2">
-            Staff <span className="arrow">→</span>
-          </Link>
-          <Link href="/admin/products/new"
-            className="btn-primary btn-icon-arrow px-6 py-2">
-            Yeni mehsul <span className="arrow">→</span>
-          </Link>
+          {canSeeOrdersAdmin ? (
+            <Link href="/admin/orders"
+              className="relative btn-admin btn-icon-arrow px-6 py-2">
+              Sifarisler <span className="arrow">→</span>
+              {newOrders && newOrders.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {newOrders.length}
+                </span>
+              )}
+            </Link>
+          ) : (
+            <span className="text-neutral-500/60 text-sm">—</span>
+          )}
+          {canSeeUsersAdmin ? (
+            <Link href="/admin/users"
+              className="btn-secondary btn-icon-arrow px-6 py-2">
+              Staff <span className="arrow">→</span>
+            </Link>
+          ) : (
+            <span className="text-neutral-500/60 text-sm">—</span>
+          )}
+          {canCreateProducts ? (
+            <Link href="/admin/products/new"
+              className="btn-primary btn-icon-arrow px-6 py-2">
+              Yeni mehsul <span className="arrow">→</span>
+            </Link>
+          ) : (
+            <span className="text-neutral-500/60 text-sm">—</span>
+          )}
         </div>
       </div>
       <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-white/10 bg-transparent">
@@ -87,12 +110,16 @@ export default async function AdminPage() {
                 </span>
               </td>
               <td className="p-3 border-b border-white/10">
-                <Link
-                  href={'/admin/products/' + p.id}
-                  className="text-[rgba(201,168,76,0.8)] text-[12px] font-semibold tracking-[0.06em] uppercase hover:text-[#e8c97a] hover:underline"
-                >
-                  Edit
-                </Link>
+                {perms.includes('manage_products') ? (
+                  <Link
+                    href={'/admin/products/' + p.id}
+                    className="text-[rgba(201,168,76,0.8)] text-[12px] font-semibold tracking-[0.06em] uppercase hover:text-[#e8c97a] hover:underline"
+                  >
+                    Edit
+                  </Link>
+                ) : (
+                  <span className="text-neutral-500/60 text-[12px]">—</span>
+                )}
               </td>
             </tr>
           ))}

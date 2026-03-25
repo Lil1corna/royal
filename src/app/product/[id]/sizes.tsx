@@ -16,13 +16,14 @@ type Size = {
   in_stock: boolean
 }
 
-export default function SizeSelector({ sizes, basePrice, discountPct, productId, productName, productImage }: {
+export default function SizeSelector({ sizes, basePrice, discountPct, productId, productName, productImage, description }: {
   sizes: Size[]
   basePrice: number
   discountPct: number
   productId: string
   productName: string
   productImage: string | null
+  description?: string | null
 }) {
   const { add } = useCart()
   const { triggerFly } = useFlyToCart()
@@ -43,6 +44,8 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
   const current = discountPct > 0
     ? parseFloat((original * (1 - discountPct / 100)).toFixed(0))
     : original
+  const desc = (description ?? '').trim()
+  const descHeading = lang === 'az' ? 'Məhsul haqqında' : lang === 'ru' ? 'О товаре' : 'About this product'
 
   const handleAdd = (fromEl?: HTMLElement | null) => {
     add({
@@ -94,6 +97,13 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {desc && (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-white/90 mb-2">{descHeading}</h3>
+          <p className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">{desc}</p>
         </div>
       )}
 

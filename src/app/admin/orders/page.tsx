@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import AdminOrdersClient from '@/components/admin-orders-client'
+import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 
 export default async function OrdersPage(props: { searchParams: Promise<{ toast?: string }> }) {
   const searchParams = await props.searchParams
@@ -26,7 +27,11 @@ export default async function OrdersPage(props: { searchParams: Promise<{ toast?
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['super_admin', 'manager'].includes(profile.role)) redirect('/admin')
+  const roleKey = normalizeDbRoleToRoleKey(profile?.role)
+  const perms = ROLES[roleKey].permissions
+
+  const canAccessOrdersAdmin = perms.includes('manage_orders') || perms.includes('view_analytics')
+  if (!profile || !canAccessOrdersAdmin) redirect('/admin')
 
   const { data: orders } = await supabase
     .from('orders')
@@ -62,7 +67,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ toast?
         </div>
       )}
 
-      <AdminOrdersClient initialOrders={orders || []} />
+      <AdminOrdersClient initialOrders={orders || []} canUpdateOrderStatus={perms.includes('manage_orders')} />
     </main>
   )
 }

@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import { useLang } from '@/context/lang'
-import Link from 'next/link'
 import { useIsMobile } from '@/hooks/useIsMobile'
 
 export default function AboutSection() {
@@ -134,22 +133,6 @@ export default function AboutSection() {
                   </div>
                 </div>
               ))}
-            </motion.div>
-
-            {/* CTA Button */}
-            <motion.div
-              variants={{
-                hidden: { y: 30, opacity: 0 },
-                visible: { y: 0, opacity: 1 },
-              }}
-            >
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-2 bg-[#c9a84c] text-[#050d1a] px-6 py-3 rounded-xl font-semibold hover:bg-[#e8c97a] transition-colors"
-              >
-                {lang === 'az' ? 'Ətraflı' : lang === 'ru' ? 'Подробнее' : 'Learn more'}
-                <span>→</span>
-              </Link>
             </motion.div>
           </motion.div>
         </div>

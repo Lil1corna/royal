@@ -63,7 +63,18 @@ function NotesWithMap({ notes }: { notes: string | null }) {
   )
 }
 
-function OrderActions({ orderId, currentStatus }: { orderId: string; currentStatus: string }) {
+function OrderActions({
+  orderId,
+  currentStatus,
+  canUpdateOrderStatus,
+}: {
+  orderId: string
+  currentStatus: string
+  canUpdateOrderStatus: boolean
+}) {
+  if (!canUpdateOrderStatus) {
+    return <div className="text-sm text-neutral-400">—</div>
+  }
   const next: Record<string, { status: string; label: string }> = {
     new: { status: 'confirmed', label: 'Tesdiq et' },
     confirmed: { status: 'in_delivery', label: 'Yola ver' },
@@ -99,7 +110,13 @@ function OrderActions({ orderId, currentStatus }: { orderId: string; currentStat
 
 const FILTER_ALL = 'all'
 
-export default function AdminOrdersClient({ initialOrders }: { initialOrders: AdminOrder[] }) {
+export default function AdminOrdersClient({
+  initialOrders,
+  canUpdateOrderStatus,
+}: {
+  initialOrders: AdminOrder[]
+  canUpdateOrderStatus: boolean
+}) {
   const [orders, setOrders] = useState<AdminOrder[]>(initialOrders)
   const [filter, setFilter] = useState<string>(FILTER_ALL)
   const [search, setSearch] = useState('')
@@ -266,7 +283,11 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Ad
               ))}
             </div>
 
-            <OrderActions orderId={order.id} currentStatus={order.status} />
+            <OrderActions
+              orderId={order.id}
+              currentStatus={order.status}
+              canUpdateOrderStatus={canUpdateOrderStatus}
+            />
           </div>
         ))}
       </div>

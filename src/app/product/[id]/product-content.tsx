@@ -13,6 +13,7 @@ type Product = {
   price: number
   discount_pct: number
   image_urls: string[] | null
+  description?: string | null
 }
 
 type Size = {
@@ -51,6 +52,7 @@ export default function ProductContent({
           sizes={sizes}
           basePrice={product.price}
           discountPct={product.discount_pct}
+          description={product.description}
           productId={product.id}
           productName={name}
           productImage={product.image_urls?.[0] || null}

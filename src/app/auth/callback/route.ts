@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { getBaseUrl } from '@/lib/url'
+import { normalizeDbRoleToRoleKey, ROLES } from '@/config/roles'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -62,6 +63,7 @@ export async function GET(request: NextRequest) {
         .single()
 
       if (pending) {
+        const roleKey = normalizeDbRoleToRoleKey(pending.role)
         await admin.from('users').upsert(
           {
             id: user.id,
@@ -70,7 +72,7 @@ export async function GET(request: NextRequest) {
               (user.user_metadata?.name as string | undefined) ||
               (user.user_metadata?.full_name as string | undefined) ||
               email,
-            role: pending.role,
+            role: ROLES[roleKey].key,
           },
           { onConflict: 'id' }
         )

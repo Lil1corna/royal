@@ -19,7 +19,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   )
   const { data: product } = await supabase
     .from('products')
-    .select('name_ru, name_az, name_en, image_urls')
+    .select('name_ru, name_az, name_en, image_urls, description')
     .eq('id', params.id)
     .single()
   if (!product) return { title: 'RoyalAz' }
@@ -52,7 +52,7 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
 
   const { data: product } = await supabase
     .from('products')
-    .select('*')
+    .select('id, name_ru, name_az, name_en, category, price, discount_pct, image_urls, description')
     .eq('id', params.id)
     .single()
 

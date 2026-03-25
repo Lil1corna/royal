@@ -597,19 +597,6 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
                   {lang === 'az' ? 'Kataloqa bax' : lang === 'ru' ? 'Смотреть каталог' : 'View catalog'}
                 </Link>
               </Magnetic>
-
-              <Magnetic strength={0.2} className="inline-flex">
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center rounded-2xl px-8 py-3.5 font-semibold text-white border border-white/20 bg-white/5 backdrop-blur-sm transition-transform"
-                  onClick={() => {
-                    const el = document.getElementById('footer-contact')
-                    el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                  }}
-                >
-                  {lang === 'az' ? 'Bizimlə əlaqə' : lang === 'ru' ? 'Связаться' : 'Contact us'}
-                </button>
-              </Magnetic>
             </div>
           </div>
         </section>
