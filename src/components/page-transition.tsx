@@ -2,9 +2,8 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
-import { useIsMobile } from '@/hooks/useIsMobile'
 
 /**
  * Золотой «занавес» при переходе между страницами (поднимается вверх и открывает контент).
@@ -14,12 +13,20 @@ function CurtainOverlay() {
   const pathname = usePathname()
   const reduce = useReducedMotion()
   const lowPower = useLowPowerMotion()
-  const [hasNavigated, setHasNavigated] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return sessionStorage.getItem('royalaz_has_navigated') === '1'
-  })
+  // Start with false on server, then check sessionStorage on client
+  const [hasNavigated, setHasNavigated] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    const stored = sessionStorage.getItem('royalaz_has_navigated') === '1'
+    setHasNavigated(stored)
+  }, [])
 
   if (reduce || lowPower) return null
+
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted) return null
 
   return (
     <motion.div
@@ -41,9 +48,7 @@ function CurtainOverlay() {
       onAnimationComplete={() => {
         if (!hasNavigated) {
           setHasNavigated(true)
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem('royalaz_has_navigated', '1')
-          }
+          sessionStorage.setItem('royalaz_has_navigated', '1')
         }
       }}
     />
@@ -57,16 +62,21 @@ export function PageTransition({
   children: React.ReactNode
   className?: string
 }) {
-  const isMobile = useIsMobile()
+  const [isMobile, setIsMobile] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
-  // Mobile: no wrapper animation / overlay. Keep children as-is for zero-cost transitions.
-  if (isMobile) {
-    return <div className={`relative min-w-0 ${className}`}>{children}</div>
-  }
+  useEffect(() => {
+    setMounted(true)
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
+  // Always render the same structure for SSR, then conditionally show overlay after mount
   return (
     <div className={`relative min-w-0 ${className}`}>
-      <CurtainOverlay />
+      {mounted && !isMobile && <CurtainOverlay />}
       {children}
     </div>
   )
