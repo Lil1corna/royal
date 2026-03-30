@@ -110,8 +110,7 @@ function ParallaxProductCardDesktop({
   const textY = useTransform(scrollYProgress, [0, 1], lowPower ? [0, 0] : [-22, 22])
 
   const { addItem } = useCart()
-  const { items: wishlistItems, addItem: addToWishlist, removeItem: removeFromWishlist } = useWishlist()
-  const isInWishlist = wishlistItems.some(item => item.id === p.id)
+  const { has: isInWishlist, toggle: toggleWishlist } = useWishlist()
 
   const name = lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
   const cat = tr.categories[p.category]?.[lang] || p.category
@@ -124,6 +123,7 @@ function ParallaxProductCardDesktop({
   const primaryImage = p.image_urls?.[0]?.trim()
   const secondaryImage = p.image_urls?.[1]?.trim()
   const showProductImage = Boolean(primaryImage) && !imgFailed
+  const inWishlist = isInWishlist(p.id)
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -142,16 +142,7 @@ function ParallaxProductCardDesktop({
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (isInWishlist) {
-      removeFromWishlist(p.id)
-    } else {
-      addToWishlist({
-        id: p.id,
-        name: name,
-        price: finalPrice,
-        image: primaryImage || '',
-      })
-    }
+    toggleWishlist(p.id)
   }
 
   const handleQuickView = (e: React.MouseEvent) => {
@@ -255,12 +246,12 @@ function ParallaxProductCardDesktop({
                 <button
                   onClick={handleWishlist}
                   className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all ${
-                    isInWishlist 
+                    inWishlist 
                       ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
                       : 'bg-white/10 text-white/80 border border-white/10 hover:bg-white/20'
                   }`}
                 >
-                  <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
+                  <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
                 </button>
                 <button
                   onClick={handleQuickView}
@@ -326,47 +317,38 @@ function ParallaxProductCardMobile({
   gridItemVariants: Variants
   priority?: boolean
 }) {
-  const { addItem } = useCart()
-  const { items: wishlistItems, addItem: addToWishlist, removeItem: removeFromWishlist } = useWishlist()
-  const isInWishlist = wishlistItems.some(item => item.id === p.id)
-
+const { addItem } = useCart()
+  const { has: isInWishlist, toggle: toggleWishlist } = useWishlist()
+  
   const name = lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
   const cat = tr.categories[p.category]?.[lang] || p.category
   const discountedPrice =
-    p.discount_pct > 0 ? (p.price * (1 - p.discount_pct / 100)).toFixed(0) : null
+  p.discount_pct > 0 ? (p.price * (1 - p.discount_pct / 100)).toFixed(0) : null
   const finalPrice = discountedPrice ? Number(discountedPrice) : p.price
-
+  
   const [imgFailed, setImgFailed] = useState(false)
   const primaryImage = p.image_urls?.[0]?.trim()
   const showProductImage = Boolean(primaryImage) && !imgFailed
-
+  const inWishlist = isInWishlist(p.id)
+  
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!p.in_stock) return
-    addItem({
-      id: p.id,
-      name: name,
-      price: finalPrice,
-      image: primaryImage || '',
-      size: '',
-      quantity: 1,
-    })
+  e.preventDefault()
+  e.stopPropagation()
+  if (!p.in_stock) return
+  addItem({
+  id: p.id,
+  name: name,
+  price: finalPrice,
+  image: primaryImage || '',
+  size: '',
+  quantity: 1,
+  })
   }
-
+  
   const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (isInWishlist) {
-      removeFromWishlist(p.id)
-    } else {
-      addToWishlist({
-        id: p.id,
-        name: name,
-        price: finalPrice,
-        image: primaryImage || '',
-      })
-    }
+  e.preventDefault()
+  e.stopPropagation()
+  toggleWishlist(p.id)
   }
 
   return (
@@ -413,12 +395,12 @@ function ParallaxProductCardMobile({
           <button
             onClick={handleWishlist}
             className={`absolute top-3 left-3 flex items-center justify-center w-9 h-9 rounded-full transition-all z-20 ${
-              isInWishlist 
+              inWishlist 
                 ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
                 : 'bg-black/30 text-white/80 border border-white/10 backdrop-blur-sm'
             }`}
           >
-            <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
+            <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
           </button>
 
           {!p.in_stock && (
@@ -475,43 +457,34 @@ function QuickViewModal({ product, lang, tr, onClose }: {
   tr: typeof translations
   onClose: () => void 
 }) {
-  const { addItem } = useCart()
-  const { items: wishlistItems, addItem: addToWishlist, removeItem: removeFromWishlist } = useWishlist()
-  const isInWishlist = wishlistItems.some(item => item.id === product.id)
+const { addItem } = useCart()
+  const { has: isInWishlist, toggle: toggleWishlist } = useWishlist()
   const [selectedImage, setSelectedImage] = useState(0)
-
+  
   const name = lang === 'az' ? product.name_az : lang === 'ru' ? product.name_ru : product.name_en
   const cat = tr.categories[product.category]?.[lang] || product.category
-  const discountedPrice = product.discount_pct > 0 
-    ? (product.price * (1 - product.discount_pct / 100)).toFixed(0) 
-    : null
+  const discountedPrice = product.discount_pct > 0
+  ? (product.price * (1 - product.discount_pct / 100)).toFixed(0)
+  : null
   const finalPrice = discountedPrice ? Number(discountedPrice) : product.price
   const primaryImage = product.image_urls?.[0]?.trim()
-
+  const inWishlist = isInWishlist(product.id)
+  
   const handleAddToCart = () => {
-    if (!product.in_stock) return
-    addItem({
-      id: product.id,
-      name: name,
-      price: finalPrice,
-      image: primaryImage || '',
-      size: '',
-      quantity: 1,
-    })
-    onClose()
+  if (!product.in_stock) return
+  addItem({
+  id: product.id,
+  name: name,
+  price: finalPrice,
+  image: primaryImage || '',
+  size: '',
+  quantity: 1,
+  })
+  onClose()
   }
-
+  
   const handleWishlist = () => {
-    if (isInWishlist) {
-      removeFromWishlist(product.id)
-    } else {
-      addToWishlist({
-        id: product.id,
-        name: name,
-        price: finalPrice,
-        image: primaryImage || '',
-      })
-    }
+  toggleWishlist(product.id)
   }
 
   return (
@@ -624,14 +597,14 @@ function QuickViewModal({ product, lang, tr, onClose }: {
                 {tr.addToCart[lang]}
               </button>
               <button
-                onClick={handleWishlist}
-                className={`flex items-center justify-center w-14 h-14 rounded-xl transition-all ${
-                  isInWishlist 
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
-                    : 'bg-white/10 text-white/80 border border-white/10 hover:bg-white/20'
-                }`}
-              >
-                <Heart className={`w-5 h-5 ${isInWishlist ? 'fill-current' : ''}`} />
+onClick={handleWishlist}
+  className={`flex items-center justify-center w-14 h-14 rounded-xl transition-all ${
+  inWishlist
+  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+  : 'bg-white/10 text-white/80 border border-white/10 hover:bg-white/20'
+  }`}
+  >
+  <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
               </button>
             </div>
 
