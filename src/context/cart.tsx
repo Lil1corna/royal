@@ -13,6 +13,7 @@ type CartContext = {
   add: (item: CartItem) => void
   remove: (id: string, size: string | null) => void
   clear: () => void
+  replaceItems: (nextItems: CartItem[]) => void
   total: number
   count: number
 }
@@ -22,6 +23,7 @@ const CartCtx = createContext<CartContext>({
   add: () => {},
   remove: () => {},
   clear: () => {},
+  replaceItems: () => {},
   total: 0,
   count: 0,
 })
@@ -56,12 +58,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const clear = () => setItems([])
+  const replaceItems = (nextItems: CartItem[]) => setItems(nextItems)
 
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0)
   const count = items.reduce((s, i) => s + i.quantity, 0)
 
   return (
-    <CartCtx.Provider value={{ items, add, remove, clear, total, count }}>
+    <CartCtx.Provider value={{ items, add, remove, clear, replaceItems, total, count }}>
       {children}
     </CartCtx.Provider>
   )

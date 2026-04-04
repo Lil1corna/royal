@@ -153,30 +153,17 @@ export default function EditProduct() {
         image_urls,
       }
 
-      const isMissingDescriptionColumn = (message: string) => {
-        const m = message.toLowerCase()
-        return m.includes('description') && (m.includes('does not exist') || m.includes('unknown column') || m.includes('column'))
-      }
-
-      let { error } = await supabase
-        .from('products')
-        .update(payload)
-        .eq('id', productId)
-
-      // If DB column `description` is not migrated yet, retry without it.
-      if (error && isMissingDescriptionColumn(error.message)) {
-        const { description: droppedDesc, ...payloadWithoutDesc } = payload
-        void droppedDesc
-        ;({ error } = await supabase
-          .from('products')
-          .update(payloadWithoutDesc)
-          .eq('id', productId))
-      }
+      const res = await fetch(`/api/admin/products/${productId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = (await res.json()) as { ok?: boolean; error?: string }
 
       newPreviews.forEach((url) => URL.revokeObjectURL(url))
 
-      if (error) {
-        alert('Xeta: ' + error.message)
+      if (!res.ok || !data.ok) {
+        alert('Xeta: ' + (data.error || 'Update failed'))
       } else {
         router.push('/admin')
       }
@@ -191,12 +178,12 @@ export default function EditProduct() {
       return
     }
     if (!confirm('Silmek isteyirsiniz?')) return
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', productId)
-    if (error) {
-      alert('Xeta: ' + error.message)
+    const res = await fetch(`/api/admin/products/${productId}`, {
+      method: 'DELETE',
+    })
+    const data = (await res.json()) as { ok?: boolean; error?: string }
+    if (!res.ok || !data.ok) {
+      alert('Xeta: ' + (data.error || 'Delete failed'))
     } else {
       router.push('/admin')
     }

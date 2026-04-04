@@ -38,7 +38,7 @@ function normalizeAzPhone(raw: string): string | null {
 }
 
 export default function CartPage() {
-  const { items, remove, clear, total, count } = useCart()
+  const { items, remove, clear, replaceItems, total, count } = useCart()
   const { lang } = useLang()
   const tr = translations
   const [address, setAddress] = useState('')
@@ -90,6 +90,42 @@ export default function CartPage() {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
     setToast({ type, message })
     toastTimerRef.current = setTimeout(() => setToast(null), 2600)
+  }
+
+  const refreshCartProducts = async () => {
+    if (items.length === 0) return
+    const ids = Array.from(new Set(items.map((i) => i.id)))
+    const { data, error } = await supabase
+      .from('products')
+      .select('id, name_az, name_ru, name_en, price, discount_pct, in_stock, image_urls')
+      .in('id', ids)
+
+    if (error || !data) return
+
+    const byId = new Map(data.map((p) => [p.id, p]))
+    const refreshed = items
+      .map((item) => {
+        const product = byId.get(item.id)
+        if (!product || !product.in_stock) return null
+        const discountedPrice =
+          product.discount_pct > 0
+            ? Math.round(product.price * (1 - product.discount_pct / 100))
+            : product.price
+        return {
+          ...item,
+          price: discountedPrice,
+          image: product.image_urls?.[0] || item.image,
+          name:
+            lang === 'ru'
+              ? product.name_ru
+              : lang === 'en'
+                ? product.name_en
+                : product.name_az,
+        }
+      })
+      .filter((i): i is NonNullable<typeof i> => i !== null)
+
+    replaceItems(refreshed)
   }
 
   useEffect(() => {
@@ -156,10 +192,26 @@ export default function CartPage() {
     })
 
     if (rpcError || orderId == null) {
-      showToast(
-        'error',
-        tr.error[lang] + ': ' + (rpcError?.message || 'create_order_with_items')
-      )
+      const rawMessage = (rpcError?.message || '').toLowerCase()
+      const isPriceChanged =
+        rawMessage.includes('price mismatch') || rawMessage.includes('invalid product_id')
+
+      if (isPriceChanged) {
+        await refreshCartProducts()
+        showToast(
+          'error',
+          lang === 'ru'
+            ? 'Цены обновились, проверьте корзину'
+            : lang === 'en'
+              ? 'Prices were updated, please review your cart'
+              : 'Qiymətlər yeniləndi, səbəti yoxlayın'
+        )
+      } else {
+        showToast(
+          'error',
+          tr.error[lang] + ': ' + (rpcError?.message || 'create_order_with_items')
+        )
+      }
       setLoading(false)
       return
     }

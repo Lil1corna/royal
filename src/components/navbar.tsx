@@ -25,7 +25,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
   }
 
   const pill =
-    'inline-flex items-center justify-center gap-2 rounded-full px-4 py-3 min-h-[44px] text-sm sm:text-[12px] font-medium transition-all duration-300 border border-white/10 bg-transparent text-white/60 hover:text-[#e8c97a] hover:border-[#c9a84c]/50'
+    'inline-flex items-center justify-center gap-2 rounded-full px-4 py-3 min-h-[44px] text-sm sm:text-[12px] font-medium motion-safe:transition-transform motion-safe:transition-opacity border border-white/10 bg-transparent text-white/60 hover:text-[#e8c97a] hover:border-[#c9a84c]/50'
 
   return (
     <>
@@ -94,9 +94,9 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
         {count > 0 && (
           <motion.span
             key={count}
-            initial={{ scale: 0.4, opacity: 0 }}
+            initial={{ scale: 1.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 18 }}
             className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-neutral-900 ring-2 ring-white"
           >
             {count > 9 ? '9+' : count}
@@ -223,7 +223,7 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
                 lowPower
                   ? { type: 'tween', duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }
                   : isMobile
-                    ? { type: 'tween', duration: 0.15, ease: 'easeOut' }
+                    ? { type: 'spring', stiffness: 300, damping: 30 }
                     : { type: 'spring', damping: 28, stiffness: 280 }
               }
             >

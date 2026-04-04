@@ -21,6 +21,31 @@
     color: rgba(255, 255, 255, 0.85);
     background: #050d1a;
     text-size-adjust: 100%;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  .price-text {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -364,6 +389,15 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @media (max-width: 768px) {
   /* Slow down heavy keyframe animations — keep them alive but lighter */
   /* If this keyframe exists, simply double the duration via override. */
@@ -393,6 +427,11 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .motion-safe\:transition-transform,
+  .motion-safe\:transition-opacity {
     transition-duration: 0.01ms !important;
   }
 }

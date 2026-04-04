@@ -128,12 +128,15 @@ export default function EditUser() {
       return
     }
     setLoading(true)
-    const { error } = await supabase
-      .from('users')
-      .update({ role: roleDbKey })
-      .eq('id', params.id)
-    if (error) {
-      showToast('error', 'Xeta: ' + error.message)
+    const userId = String(params.id)
+    const res = await fetch(`/api/admin/users/${userId}/role`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: roleDbKey }),
+    })
+    const data = (await res.json()) as { ok?: boolean; error?: string }
+    if (!res.ok || !data.ok) {
+      showToast('error', 'Xeta: ' + (data.error || 'Role update failed'))
     } else {
       showToast('success', 'Rol yenilendi')
       router.push('/admin/users')

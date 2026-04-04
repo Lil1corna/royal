@@ -103,53 +103,32 @@ export default function NewProduct() {
       }
     }
 
+    const validSizes = sizes
+      .filter((s) => s.size && s.price)
+      .map((s) => ({
+        size: s.size,
+        price: parseFloat(s.price),
+        in_stock: s.in_stock,
+      }))
+
     const payload = {
       ...form,
       price: parseFloat(form.price),
       discount_pct: parseFloat(form.discount_pct),
       image_urls: imageUrls,
+      sizes: validSizes,
     }
 
-    const isMissingDescriptionColumn = (message: string) => {
-      const m = message.toLowerCase()
-      return m.includes('description') && (m.includes('does not exist') || m.includes('unknown column') || m.includes('column'))
-    }
-
-    let { data: product, error } = await supabase
-      .from('products')
-      .insert([payload])
-      .select()
-      .single()
-
-    if (error) {
-      // In case DB column `description` is not migrated yet.
-      if (isMissingDescriptionColumn(error.message)) {
-        const { description: droppedDesc, ...payloadWithoutDesc } = payload
-        void droppedDesc
-        ;({ data: product, error } = await supabase
-          .from('products')
-          .insert([payloadWithoutDesc])
-          .select()
-          .single())
-      }
-    }
-
-    if (error || !product) {
-      alert('Xeta: ' + (error?.message || 'Unknown error'))
+    const res = await fetch('/api/admin/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    const data = (await res.json()) as { ok?: boolean; error?: string }
+    if (!res.ok || !data.ok) {
+      alert('Xeta: ' + (data.error || 'Create failed'))
       setLoading(false)
       return
-    }
-
-    const validSizes = sizes.filter(s => s.size && s.price)
-    if (validSizes.length > 0) {
-      await supabase.from('product_sizes').insert(
-        validSizes.map(s => ({
-          product_id: product.id,
-          size: s.size,
-          price: parseFloat(s.price),
-          in_stock: s.in_stock,
-        }))
-      )
     }
 
     router.push('/admin')

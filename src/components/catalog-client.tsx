@@ -145,14 +145,13 @@ function ParallaxProductCardDesktop({
                 src={primaryImage!}
                 alt={name}
                 fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 className={`object-cover scale-110 transition-transform duration-700 ease-out ${
                   lowPower ? '' : 'group-hover:scale-[1.18]'
                 }`}
                 style={{
                   filter: 'brightness(0.95) contrast(1.05)',
                 }}
-                unoptimized
                 priority={priority}
                 onError={() => setImgFailed(true)}
               />
@@ -267,14 +266,13 @@ function ParallaxProductCardMobile({
                 src={primaryImage!}
                 alt={name}
                 fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 className={`object-cover scale-110 transition-transform duration-700 ease-out ${
                   lowPower ? '' : 'group-hover:scale-[1.18]'
                 }`}
                 style={{
                   filter: 'brightness(0.95) contrast(1.05)',
                 }}
-                unoptimized
                 priority={priority}
                 onError={() => setImgFailed(true)}
               />
