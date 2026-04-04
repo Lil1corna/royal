@@ -32,6 +32,9 @@ export default function WishlistPage() {
   const isMobile = useIsMobile()
 
   useEffect(() => {
+    let cancelled = false
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
     if (ids.length === 0) {
       setProducts([])
       setLoadError(null)
@@ -39,11 +42,10 @@ export default function WishlistPage() {
       return
     }
 
-    let cancelled = false
     setLoadingProducts(true)
     setLoadError(null)
 
-    void (async () => {
+    const fetchWishlistProducts = async () => {
       try {
         const { data, error } = await supabase
           .from('products')
@@ -64,10 +66,28 @@ export default function WishlistPage() {
       } finally {
         if (!cancelled) setLoadingProducts(false)
       }
-    })()
+    }
+
+    void fetchWishlistProducts()
+
+    channel = supabase
+      .channel(`wishlist-products-${ids.join(',')}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        (payload) => {
+          const changedId = String(payload.new?.id ?? payload.old?.id ?? '')
+          if (changedId && !ids.includes(changedId)) return
+          void fetchWishlistProducts()
+        }
+      )
+      .subscribe((status, err) => {
+        if (err) console.warn('[Realtime] wishlist products:', err.message)
+      })
 
     return () => {
       cancelled = true
+      if (channel) void supabase.removeChannel(channel)
     }
   }, [ids, supabase])
 

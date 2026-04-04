@@ -23,7 +23,9 @@ export default function Home() {
   const supabase = useMemo(() => getSupabaseClient(), [])
 
   useEffect(() => {
-    async function fetchProducts() {
+    let cancelled = false
+
+    const fetchProducts = async () => {
       try {
         const { data, error } = await supabase
           .from('products')
@@ -32,20 +34,47 @@ export default function Home() {
 
         if (error) {
           console.error('Supabase error:', error)
-          setLoadError(error.message)
+          if (!cancelled) setLoadError(error.message)
         } else {
-          setProducts(data || [])
-          setLoadError(null)
+          if (!cancelled) {
+            setProducts(data || [])
+            setLoadError(null)
+          }
         }
       } catch (error) {
         console.error('Error fetching products:', error)
-        setLoadError(error instanceof Error ? error.message : 'Failed to load products')
+        if (!cancelled) setLoadError(error instanceof Error ? error.message : 'Failed to load products')
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
-    fetchProducts()
+    void fetchProducts()
+
+    const channel = supabase
+      .channel('home-products-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => {
+          void fetchProducts()
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'product_sizes' },
+        () => {
+          void fetchProducts()
+        }
+      )
+      .subscribe((status, err) => {
+        if (err) console.warn('[Realtime] home products:', err.message)
+      })
+
+    return () => {
+      cancelled = true
+      void supabase.removeChannel(channel)
+    }
   }, [supabase])
 
   if (loading) {

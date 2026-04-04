@@ -22,7 +22,15 @@ export default function NavbarWrapper() {
       }
     }
 
-    getUser()
+    void getUser()
+
+    const { data: authSubscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email)
+    })
+
+    return () => {
+      authSubscription.subscription.unsubscribe()
+    }
   }, [supabase])
 
   return <Navbar userEmail={userEmail} />
