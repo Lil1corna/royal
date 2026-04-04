@@ -1,14 +1,12 @@
 'use client'
 import { createContext, useContext, useState, useEffect } from 'react'
+import {
+  safeParseCart,
+  CART_STORAGE_KEY,
+  type CartItem,
+} from '@/lib/cart-storage'
 
-type CartItem = {
-  id: string
-  name: string
-  price: number
-  size: string | null
-  image: string | null
-  quantity: number
-}
+export type { CartItem }
 
 type CartContext = {
   items: CartItem[]
@@ -20,25 +18,30 @@ type CartContext = {
 }
 
 const CartCtx = createContext<CartContext>({
-  items: [], add: () => {}, remove: () => {}, clear: () => {}, total: 0, count: 0
+  items: [],
+  add: () => {},
+  remove: () => {},
+  clear: () => {},
+  total: 0,
+  count: 0,
 })
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     if (typeof window === 'undefined') return []
-    const saved = localStorage.getItem('royalaz_cart')
-    return saved ? (JSON.parse(saved) as CartItem[]) : []
+    const saved = localStorage.getItem(CART_STORAGE_KEY)
+    return safeParseCart(saved)
   })
 
   useEffect(() => {
-    localStorage.setItem('royalaz_cart', JSON.stringify(items))
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
   }, [items])
 
   const add = (item: CartItem) => {
-    setItems(prev => {
-      const exists = prev.find(i => i.id === item.id && i.size === item.size)
+    setItems((prev) => {
+      const exists = prev.find((i) => i.id === item.id && i.size === item.size)
       if (exists) {
-        return prev.map(i =>
+        return prev.map((i) =>
           i.id === item.id && i.size === item.size
             ? { ...i, quantity: i.quantity + 1 }
             : i
@@ -49,7 +52,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const remove = (id: string, size: string | null) => {
-    setItems(prev => prev.filter(i => !(i.id === id && i.size === size)))
+    setItems((prev) => prev.filter((i) => !(i.id === id && i.size === size)))
   }
 
   const clear = () => setItems([])

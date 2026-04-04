@@ -1,6 +1,6 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { useEffect, useMemo, useState } from 'react'
+import { getSupabaseClient } from '@/lib/supabase'
 import CatalogClient from '@/components/catalog-client'
 
 type Product = {
@@ -19,12 +19,11 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const supabase = useMemo(() => getSupabaseClient(), [])
 
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const supabase = createClient()
-        
         const { data, error } = await supabase
           .from('products')
           .select('*')
@@ -46,7 +45,7 @@ export default function Home() {
     }
 
     fetchProducts()
-  }, [])
+  }, [supabase])
 
   if (loading) {
     return (

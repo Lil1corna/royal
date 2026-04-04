@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/context/cart'
 import { useLang, translations } from '@/context/lang'
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
@@ -60,7 +60,7 @@ export default function CartPage() {
   const [addressMode, setAddressMode] = useState<'saved' | 'map'>('map')
   const [mapResetKey, setMapResetKey] = useState(0)
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const isMobile = useIsMobile()
 
   useEffect(() => {
@@ -136,55 +136,33 @@ export default function CartPage() {
           ? ` | Delivery: ${deliveryMode}, shipping ${shippingFee} AZN, items ${subtotal} AZN`
           : ` | Catdirilma: ${deliveryMode}, catdirilma ${shippingFee} AZN, mehsul ${subtotal} AZN`
 
-    const fullRow = {
-      user_id: user?.id || null,
-      total_price: grandTotal,
-      subtotal,
-      shipping_fee: shippingFee,
-      delivery_mode: deliveryMode,
-      status: 'new' as const,
-      address: orderAddress,
-      notes: notesBase + deliveryMeta,
-    }
+    const notesFull = notesBase + deliveryMeta
 
-    let order = null
-    let error = null
-    const first = await supabase.from('orders').insert([fullRow]).select().single()
-    if (first.error) {
-      const fallback = await supabase
-        .from('orders')
-        .insert([
-          {
-            user_id: fullRow.user_id,
-            total_price: grandTotal,
-            status: 'new',
-            address: orderAddress,
-            notes: notesBase + deliveryMeta,
-          },
-        ])
-        .select()
-        .single()
-      order = fallback.data
-      error = fallback.error
-    } else {
-      order = first.data
-      error = first.error
-    }
-
-    if (error) {
-      showToast('error', tr.error[lang] + ': ' + error.message)
-      setLoading(false)
-      return
-    }
-
-    await supabase.from('order_items').insert(
-      items.map(i => ({
-        order_id: order.id,
+    const { data: orderId, error: rpcError } = await supabase.rpc('create_order_with_items', {
+      p_user_id: user?.id ?? null,
+      p_items: items.map((i) => ({
         product_id: i.id,
         quantity: i.quantity,
         price_at_purchase: i.price,
-      }))
-    )
+      })),
+      p_total: grandTotal,
+      p_meta: {
+        subtotal,
+        shipping_fee: shippingFee,
+        delivery_mode: deliveryMode,
+        address: orderAddress,
+        notes: notesFull,
+      },
+    })
+
+    if (rpcError || orderId == null) {
+      showToast(
+        'error',
+        tr.error[lang] + ': ' + (rpcError?.message || 'create_order_with_items')
+      )
+      setLoading(false)
+      return
+    }
 
     showToast('success', tr.orderSuccess[lang])
     clear()
@@ -214,7 +192,7 @@ export default function CartPage() {
           <div className="flex flex-col gap-3 mb-6">
             {items.map((item, i) => (
               <motion.div
-                key={i}
+                key={`${item.id}-${item.size ?? 'default'}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={

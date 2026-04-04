@@ -1,23 +1,23 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { getBaseUrl } from '@/lib/url'
 import { normalizeDbRoleToRoleKey, ROLES } from '@/config/roles'
+import { sanitizeNext } from '@/lib/sanitize-next'
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const code = searchParams.get('code')
-  const next = searchParams.get('next') || '/'
-
-  const baseUrl = getBaseUrl(request)
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const safePath = sanitizeNext(requestUrl.searchParams.get('next'))
 
   if (!code) {
     console.error('[Auth Callback] No code provided')
-    return NextResponse.redirect(`${baseUrl}/auth/error?message=No+code`)
+    const errUrl = new URL('/auth/error', requestUrl.origin)
+    errUrl.searchParams.set('message', 'No code')
+    return NextResponse.redirect(errUrl.toString())
   }
 
-  // Create response object that we'll use to set cookies
-  const response = NextResponse.redirect(`${baseUrl}${next}`)
+  const redirectTo = new URL(safePath, requestUrl.origin).toString()
+  const response = NextResponse.redirect(redirectTo)
   
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
   
   if (error) {
     console.error('[Auth Callback] Session exchange failed:', error)
-    return NextResponse.redirect(`${baseUrl}/auth/error?message=${encodeURIComponent(error.message)}`)
+    const errUrl = new URL('/auth/error', requestUrl.origin)
+    errUrl.searchParams.set('message', error.message)
+    return NextResponse.redirect(errUrl.toString())
   }
 
   // Assign pending staff role after first successful sign-in

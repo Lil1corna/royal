@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 export default function NewProduct() {
   const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const { lang } = useLang()
   const [loading, setLoading] = useState(false)
   const [canCreate, setCanCreate] = useState(false)

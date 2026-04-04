@@ -3,23 +3,13 @@ import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { getBaseUrl } from '@/lib/url'
+import { sanitizeNext } from '@/lib/sanitize-next'
 import { normalizeDbRoleToRoleKey, ROLES } from '@/config/roles'
+import { INVITE_ALLOWED_ROLE_INPUTS } from '@/lib/constants/roles'
 
-const ALLOWED_ROLES = new Set([
-  // New role keys
-  ROLES.SUPER_ADMIN.key,
-  ROLES.ADMIN.key,
-  ROLES.MODERATOR.key,
-  ROLES.EDITOR.key,
-  ROLES.SUPPORT.key,
-  ROLES.VIEWER.key,
-  ROLES.USER.key,
+export { INVITE_ALLOWED_ROLE_INPUTS } from '@/lib/constants/roles'
 
-  // Legacy role keys (backward compatibility)
-  'manager',
-  'content_manager',
-  'customer',
-])
+const ALLOWED_ROLES = new Set(INVITE_ALLOWED_ROLE_INPUTS)
 
 export async function POST(request: NextRequest) {
   try {
@@ -127,7 +117,10 @@ export async function POST(request: NextRequest) {
 
     // Otherwise: send an invite email; role will be applied after first auth callback.
     const baseUrl = getBaseUrl(request)
-    const redirectTo = `${baseUrl}/auth/callback?next=/account`
+    const nextPath = sanitizeNext('/account')
+    const callbackUrl = new URL('/auth/callback', baseUrl)
+    callbackUrl.searchParams.set('next', nextPath)
+    const redirectTo = callbackUrl.toString()
 
     const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
       redirectTo,

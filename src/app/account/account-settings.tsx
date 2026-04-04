@@ -1,9 +1,9 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { useLang, translations } from '@/context/lang'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
 
@@ -56,7 +56,7 @@ export default function AccountSettings({
   const { lang } = useLang()
   const tr = translations
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const [name, setName] = useState(initialName)
   const [phone, setPhone] = useState(formatAzPhone(initialPhone || ''))
   const [address, setAddress] = useState(initialAddress)

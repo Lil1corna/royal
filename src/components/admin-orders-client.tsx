@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { deliveryModeLabel, type DeliveryMode } from '@/lib/delivery'
 
 type OrderItem = {
@@ -120,7 +120,7 @@ export default function AdminOrdersClient({
   const [orders, setOrders] = useState<AdminOrder[]>(initialOrders)
   const [filter, setFilter] = useState<string>(FILTER_ALL)
   const [search, setSearch] = useState('')
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => getSupabaseClient(), [])
 
   useEffect(() => {
     setOrders(initialOrders)

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { useWishlist } from '@/context/wishlist'
 import { useLang, translations } from '@/context/lang'
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -27,7 +27,7 @@ export default function WishlistPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const isMobile = useIsMobile()
 
   useEffect(() => {

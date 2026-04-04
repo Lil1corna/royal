@@ -1,14 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase'
+import { useSearchParams } from 'next/navigation'
+import { getSupabaseClient } from '@/lib/supabase'
+import { sanitizeNext } from '@/lib/sanitize-next'
 
 /**
  * Раньше вход был через route.ts (GET → redirect). На части хостингов такой ответ
  * сохранялся как файл «signin». Здесь отдаётся обычная HTML-страница, редирект на Google — в браузере.
  */
-export default function SignInPage() {
+function SignInContent() {
+  const searchParams = useSearchParams()
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const [error, setError] = useState<string | null>(null)
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [debugInfo, setDebugInfo] = useState<string>('')
@@ -16,55 +20,55 @@ export default function SignInPage() {
   useEffect(() => {
     const run = async () => {
       try {
-        const supabase = createClient()
-        
-        // Always use the actual runtime origin to avoid stale env domain mismatch.
-        // A wrong NEXT_PUBLIC_SITE_URL causes Google redirect_uri_mismatch.
         const baseUrl = window.location.origin
-        const redirectTo = `${baseUrl}/auth/callback`
-        
+        const rawNext = searchParams.get('next')
+        const callbackUrl = new URL('/auth/callback', baseUrl)
+        if (rawNext !== null) {
+          callbackUrl.searchParams.set('next', sanitizeNext(rawNext))
+        }
+        const redirectTo = callbackUrl.toString()
+
         setDebugInfo(`Base URL: ${baseUrl}, Redirect: ${redirectTo}`)
-        
+
         const { data, error: err } = await supabase.auth.signInWithOAuth({
           provider: 'google',
-          options: { 
+          options: {
             redirectTo,
             queryParams: {
               access_type: 'offline',
               prompt: 'consent',
-            }
+            },
           },
         })
-        
+
         if (err) {
           console.error('[Sign In] OAuth error:', err)
           setError(`OAuth Error: ${err.message}`)
-          setDebugInfo(prev => `${prev}\nError: ${JSON.stringify(err)}`)
+          setDebugInfo((prev) => `${prev}\nError: ${JSON.stringify(err)}`)
           return
         }
-        
+
         if (data.url) {
           setIsRedirecting(true)
-          setDebugInfo(prev => `${prev}\nRedirect URL: ${data.url}`)
-          
-          // Use window.location.href for more reliable redirect
+          setDebugInfo((prev) => `${prev}\nRedirect URL: ${data.url}`)
+
           setTimeout(() => {
             window.location.href = data.url
           }, 100)
         } else {
           console.error('[Sign In] No auth URL returned', { data })
           setError('No auth URL returned from Supabase. Check Supabase Auth settings.')
-          setDebugInfo(prev => `${prev}\nNo URL in response: ${JSON.stringify(data)}`)
+          setDebugInfo((prev) => `${prev}\nNo URL in response: ${JSON.stringify(data)}`)
         }
       } catch (err) {
         console.error('[Sign In] Unexpected error:', err)
         const errorMsg = err instanceof Error ? err.message : 'Unexpected error occurred'
         setError(errorMsg)
-        setDebugInfo(prev => `${prev}\nException: ${errorMsg}`)
+        setDebugInfo((prev) => `${prev}\nException: ${errorMsg}`)
       }
     }
     void run()
-  }, [])
+  }, [searchParams, supabase])
 
   if (error) {
     return (
@@ -82,8 +86,9 @@ export default function SignInPage() {
           <Link href="/" className="btn-primary px-6 py-2">
             Ana səhifə
           </Link>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
             className="btn-secondary px-4 py-2"
           >
             Yenidən cəhd et
@@ -95,11 +100,16 @@ export default function SignInPage() {
 
   return (
     <main className="flex min-h-[50vh] flex-col items-center justify-center gap-2 p-8">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" aria-hidden />
+      <div
+        className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"
+        aria-hidden
+      />
       <p className="text-neutral-200">Google-a yönləndirilir…</p>
       <p className="text-sm text-neutral-400">Redirecting to Google…</p>
       {isRedirecting && (
-        <p className="text-xs text-neutral-500 mt-4">If you are not redirected, please check your browser settings.</p>
+        <p className="text-xs text-neutral-500 mt-4">
+          If you are not redirected, please check your browser settings.
+        </p>
       )}
       {debugInfo && (
         <details className="mt-4 text-xs text-white/60 max-w-2xl">
@@ -108,5 +118,23 @@ export default function SignInPage() {
         </details>
       )}
     </main>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-[50vh] flex-col items-center justify-center gap-2 p-8">
+          <div
+            className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"
+            aria-hidden
+          />
+          <p className="text-neutral-200">Yüklənir…</p>
+        </main>
+      }
+    >
+      <SignInContent />
+    </Suspense>
   )
 }

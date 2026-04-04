@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
@@ -16,7 +16,7 @@ type UserRow = {
 export default function EditUser() {
   const router = useRouter()
   const params = useParams()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<UserRow | null>(null)
   const [roleDbKey, setRoleDbKey] = useState('user')

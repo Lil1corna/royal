@@ -1,15 +1,15 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { useEffect, useMemo, useState } from 'react'
+import { getSupabaseClient } from '@/lib/supabase'
 import Navbar from './navbar'
 
 export default function NavbarWrapper() {
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined)
+  const supabase = useMemo(() => getSupabaseClient(), [])
 
   useEffect(() => {
     async function getUser() {
       try {
-        const supabase = createClient()
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
@@ -23,7 +23,7 @@ export default function NavbarWrapper() {
     }
 
     getUser()
-  }, [])
+  }, [supabase])
 
   return <Navbar userEmail={userEmail} />
 }

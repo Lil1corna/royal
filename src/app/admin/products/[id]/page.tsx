@@ -1,6 +1,6 @@
 'use client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
@@ -10,7 +10,7 @@ import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 export default function EditProduct() {
   const router = useRouter()
   const params = useParams()
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const productId = params.id as string
   const { lang } = useLang()
   const [loading, setLoading] = useState(false)

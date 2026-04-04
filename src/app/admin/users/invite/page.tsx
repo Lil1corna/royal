@@ -2,12 +2,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import { useLang } from '@/context/lang'
 import { ROLES, getRoleKeyFromRoleDbKey, permissionLabels, type RoleKey } from '@/config/roles'
 
 export default function InviteUser() {
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [roleDbKey, setRoleDbKey] = useState(ROLES.ADMIN.key)

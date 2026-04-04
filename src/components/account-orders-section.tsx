@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { createClient } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import OrderStatusTimeline from '@/components/order-status-timeline'
@@ -38,7 +38,7 @@ export default function AccountOrdersSection({
   const { lang } = useLang()
   const tr = translations
   const [orders, setOrders] = useState<AccountOrder[]>(initialOrders)
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => getSupabaseClient(), [])
 
   useEffect(() => {
     setOrders(initialOrders)
