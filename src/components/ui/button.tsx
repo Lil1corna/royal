@@ -1,16 +1,17 @@
 'use client'
 
 import { forwardRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, type HTMLMotionProps } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 
 type ButtonVariant = 'primary' | 'outline' | 'ghost'
 type ButtonSize = 'md' | 'lg'
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonProps = Omit<HTMLMotionProps<'button'>, 'children'> & {
   variant?: ButtonVariant
   size?: ButtonSize
   loading?: boolean
+  children?: React.ReactNode
 }
 
 function cn(...classes: Array<string | false | null | undefined>) {

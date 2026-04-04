@@ -390,7 +390,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
   const tr = translations
   const isMobile = useIsMobile()
   const reducedMotion = useReducedMotion()
-  const lowPower = useLowPowerMotion() || isMobile || reducedMotion
+  const lowPower = useLowPowerMotion() || isMobile || Boolean(reducedMotion)
   const gridContainerVariants = isMobile
     ? catalogGridContainerMobile
     : lowPower

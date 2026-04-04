@@ -1,19 +1,19 @@
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, type Variants } from 'framer-motion'
 
 export type ToastState = {
   type: 'success' | 'error'
   message: string
 }
 
-const toastVariants = {
+const toastVariants: Variants = {
   initial: { opacity: 0, x: 80, scale: 0.9 },
   animate: {
     opacity: 1,
     x: 0,
     scale: 1,
-    transition: { type: 'spring', stiffness: 300, damping: 24 },
+    transition: { type: 'spring' as const, stiffness: 300, damping: 24 },
   },
   exit: {
     opacity: 0,
