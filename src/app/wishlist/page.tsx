@@ -76,7 +76,11 @@ export default function WishlistPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },
         (payload) => {
-          const changedId = String(payload.new?.id ?? payload.old?.id ?? '')
+          const nextRow =
+            payload.new && typeof payload.new === 'object' ? (payload.new as { id?: unknown }) : null
+          const prevRow =
+            payload.old && typeof payload.old === 'object' ? (payload.old as { id?: unknown }) : null
+          const changedId = String(nextRow?.id ?? prevRow?.id ?? '')
           if (changedId && !ids.includes(changedId)) return
           void fetchWishlistProducts()
         }
