@@ -10,13 +10,13 @@ export default function NavbarWrapper() {
   useEffect(() => {
     async function getUser() {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser()
+        const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error('[Navbar] Error getting user:', error)
         }
         
-        setUserEmail(user?.email)
+        setUserEmail(session?.user?.email)
       } catch (error) {
         console.error('[Navbar] Error getting user:', error)
       }

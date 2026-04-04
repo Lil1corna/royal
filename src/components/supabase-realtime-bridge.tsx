@@ -19,6 +19,16 @@ export default function SupabaseRealtimeBridge() {
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    const isLocalhost =
+      typeof window !== 'undefined' &&
+      ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)
+    const canUseWebSocket =
+      typeof window !== 'undefined' &&
+      window.isSecureContext &&
+      (window.location.protocol === 'https:' || isLocalhost)
+
+    if (!canUseWebSocket) return
+
     const scheduleRefresh = () => {
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current)
       refreshTimerRef.current = setTimeout(() => {
@@ -26,27 +36,33 @@ export default function SupabaseRealtimeBridge() {
       }, 180)
     }
 
-    const channel = REALTIME_TABLES.reduce(
-      (acc, table) =>
-        acc.on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table },
-          () => {
-            scheduleRefresh()
-          }
-        ),
-      supabase.channel('global-db-refresh')
-    )
+    let channel: ReturnType<typeof supabase.channel> | null = null
 
-    channel.subscribe((status, err) => {
-      if (err) {
-        console.warn('[Realtime] global subscription error:', err.message)
-        return
-      }
-      if (status === 'CHANNEL_ERROR') {
-        console.warn('[Realtime] global channel status:', status)
-      }
-    })
+    try {
+      channel = REALTIME_TABLES.reduce(
+        (acc, table) =>
+          acc.on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table },
+            () => {
+              scheduleRefresh()
+            }
+          ),
+        supabase.channel('global-db-refresh')
+      )
+
+      channel.subscribe((status, err) => {
+        if (err) {
+          console.warn('[Realtime] global subscription error:', err.message)
+          return
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.warn('[Realtime] global channel status:', status)
+        }
+      })
+    } catch (error) {
+      console.warn('[Realtime] global subscribe skipped:', error)
+    }
 
     const { data: authSubscription } = supabase.auth.onAuthStateChange(() => {
       scheduleRefresh()
@@ -54,7 +70,7 @@ export default function SupabaseRealtimeBridge() {
 
     return () => {
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current)
-      void supabase.removeChannel(channel)
+      if (channel) void supabase.removeChannel(channel)
       authSubscription.subscription.unsubscribe()
     }
   }, [router, supabase])
