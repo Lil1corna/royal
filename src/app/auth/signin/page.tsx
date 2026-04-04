@@ -72,7 +72,7 @@ function SignInContent() {
 
   if (error) {
     return (
-      <main className="flex min-h-[50vh] flex-col items-center justify-center p-8">
+      <main className="flex min-h-[50vh] flex-col items-center justify-center p-4 md:p-6 lg:p-8">
         <div className="mb-4 max-w-2xl">
           <p className="mb-2 text-center text-red-300 font-semibold">{error}</p>
           {debugInfo && (
@@ -99,7 +99,7 @@ function SignInContent() {
   }
 
   return (
-    <main className="flex min-h-[50vh] flex-col items-center justify-center gap-2 p-8">
+    <main className="flex min-h-[50vh] flex-col items-center justify-center gap-2 p-4 md:p-6 lg:p-8">
       <div
         className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"
         aria-hidden
@@ -125,7 +125,7 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-[50vh] flex-col items-center justify-center gap-2 p-8">
+        <main className="flex min-h-[50vh] flex-col items-center justify-center gap-2 p-4 md:p-6 lg:p-8">
           <div
             className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"
             aria-hidden

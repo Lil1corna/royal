@@ -1,6 +1,6 @@
 'use client'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useLang, translations } from '@/context/lang'
 import { useCart } from '@/context/cart'
@@ -61,6 +61,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
         onClick={() => onClose?.()}
         className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c9a84c]/35 hover:bg-[rgba(201,168,76,0.1)]"
         title={tr.wishlist[lang]}
+        aria-label={tr.wishlist[lang]}
       >
         <motion.span
           className="text-lg text-rose-500"
@@ -141,13 +142,35 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const lowPower = useLowPowerMotion()
   const isMobile = useIsMobile()
+  const drawerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!mobileOpen) return
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMobileOpen(false)
+      if (e.key !== 'Tab' || !drawerRef.current) return
+
+      const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      const active = document.activeElement as HTMLElement | null
+
+      if (e.shiftKey && active === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
     window.addEventListener('keydown', onKeyDown)
+    const firstFocusable = drawerRef.current?.querySelector<HTMLElement>(
+      'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    firstFocusable?.focus()
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [mobileOpen])
 
@@ -162,7 +185,7 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
           ? { duration: 0 }
           : isMobile
             ? { duration: 0.15, ease: 'easeOut' }
-            : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
+            : { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }
       }
       className={`sticky top-0 z-50 border-b border-white/5 bg-[rgba(5,13,26,0.85)] text-white shadow-none ${lowPower ? '' : 'backdrop-blur-xl'}`}
     >
@@ -195,6 +218,8 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
         onClick={() => setMobileOpen(true)}
         className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white shadow-sm md:hidden"
         aria-label="Menu"
+        aria-expanded={mobileOpen}
+        aria-controls="mobile-nav-drawer"
         whileTap={lowPower ? undefined : { scale: 0.95 }}
       >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,6 +240,11 @@ export default function Navbar({ userEmail }: { userEmail?: string | null }) {
               transition={{ duration: lowPower ? 0.12 : isMobile ? 0.15 : 0.2 }}
             />
             <motion.div
+              id="mobile-nav-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Mobile menu"
+              ref={drawerRef}
               className={`fixed right-0 top-0 z-[100] flex h-full w-[min(100%,20rem)] flex-col gap-5 border-l border-white/10 bg-[rgba(5,13,26,0.95)] p-5 text-white shadow-2xl md:hidden ${lowPower ? '' : 'backdrop-blur-xl'}`}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}

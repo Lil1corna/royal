@@ -5,7 +5,13 @@ import { useCallback, useRef, useState, type MouseEvent, type TouchEvent } from 
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 import { useIsMobile } from '@/hooks/useIsMobile'
 
-export default function ProductGallery({ images }: { images: string[] }) {
+export default function ProductGallery({
+  images,
+  productName,
+}: {
+  images: string[]
+  productName: string
+}) {
   const [active, setActive] = useState(0)
   const mainRef = useRef<HTMLDivElement>(null)
   const touchStartX = useRef<number | null>(null)
@@ -99,7 +105,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
           >
             <Image
               src={images[active]}
-              alt="Product image"
+              alt={`${productName} — image ${active + 1}`}
               width={800}
               height={800}
               className="w-full h-full object-cover rounded-2xl shadow-lg"
@@ -112,7 +118,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
         </motion.div>
       </div>
       {images.length > 1 && (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {images.map((img, i) => (
             <button
               key={i}
@@ -126,7 +132,7 @@ export default function ProductGallery({ images }: { images: string[] }) {
             >
               <Image
                 src={img}
-                alt={`Thumbnail ${i + 1}`}
+                alt={`${productName} thumbnail ${i + 1}`}
                 width={180}
                 height={180}
                 className="w-full h-full object-cover"

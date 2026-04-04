@@ -11,6 +11,7 @@ export type { CartItem }
 type CartContext = {
   items: CartItem[]
   add: (item: CartItem) => void
+  decrease: (id: string, size: string | null) => void
   remove: (id: string, size: string | null) => void
   clear: () => void
   replaceItems: (nextItems: CartItem[]) => void
@@ -21,6 +22,7 @@ type CartContext = {
 const CartCtx = createContext<CartContext>({
   items: [],
   add: () => {},
+  decrease: () => {},
   remove: () => {},
   clear: () => {},
   replaceItems: () => {},
@@ -57,6 +59,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.filter((i) => !(i.id === id && i.size === size)))
   }
 
+  const decrease = (id: string, size: string | null) => {
+    setItems((prev) =>
+      prev
+        .map((i) =>
+          i.id === id && i.size === size
+            ? { ...i, quantity: Math.max(0, i.quantity - 1) }
+            : i
+        )
+        .filter((i) => i.quantity > 0)
+    )
+  }
+
   const clear = () => setItems([])
   const replaceItems = (nextItems: CartItem[]) => setItems(nextItems)
 
@@ -64,7 +78,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const count = items.reduce((s, i) => s + i.quantity, 0)
 
   return (
-    <CartCtx.Provider value={{ items, add, remove, clear, replaceItems, total, count }}>
+    <CartCtx.Provider value={{ items, add, decrease, remove, clear, replaceItems, total, count }}>
       {children}
     </CartCtx.Provider>
   )

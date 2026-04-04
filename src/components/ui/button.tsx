@@ -5,9 +5,11 @@ import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 
 type ButtonVariant = 'primary' | 'outline' | 'ghost'
+type ButtonSize = 'md' | 'lg'
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant
+  size?: ButtonSize
   loading?: boolean
 }
 
@@ -23,8 +25,13 @@ const variantClass: Record<ButtonVariant, string> = {
   ghost: 'bg-transparent text-white border border-transparent hover:bg-white/10',
 }
 
+const sizeClass: Record<ButtonSize, string> = {
+  md: 'min-h-[44px] px-4 py-2.5 text-sm',
+  lg: 'min-h-[52px] px-5 py-3 text-base',
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'primary', loading = false, disabled, className, children, ...props },
+  { variant = 'primary', size = 'md', loading = false, disabled, className, children, ...props },
   ref
 ) {
   return (
@@ -34,7 +41,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={props.type ?? 'button'}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold',
+        'inline-flex items-center justify-center gap-2 rounded-xl font-semibold',
+        sizeClass[size],
         'motion-safe:transition-transform motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050d1a]',
         'disabled:cursor-not-allowed disabled:opacity-60',
         variantClass[variant],

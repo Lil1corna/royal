@@ -14,7 +14,7 @@ export default function OrderSuccess() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.22 }}
-      className="p-8 max-w-md mx-auto text-center mt-20"
+      className="mt-20 max-w-md mx-auto p-4 text-center md:p-6 lg:p-8"
     >
       <motion.div
         initial={{ scale: 0.92 }}

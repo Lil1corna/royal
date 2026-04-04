@@ -1,9 +1,10 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, useScroll, useTransform, type Variants } from 'framer-motion'
+import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform, type Variants } from 'framer-motion'
 import { useMemo, useRef, useState } from 'react'
 import { useLang, translations } from '@/context/lang'
+import { useWishlist } from '@/context/wishlist'
 import CinematicHero from '@/components/cinematic-hero'
 import AboutSection from '@/components/about-section'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
@@ -29,19 +30,19 @@ const catalogGridContainerHeavy = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.065,
-      delayChildren: 0.04,
+      staggerChildren: 0.06,
+      delayChildren: 0.1,
     },
   },
 }
 
 const catalogGridItemHeavy = {
-  hidden: { opacity: 0, y: 26, scale: 0.985 },
+  hidden: { opacity: 0, y: 24, scale: 0.97 },
   show: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.48, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const },
   },
 }
 
@@ -81,6 +82,13 @@ const catalogGridItemMobile = {
   },
 }
 
+function getRating(id: string) {
+  const seed = id
+    .split('')
+    .reduce((sum, ch) => sum + ch.charCodeAt(0), 0)
+  return 4 + (seed % 10) / 10
+}
+
 function ParallaxProductCardDesktop({
   p,
   lang,
@@ -111,8 +119,19 @@ function ParallaxProductCardDesktop({
     p.discount_pct > 0 ? (p.price * (1 - p.discount_pct / 100)).toFixed(0) : null
 
   const [imgFailed, setImgFailed] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const { has, toggle } = useWishlist()
   const primaryImage = p.image_urls?.[0]?.trim()
   const showProductImage = Boolean(primaryImage) && !imgFailed
+  const rating = getRating(p.id)
+  const badgeText = p.discount_pct > 0 ? 'Скидка' : Number(p.id.replace(/\D/g, '').slice(-1) || '0') % 2 ? 'Новинка' : 'Хит'
+  const badgeClass =
+    p.discount_pct > 0
+      ? 'bg-red-500/90 text-white'
+      : badgeText === 'Новинка'
+        ? 'bg-emerald-500/90 text-white'
+        : 'bg-amber-500/90 text-neutral-900'
+  const inWishlist = has(p.id)
 
   return (
     <motion.div
@@ -129,14 +148,16 @@ function ParallaxProductCardDesktop({
     >
       <Link
         href={'/product/' + p.id}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         className={[
-          'group block ds-card-glass transform-gpu transition-shadow transition-transform duration-300',
+          'group block ds-card-glass transform-gpu motion-safe:transition-transform motion-safe:transition-opacity',
           !p.in_stock ? 'opacity-60' : '',
         ].join(' ')}
       >
         <motion.div
           className="relative aspect-[4/3] overflow-hidden bg-[rgba(255,255,255,0.03)]"
-          whileHover={lowPower ? undefined : { scale: 1.035 }}
+          whileHover={lowPower ? undefined : { scale: 1.03 }}
           transition={{ duration: 0.35 }}
         >
           <motion.div className="absolute inset-0" style={{ y: imgY }}>
@@ -146,7 +167,7 @@ function ParallaxProductCardDesktop({
                 alt={name}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                className={`object-cover scale-110 transition-transform duration-700 ease-out ${
+                className={`object-cover scale-110 transition-transform duration-300 ease-out ${
                   lowPower ? '' : 'group-hover:scale-[1.18]'
                 }`}
                 style={{
@@ -173,6 +194,36 @@ function ParallaxProductCardDesktop({
           {/* Небольшая "тонировка" как в референсе */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#061226]/80 via-transparent to-transparent pointer-events-none" />
           <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(245,158,11,0.22),transparent_55%),radial-gradient(circle_at_70%_10%,rgba(255,255,255,0.14),transparent_45%)]" />
+          <div className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold ${badgeClass}`}>
+            {badgeText}
+          </div>
+          <motion.button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              toggle(p.id)
+            }}
+            className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 text-sm text-white/90 backdrop-blur"
+            animate={inWishlist ? { scale: [1, 1.3, 1], color: '#fb7185' } : { scale: 1, color: '#ffffff' }}
+            transition={{ duration: 0.25 }}
+            aria-label={`Toggle wishlist for ${name}`}
+          >
+            {inWishlist ? '❤' : '♡'}
+          </motion.button>
+          <AnimatePresence>
+            {hovered && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/75 via-black/40 to-transparent p-4"
+              >
+                <span className="inline-flex rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold text-white">
+                  Быстрый просмотр
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {!p.in_stock && (
             <div className="absolute top-3 right-3 bg-[rgba(220,53,69,0.1)] border border-[rgba(220,53,69,0.2)] text-[rgba(255,100,100,0.8)] text-[10px] font-semibold px-2 py-1 rounded-full z-10">
               {tr.outOfStock[lang]}
@@ -197,15 +248,16 @@ function ParallaxProductCardDesktop({
           <div className="flex items-center gap-2">
             {discountedPrice ? (
               <>
-                <span className="font-serif text-[26px] font-bold text-[#e8c97a]">
+                <span className="price-text font-serif text-[26px] font-bold text-red-300">
                   {discountedPrice} AZN
                 </span>
-                <span className="text-white/40 text-sm line-through">{p.price} AZN</span>
+                <span className="price-text text-white/40 text-sm line-through">{p.price} AZN</span>
               </>
             ) : (
-              <span className="font-serif text-[26px] font-bold text-[#e8c97a]">{p.price} AZN</span>
+              <span className="price-text font-serif text-[26px] font-bold text-[#e8c97a]">{p.price} AZN</span>
             )}
           </div>
+          <p className="mt-2 text-xs text-amber-200/80">{'★'.repeat(4)}☆ {rating.toFixed(1)}</p>
         </motion.div>
       </Link>
     </motion.div>
@@ -267,7 +319,7 @@ function ParallaxProductCardMobile({
                 alt={name}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                className={`object-cover scale-110 transition-transform duration-700 ease-out ${
+                className={`object-cover scale-110 transition-transform duration-300 ease-out ${
                   lowPower ? '' : 'group-hover:scale-[1.18]'
                 }`}
                 style={{
@@ -337,7 +389,8 @@ export default function CatalogClient({ products }: { products: Product[] }) {
   const { lang } = useLang()
   const tr = translations
   const isMobile = useIsMobile()
-  const lowPower = useLowPowerMotion() || isMobile
+  const reducedMotion = useReducedMotion()
+  const lowPower = useLowPowerMotion() || isMobile || reducedMotion
   const gridContainerVariants = isMobile
     ? catalogGridContainerMobile
     : lowPower
@@ -364,6 +417,8 @@ export default function CatalogClient({ products }: { products: Product[] }) {
   }, [products, searchLower, categoryFilter])
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+  const featuredRef = useRef<HTMLDivElement>(null)
+  const featuredInView = useInView(featuredRef, { once: true, margin: '-80px' })
   const paginatedProducts = useMemo(() => {
     return filteredProducts.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
   }, [filteredProducts, page])
@@ -384,7 +439,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
             whileInView={isMobile ? undefined : { opacity: 1, y: 0 }}
             viewport={isMobile ? undefined : { once: true, amount: 0.3 }}
             transition={
-              isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
+              isMobile ? { duration: 0.15, ease: 'easeOut' } : { duration: 0.38, ease: [0.25, 0.1, 0.25, 1] }
             }
           >
             <h2 className="font-serif text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold text-white mb-4 sm:mb-6">
@@ -401,7 +456,13 @@ export default function CatalogClient({ products }: { products: Product[] }) {
         </div>
       </div>
 
-      <div className="w-full bg-[#061226] py-8 sm:py-10">
+      <motion.section
+        ref={featuredRef}
+        initial={{ opacity: 0, y: 40 }}
+        animate={featuredInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.38, ease: [0.25, 0.1, 0.25, 1] }}
+        className="w-full bg-[#061226] py-8 sm:py-10"
+      >
         <div id="catalog-grid" className="scroll-mt-28 max-w-6xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-white tracking-tight">
             {tr.catalog[lang]}
@@ -439,7 +500,29 @@ export default function CatalogClient({ products }: { products: Product[] }) {
 
           {/* CATALOG PRODUCT LIST — do not remove even if appears empty statically.
               Products are loaded asynchronously from the API at runtime. */}
-          <motion.div
+          {paginatedProducts.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-12 text-center">
+              <div className="mb-3 text-5xl">🔎</div>
+              <p className="text-lg font-semibold text-white">
+                Ничего не найдено по запросу «{search}»
+              </p>
+              <p className="mt-2 text-sm text-white/60">
+                Попробуйте изменить фильтры или поисковый запрос
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  setCategoryFilter('')
+                  setPage(1)
+                }}
+                className="mt-5 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/20"
+              >
+                Сбросить фильтры
+              </button>
+            </div>
+          ) : (
+            <motion.div
             key={`${page}-${categoryFilter}-${searchLower}`}
             className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
             variants={gridContainerVariants}
@@ -469,9 +552,10 @@ export default function CatalogClient({ products }: { products: Product[] }) {
                 />
               )
             )}
-          </motion.div>
+            </motion.div>
+          )}
         </div>
-      </div>
+      </motion.section>
 
       {totalPages > 1 && (
         <div className="w-full bg-[#061226] pb-10">

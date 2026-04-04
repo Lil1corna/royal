@@ -4,9 +4,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import OrderStatusTimeline from '@/components/order-status-timeline'
 import { deliveryModeLabel, type DeliveryMode } from '@/lib/delivery'
 import { useLang, translations } from '@/context/lang'
+import { Button } from '@/components/ui/button'
 
 export type AccountOrderItem = {
   id: string
@@ -100,10 +102,16 @@ export default function AccountOrdersSection({
   if (!orders.length) {
     return (
       <div className="text-center py-16 ds-card-glass rounded-2xl">
-        <div className="text-5xl mb-4">📦</div>
+        <motion.div
+          animate={{ y: [0, -4, 0] }}
+          transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+          className="mb-4 text-5xl"
+        >
+          📦
+        </motion.div>
         <p className="text-neutral-300 mb-4">{tr.noOrdersYet[lang]}</p>
-        <Link href="/" className="ds-btn-primary inline-block px-6 py-2">
-          {tr.startShopping[lang]}
+        <Link href="/">
+          <Button variant="outline">{tr.startShopping[lang]}</Button>
         </Link>
       </div>
     )

@@ -190,7 +190,7 @@ export default function EditProduct() {
   }
 
   return (
-    <main className="p-8 max-w-2xl mx-auto">
+    <main className="p-4 md:p-6 lg:p-8 max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Mehsulu Redakte Et</h1>
@@ -199,7 +199,7 @@ export default function EditProduct() {
         onSubmit={handleSave}
         className="flex flex-col gap-4 ds-card-glass p-6 rounded-2xl"
       >
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label className="ds-label">Ad (AZ)</label>
             <input className="ds-input" value={form.name_az}

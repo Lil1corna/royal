@@ -144,10 +144,10 @@ export default function EditUser() {
     setLoading(false)
   }
 
-  if (!user) return <div className="p-8">Yuklenilir...</div>
+  if (!user) return <div className="p-4 md:p-6 lg:p-8">Yuklenilir...</div>
 
   return (
-    <main className="p-8 max-w-md mx-auto">
+    <main className="p-4 md:p-6 lg:p-8 max-w-md mx-auto">
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin/users" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Rol Deyis</h1>

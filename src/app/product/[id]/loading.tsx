@@ -1,6 +1,6 @@
 export default function ProductLoading() {
   return (
-    <main className="p-8 max-w-6xl mx-auto">
+    <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto">
       <div className="h-4 w-24 bg-white/10 rounded mb-6 animate-pulse" />
       <div className="h-3 w-20 bg-white/10 rounded mb-1 animate-pulse" />
       <div className="h-9 w-2/3 bg-white/10 rounded mb-8 animate-pulse" />

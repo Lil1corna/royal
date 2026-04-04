@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import CatalogClient from '@/components/catalog-client'
+import ProductCardSkeleton from '@/components/product-card-skeleton'
 
 type Product = {
   id: string
@@ -49,8 +50,10 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white text-xl">Yüklənir...</div>
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 py-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <ProductCardSkeleton key={index} />
+        ))}
       </div>
     )
   }

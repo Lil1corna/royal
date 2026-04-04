@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase'
 import { useLang, translations } from '@/context/lang'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
+import { Button } from '@/components/ui/button'
+import { useAsyncAction } from '@/hooks/useAsyncAction'
 
 const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
 
@@ -64,30 +66,13 @@ export default function AccountSettings({
   const [shippingLng, setShippingLng] = useState<number | null>(initialShippingLng)
   const [addressExtra, setAddressExtra] = useState(initialAddressExtra)
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl)
-  const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [avatarChecking, setAvatarChecking] = useState(false)
   const [avatarReachable, setAvatarReachable] = useState<boolean | null>(null)
-
   const previewAvatar = avatarUrl.trim()
   const avatarValid = /^https?:\/\/.+/i.test(previewAvatar)
-
-  useEffect(() => {
-    if (!previewAvatar || !avatarValid) return
-    const startCheck = window.setTimeout(() => setAvatarChecking(true), 0)
-    const img = new window.Image()
-    const done = (ok: boolean) => {
-      setAvatarReachable(ok)
-      setAvatarChecking(false)
-    }
-    img.onload = () => done(true)
-    img.onerror = () => done(false)
-    img.referrerPolicy = 'no-referrer'
-    img.src = previewAvatar
-    return () => clearTimeout(startCheck)
-  }, [previewAvatar, avatarValid])
 
   const showToast = (type: 'success' | 'error', message: string) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
@@ -95,16 +80,7 @@ export default function AccountSettings({
     toastTimerRef.current = setTimeout(() => setToast(null), 2800)
   }
 
-  const fullAddressLine = [address.trim(), addressExtra.trim()].filter(Boolean).join(', ')
-
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
-    }
-  }, [])
-
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const { execute: runSave, loading: saving } = useAsyncAction(async () => {
     const phoneNormalized = normalizeAzPhone(phone)
     if (!phoneNormalized) {
       showToast('error', tr.invalidPhone[lang])
@@ -125,8 +101,6 @@ export default function AccountSettings({
       showToast('error', tr.invalidAvatarUrl[lang])
       return
     }
-
-    setSaving(true)
     setSaved(false)
 
     const { error } = await supabase
@@ -145,7 +119,6 @@ export default function AccountSettings({
       },
     })
 
-    setSaving(false)
     if (!error && !metaRes.error) {
       setSaved(true)
       showToast('success', tr.saved[lang])
@@ -154,6 +127,34 @@ export default function AccountSettings({
     } else {
       showToast('error', error?.message || metaRes.error?.message || tr.error[lang])
     }
+  })
+
+  useEffect(() => {
+    if (!previewAvatar || !avatarValid) return
+    const startCheck = window.setTimeout(() => setAvatarChecking(true), 0)
+    const img = new window.Image()
+    const done = (ok: boolean) => {
+      setAvatarReachable(ok)
+      setAvatarChecking(false)
+    }
+    img.onload = () => done(true)
+    img.onerror = () => done(false)
+    img.referrerPolicy = 'no-referrer'
+    img.src = previewAvatar
+    return () => clearTimeout(startCheck)
+  }, [previewAvatar, avatarValid])
+
+  const fullAddressLine = [address.trim(), addressExtra.trim()].filter(Boolean).join(', ')
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    }
+  }, [])
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await runSave()
   }
 
   return (
@@ -168,16 +169,18 @@ export default function AccountSettings({
             : `Email: ${currentEmail} (email dəyişmə söndürülüb)`}
       </p>
       <form onSubmit={save}>
-        <label className="ds-label">{tr.displayName[lang]}</label>
+        <label className="ds-label" htmlFor="account-display-name">{tr.displayName[lang]}</label>
         <input
+          id="account-display-name"
           className="ds-input mb-4"
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={60}
         />
 
-        <label className="ds-label">{tr.accountPhone[lang]}</label>
+        <label className="ds-label" htmlFor="account-phone">{tr.accountPhone[lang]}</label>
         <input
+          id="account-phone"
           className="ds-input mb-4"
           value={phone}
           onChange={(e) => setPhone(formatAzPhone(e.target.value))}
@@ -199,8 +202,9 @@ export default function AccountSettings({
           }}
         />
 
-        <label className="ds-label mt-4">{tr.addressDetailHint[lang]}</label>
+        <label className="ds-label mt-4" htmlFor="account-address-extra">{tr.addressDetailHint[lang]}</label>
         <input
+          id="account-address-extra"
           className="ds-input mb-4"
           value={addressExtra}
           onChange={(e) => setAddressExtra(e.target.value)}
@@ -222,7 +226,7 @@ export default function AccountSettings({
           </div>
         )}
 
-        <label className="ds-label">{tr.avatarUrl[lang]}</label>
+        <label className="ds-label" htmlFor="account-avatar-url">{tr.avatarUrl[lang]}</label>
         <p className="text-xs text-white/60 mb-2">
           {lang === 'ru'
             ? 'Прямая ссылка на картинку (https). Если превью не грузится из‑за защиты сайта — сохранение всё равно возможно.'
@@ -231,6 +235,7 @@ export default function AccountSettings({
               : 'Birbaşa şəkil linki (https). Bəzi saytlar önizləməni bloklaya bilər — saxlama işləyir.'}
         </p>
         <input
+          id="account-avatar-url"
           className="ds-input mb-4"
           value={avatarUrl}
           onChange={(e) => setAvatarUrl(e.target.value)}
@@ -277,9 +282,7 @@ export default function AccountSettings({
           </button>
         </div>
 
-        <button className="btn-primary" disabled={saving}>
-          {saving ? tr.saving[lang] : tr.saveChanges[lang]}
-        </button>
+        <Button loading={saving}>{tr.saveChanges[lang]}</Button>
         {saved && <span className="ml-3 text-sm text-emerald-300">{tr.saved[lang]}</span>}
       </form>
     </div>

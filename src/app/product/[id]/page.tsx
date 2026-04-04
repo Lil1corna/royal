@@ -4,6 +4,18 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import ProductContent from './product-content'
 
+type ProductData = {
+  id: string
+  name_ru: string
+  name_az: string
+  name_en: string
+  category: string
+  price: number
+  discount_pct: number
+  image_urls: string[] | null
+  description?: string | null
+}
+
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const params = await props.params
   const cookieStore = await cookies()
@@ -62,14 +74,14 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
 
   // If `description` column doesn't exist yet, keep product page working.
   // We cast because the first query includes `description`, while the fallback query omits it.
-  let resolvedProduct: any = product
+  let resolvedProduct: ProductData | null = (product as ProductData | null) ?? null
   if (!resolvedProduct && productError && /description/i.test(productError.message)) {
     const { data: productWithoutDesc } = await supabase
       .from('products')
       .select('id, name_ru, name_az, name_en, category, price, discount_pct, image_urls')
       .eq('id', params.id)
       .single()
-    resolvedProduct = productWithoutDesc
+    resolvedProduct = (productWithoutDesc as ProductData | null) ?? null
   }
 
   if (!resolvedProduct) notFound()

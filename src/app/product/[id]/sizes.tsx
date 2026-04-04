@@ -1,5 +1,5 @@
 'use client'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useRef, useState } from 'react'
 import { useCart } from '@/context/cart'
 import { useFlyToCart } from '@/context/fly-to-cart'
@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useLang, translations } from '@/context/lang'
 import Magnetic from '@/components/magnetic'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { Button } from '@/components/ui/button'
 
 type Size = {
   id: string
@@ -58,11 +59,11 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
     })
     if (fromEl) triggerFly(fromEl, productImage)
     setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
+    setTimeout(() => setAdded(false), 800)
   }
 
   return (
-    <div>
+    <div className="pb-24 md:pb-0">
       <div className="flex items-center gap-3 mb-6">
         <span className="font-serif text-[26px] font-bold text-[#e8c97a]">{current} AZN</span>
         {discountPct > 0 && (
@@ -125,17 +126,30 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
         >
           {inWishlist ? tr.removeFromWishlist[lang] : tr.addToWishlist[lang]}
         </motion.button>
-        <Magnetic className="w-full" strength={0.16}>
+        <Magnetic className="hidden w-full md:block" strength={0.16}>
           <motion.button
             ref={addBtnRef}
             type="button"
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.94 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             onClick={() => handleAdd(addBtnRef.current)}
             className={`w-full rounded-xl py-3 min-h-[44px] text-lg transition-all ${
-              added ? 'bg-green-500 text-white' : 'btn-primary'
+              added ? 'bg-emerald-500 text-white' : 'btn-primary'
             }`}
           >
-            {added ? tr.addToCartSuccess[lang] : tr.addToCart[lang]}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={added ? 'added' : 'idle'}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.18 }}
+                className="inline-flex items-center"
+              >
+                {added ? '✓ Добавлено' : tr.addToCart[lang]}
+              </motion.span>
+            </AnimatePresence>
           </motion.button>
         </Magnetic>
         <Magnetic className="w-full" strength={0.16}>
@@ -153,6 +167,16 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
           </motion.button>
         </Magnetic>
       </motion.div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#050d1a]/95 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-md md:hidden">
+        <Button
+          className="w-full"
+          size="lg"
+          onClick={() => handleAdd(addBtnRef.current)}
+        >
+          {tr.addToCart[lang]} — {current} AZN
+        </Button>
+      </div>
     </div>
   )
 }

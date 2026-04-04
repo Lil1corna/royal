@@ -41,7 +41,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ toast?
   const newCount = orders?.filter((o) => o.status === 'new').length ?? 0
 
   return (
-    <main className="p-8 max-w-6xl mx-auto">
+    <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto">
       <div className="flex items-center gap-4 mb-8 flex-wrap">
         <a href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">
           Geri

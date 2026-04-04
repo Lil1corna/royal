@@ -17,6 +17,8 @@ import {
 } from '@/lib/delivery'
 import { buildProfileAddressLine, metaCoord } from '@/lib/profile-address'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { Button } from '@/components/ui/button'
+import { useAsyncAction } from '@/hooks/useAsyncAction'
 
 const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
 
@@ -38,7 +40,7 @@ function normalizeAzPhone(raw: string): string | null {
 }
 
 export default function CartPage() {
-  const { items, remove, clear, replaceItems, total, count } = useCart()
+  const { items, add, decrease, remove, clear, replaceItems, total, count } = useCart()
   const { lang } = useLang()
   const tr = translations
   const [address, setAddress] = useState('')
@@ -47,7 +49,6 @@ export default function CartPage() {
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('courier')
-  const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   /** Сохранённый в профиле адрес (если есть) */
@@ -128,26 +129,7 @@ export default function CartPage() {
     replaceItems(refreshed)
   }
 
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
-    }
-  }, [])
-
-  const handleOrder = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (items.length === 0) return
-    if (deliveryMode === 'courier' && !address.trim()) {
-      showToast('error', tr.selectAddress[lang])
-      return
-    }
-    const phoneNormalized = normalizeAzPhone(phone)
-    if (!phoneNormalized) {
-      showToast('error', tr.invalidPhone[lang])
-      return
-    }
-    setLoading(true)
-
+  const { execute: executeOrder, loading } = useAsyncAction(async () => {
     const { data: { user } } = await supabase.auth.getUser()
 
     const orderAddress =
@@ -164,7 +146,7 @@ export default function CartPage() {
         ? ` | Koordinat: ${lat},${lng}`
         : ''
 
-    const notesBase = `Tel: ${phoneNormalized}${notes ? ' | ' + notes : ''}${coordPart}`
+    const notesBase = `Tel: ${normalizeAzPhone(phone) || ''}${notes ? ' | ' + notes : ''}${coordPart}`
     const deliveryMeta =
       lang === 'ru'
         ? ` | Доставка: ${deliveryMode === 'pickup' ? 'самовывоз' : 'курьер'}, доставка ${shippingFee} AZN, товары ${subtotal} AZN`
@@ -212,34 +194,60 @@ export default function CartPage() {
           tr.error[lang] + ': ' + (rpcError?.message || 'create_order_with_items')
         )
       }
-      setLoading(false)
       return
     }
 
     showToast('success', tr.orderSuccess[lang])
     clear()
     router.push('/order-success')
-    setLoading(false)
+  })
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    }
+  }, [])
+
+  const handleOrder = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (items.length === 0) return
+    if (deliveryMode === 'courier' && !address.trim()) {
+      showToast('error', tr.selectAddress[lang])
+      return
+    }
+    const phoneNormalized = normalizeAzPhone(phone)
+    if (!phoneNormalized) {
+      showToast('error', tr.invalidPhone[lang])
+      return
+    }
+    await executeOrder()
   }
 
   if (count === 0) {
     return (
       <main className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto text-center overflow-x-hidden">
-        <div className="text-6xl mb-4">🛒</div>
+        <motion.div
+          animate={{ rotate: [-5, 5, -5] }}
+          transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}
+          className="mb-4 text-6xl"
+        >
+          🛒
+        </motion.div>
         <h1 className="text-xl sm:text-2xl font-bold mb-2">{tr.cartEmpty[lang]}</h1>
+        <p className="mb-5 text-white/60">Добавьте товары которые вам понравились</p>
         <Link href="/" className="text-[#e8c97a] hover:underline">{tr.backToCatalog[lang]}</Link>
       </main>
     )
   }
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto overflow-x-hidden">
+    <main className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto overflow-x-hidden pb-28 md:pb-8">
       <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Link href="/" className="text-white/60 hover:text-white min-h-[44px] inline-flex items-center">{tr.back[lang]}</Link>
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">{tr.cart[lang]}</h1>
       </div>
       <ToastMessage toast={toast} className="mb-5" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-[1.3fr_0.9fr] gap-8 md:gap-12">
         <div>
           <div className="flex flex-col gap-3 mb-6">
             {items.map((item, i) => (
@@ -270,7 +278,25 @@ export default function CartPage() {
                   <div className="font-semibold">{item.name}</div>
                   {item.size && <div className="text-sm text-white/60">{item.size}</div>}
                   <div className="font-bold mt-1">{item.price * item.quantity} AZN</div>
-                  <div className="text-sm text-white/60">{item.quantity} {tr.pieces[lang]}</div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => decrease(item.id, item.size)}
+                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 bg-white/5 text-white"
+                    >
+                      -
+                    </button>
+                    <div className="flex h-11 min-w-[44px] items-center justify-center rounded-lg border border-white/15 px-3 text-sm font-semibold">
+                      {item.quantity}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => add(item)}
+                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 bg-white/5 text-white"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
                 <button
                   onClick={() => remove(item.id, item.size)}
@@ -311,7 +337,7 @@ export default function CartPage() {
           </div>
         </div>
 
-        <form onSubmit={handleOrder} className="flex flex-col gap-4">
+        <form id="cart-order-form" onSubmit={handleOrder} className="flex flex-col gap-4 md:sticky md:top-24 h-fit">
           <h2 className="text-xl font-bold">{tr.orderForm[lang]}</h2>
           <div>
             <span className="ds-label">{tr.deliveryMethod[lang]}</span>
@@ -456,20 +482,36 @@ export default function CartPage() {
             </p>
           )}
           <div>
-            <label className="ds-label">{tr.notes[lang]}</label>
-            <textarea className="ds-input h-20 resize-none"
+            <label className="ds-label" htmlFor="cart-notes">{tr.notes[lang]}</label>
+            <textarea id="cart-notes" className="ds-input h-20 resize-none"
               placeholder={tr.extraInfo[lang] + '...'}
               value={notes} onChange={e => setNotes(e.target.value)} />
           </div>
-          <motion.button
-            whileTap={{ scale: 0.985 }}
+          <Button
             type="submit"
-            disabled={loading || (deliveryMode === 'courier' && !address.trim())}
-            className="btn-primary w-full"
+            loading={loading}
+            disabled={deliveryMode === 'courier' && !address.trim()}
+            className="w-full"
           >
-            {loading ? tr.submitting[lang] : `${tr.submitOrder[lang]} — ${grandTotal} AZN`}
-          </motion.button>
+            {`${tr.submitOrder[lang]} — ${grandTotal} AZN`}
+          </Button>
         </form>
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#050d1a]/95 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-md md:hidden">
+        <div className="mb-2 flex items-center justify-between text-sm text-white/70">
+          <span>{tr.total[lang]}</span>
+          <span className="price-text text-base font-bold text-white">{grandTotal} AZN</span>
+        </div>
+        <Button
+          type="submit"
+          form="cart-order-form"
+          loading={loading}
+          disabled={deliveryMode === 'courier' && !address.trim()}
+          className="w-full"
+          size="lg"
+        >
+          {`${tr.submitOrder[lang]} — ${grandTotal} AZN`}
+        </Button>
       </div>
     </main>
   )

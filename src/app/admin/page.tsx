@@ -51,7 +51,7 @@ export default async function AdminPage() {
     .eq('status', 'new')
 
   return (
-    <main className="p-8 max-w-6xl mx-auto">
+    <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Panel</h1>
         <div className="flex gap-3">

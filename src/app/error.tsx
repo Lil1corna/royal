@@ -13,7 +13,7 @@ export default function Error({
   const tr = translations
 
   return (
-    <main className="min-h-[60vh] flex flex-col items-center justify-center p-8">
+    <main className="min-h-[60vh] flex flex-col items-center justify-center p-4 md:p-6 lg:p-8">
       <div className="text-5xl mb-4">⚠️</div>
       <h1 className="text-2xl font-bold mb-2">{tr.error[lang]}</h1>
       <p className="text-gray-500 mb-6 text-center max-w-md">{error.message}</p>

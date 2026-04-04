@@ -8,6 +8,7 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { useWishlist } from '@/context/wishlist'
 import { useLang, translations } from '@/context/lang'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import ProductCardSkeleton from '@/components/product-card-skeleton'
 
 type Product = {
   id: string
@@ -72,8 +73,10 @@ export default function WishlistPage() {
 
   if (ids.length > 0 && loadingProducts) {
     return (
-      <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto text-center text-white/60">
-        {tr.loading[lang]}…
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 py-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, idx) => (
+          <ProductCardSkeleton key={idx} />
+        ))}
       </main>
     )
   }
@@ -93,7 +96,13 @@ export default function WishlistPage() {
   if (ids.length === 0 || products.length === 0) {
     return (
       <main className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto text-center">
-        <div className="text-6xl mb-4">♡</div>
+        <motion.div
+          animate={{ rotate: [-4, 4, -4] }}
+          transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
+          className="mb-4 text-6xl text-rose-300"
+        >
+          ♡
+        </motion.div>
         <h1 className="text-xl sm:text-2xl font-bold mb-2">{tr.wishlistEmpty[lang]}</h1>
         <Link href="/" className="text-[#e8c97a] font-medium hover:underline">
           {tr.backToCatalog[lang]}
