@@ -2,14 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { getBaseUrl } from '@/lib/url'
-import { verifyCsrf } from '@/lib/csrf'
 
-export async function POST(request: NextRequest) {
-  const csrfOk = await verifyCsrf(request)
-  if (!csrfOk) {
-    return NextResponse.json({ error: 'CSRF token mismatch' }, { status: 403 })
-  }
-
+export async function POST(_request: NextRequest) {
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

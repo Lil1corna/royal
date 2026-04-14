@@ -6,7 +6,6 @@ import Footer from '@/components/footer'
 import { PageTransition } from '@/components/page-transition'
 import AuroraBg from '@/components/aurora-bg'
 import { jost, cormorant, dmSans } from '@/lib/fonts'
-import { ensureCsrfToken } from '@/lib/csrf'
 
 export const metadata: Metadata = {
   title: 'RoyalAz — Ortopedik Dosekler',
@@ -25,7 +24,6 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  await ensureCsrfToken()
 
   return (
     <html
