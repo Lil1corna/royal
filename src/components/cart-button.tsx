@@ -1,10 +1,13 @@
 'use client'
 import { useCart } from '@/context/cart'
+import { useLang, translations } from '@/context/lang'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function CartButton() {
   const { count } = useCart()
+  const { lang } = useLang()
+  const tr = translations
   const router = useRouter()
 
   return (
@@ -14,7 +17,8 @@ export default function CartButton() {
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       onClick={() => router.push('/cart')}
       type="button"
-      className="relative flex items-center gap-2 ds-btn-secondary !px-4 !py-2"
+      className="relative flex items-center gap-2 ds-btn-secondary !px-4 !py-2 min-h-[44px]"
+      aria-label={tr.cart[lang]}
     >
       🛒
       <AnimatePresence>
@@ -30,7 +34,7 @@ export default function CartButton() {
           </motion.span>
         )}
       </AnimatePresence>
-      <span className="text-sm text-white">Sebet</span>
+      <span className="text-sm text-white">{tr.cart[lang]}</span>
     </motion.button>
   )
 }

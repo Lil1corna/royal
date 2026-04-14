@@ -1,9 +1,7 @@
-import { createServerClient } from '@supabase/ssr'
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { ROLES } from '@/config/roles'
+import { ensureAuthorized } from '@/lib/ensure-authorized'
 
 const ROLE_VALUES = Array.from(new Set(Object.values(ROLES).map((r) => r.key)))
 
@@ -22,54 +20,15 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => cookieStore.getAll(),
-          setAll: (cookiesToSet) => {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          },
-        },
-      }
-    )
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!serviceRoleKey) {
+    const auth = await ensureAuthorized('assign_roles')
+    if (!auth.ok) {
       return NextResponse.json(
-        { error: 'Missing SUPABASE_SERVICE_ROLE_KEY' },
-        { status: 500 }
+        { error: auth.status === 401 ? 'Unauthorized' : auth.error || 'Forbidden' },
+        { status: auth.status }
       )
     }
 
-    const admin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      serviceRoleKey,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    )
-
-    const { error } = await admin
+    const { error } = await auth.admin
       .from('users')
       .update({ role: body.data.role })
       .eq('id', id)

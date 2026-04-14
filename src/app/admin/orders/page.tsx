@@ -1,22 +1,11 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { createServerSupabase } from '@/lib/supabase-server'
 import AdminOrdersClient from '@/components/admin-orders-client'
 import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 
 export default async function OrdersPage(props: { searchParams: Promise<{ toast?: string }> }) {
   const searchParams = await props.searchParams
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: () => {},
-      },
-    }
-  )
+  const supabase = await createServerSupabase()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/')

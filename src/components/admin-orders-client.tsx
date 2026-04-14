@@ -21,6 +21,8 @@ export type AdminOrder = {
   subtotal?: number | null
   shipping_fee?: number | null
   delivery_mode?: string | null
+  payment_method?: 'cash' | 'online' | null
+  payment_status?: 'pending' | 'paid' | 'failed' | null
   order_items?: OrderItem[] | null
 }
 
@@ -38,6 +40,17 @@ function StatusBadge({ status }: { status: string }) {
       {s.label}
     </span>
   )
+}
+
+function PaymentStatusBadge({ status }: { status: string | null | undefined }) {
+  const normalized = status || 'pending'
+  const map: Record<string, { label: string; className: string }> = {
+    pending: { label: 'Pending', className: 'bg-neutral-500/20 text-neutral-300 border border-neutral-500/30' },
+    paid: { label: 'Paid', className: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' },
+    failed: { label: 'Failed', className: 'bg-red-500/20 text-red-300 border border-red-500/30' },
+  }
+  const s = map[normalized] || map.pending
+  return <span className={`px-2 py-1 rounded-full text-xs font-medium ${s.className}`}>{s.label}</span>
 }
 
 function NotesWithMap({ notes }: { notes: string | null }) {
@@ -67,11 +80,16 @@ function OrderActions({
   orderId,
   currentStatus,
   canUpdateOrderStatus,
+  onStatusChanged,
 }: {
   orderId: string
   currentStatus: string
   canUpdateOrderStatus: boolean
+  onStatusChanged: (orderId: string, newStatus: string) => void
 }) {
+  const [updating, setUpdating] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
   if (!canUpdateOrderStatus) {
     return <div className="text-sm text-neutral-400">—</div>
   }
@@ -81,29 +99,52 @@ function OrderActions({
     in_delivery: { status: 'delivered', label: 'Catdirildi' },
   }
   const n = next[currentStatus]
+
+  const handleUpdate = async (targetStatus: string) => {
+    setUpdating(targetStatus)
+    setErrorMsg(null)
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: targetStatus }),
+      })
+      const data = (await res.json()) as { success?: boolean; error?: string }
+      if (!res.ok || !data.success) {
+        setErrorMsg(data.error || `Error ${res.status}`)
+        return
+      }
+      onStatusChanged(orderId, targetStatus)
+    } catch {
+      setErrorMsg('Network error')
+    } finally {
+      setUpdating(null)
+    }
+  }
+
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex gap-2 flex-wrap items-center">
       {n && (
-        <form action="/admin/orders/update" method="post">
-          <input type="hidden" name="id" value={orderId} />
-          <input type="hidden" name="status" value={n.status} />
-          <button type="submit" className="btn-admin btn-icon-arrow px-4 py-2">
-            {n.label} <span className="arrow">→</span>
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={() => handleUpdate(n.status)}
+          disabled={updating !== null}
+          className="btn-admin btn-icon-arrow px-4 py-2 disabled:opacity-50"
+        >
+          {updating === n.status ? '...' : n.label} <span className="arrow">→</span>
+        </button>
       )}
       {currentStatus !== 'cancelled' && currentStatus !== 'delivered' && (
-        <form action="/admin/orders/update" method="post">
-          <input type="hidden" name="id" value={orderId} />
-          <input type="hidden" name="status" value="cancelled" />
-          <button
-            type="submit"
-            className="bg-red-500/20 text-red-300 px-4 py-2 rounded-lg text-sm hover:bg-red-500/30 border border-red-500/30 transition-colors"
-          >
-            Legv et
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={() => handleUpdate('cancelled')}
+          disabled={updating !== null}
+          className="bg-red-500/20 text-red-300 px-4 py-2 rounded-lg text-sm hover:bg-red-500/30 border border-red-500/30 transition-colors disabled:opacity-50"
+        >
+          {updating === 'cancelled' ? '...' : 'Legv et'}
+        </button>
       )}
+      {errorMsg && <span className="text-xs text-red-400">{errorMsg}</span>}
     </div>
   )
 }
@@ -244,6 +285,10 @@ export default function AdminOrdersClient({
                 <div className="flex items-center gap-3 mb-1 flex-wrap">
                   <span className="font-mono text-sm text-neutral-400">#{order.id.slice(0, 8)}</span>
                   <StatusBadge status={order.status} />
+                  <PaymentStatusBadge status={order.payment_status} />
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-white/10 text-neutral-200 border border-white/20">
+                    {order.payment_method === 'online' ? 'Online' : 'Cash'}
+                  </span>
                 </div>
                 <div className="text-sm text-neutral-400">
                   {new Date(order.created_at).toLocaleString()}
@@ -287,6 +332,11 @@ export default function AdminOrdersClient({
               orderId={order.id}
               currentStatus={order.status}
               canUpdateOrderStatus={canUpdateOrderStatus}
+              onStatusChanged={(oid, newStatus) => {
+                setOrders((prev) =>
+                  prev.map((o) => o.id === oid ? { ...o, status: newStatus } : o)
+                )
+              }}
             />
           </div>
         ))}

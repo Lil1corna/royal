@@ -1,8 +1,6 @@
-import { createServerClient } from '@supabase/ssr'
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { ensureAuthorized } from '@/lib/ensure-authorized'
 
 const CATEGORY_VALUES = ['ortopedik', 'berk', 'yumshaq', 'topper', 'ushaq', 'yastig'] as const
 
@@ -18,52 +16,6 @@ const productUpdateSchema = z.object({
   image_urls: z.array(z.string().url()).optional().default([]),
 })
 
-async function ensureAdminSession() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { ok: false as const, status: 401 }
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || profile.role !== 'admin') {
-    return { ok: false as const, status: 403 }
-  }
-
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!serviceRoleKey) {
-    return { ok: false as const, status: 500, error: 'Missing SUPABASE_SERVICE_ROLE_KEY' }
-  }
-
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    serviceRoleKey,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
-
-  return { ok: true as const, admin }
-}
-
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -75,7 +27,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    const auth = await ensureAdminSession()
+    const auth = await ensureAuthorized('manage_products')
     if (!auth.ok) {
       return NextResponse.json(
         { error: auth.status === 401 ? 'Unauthorized' : auth.error || 'Forbidden' },
@@ -107,7 +59,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await context.params
-    const auth = await ensureAdminSession()
+    const auth = await ensureAuthorized('delete_anything')
     if (!auth.ok) {
       return NextResponse.json(
         { error: auth.status === 401 ? 'Unauthorized' : auth.error || 'Forbidden' },

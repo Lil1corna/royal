@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { useCart } from '@/context/cart'
 import { useFlyToCart } from '@/context/fly-to-cart'
 import { useWishlist } from '@/context/wishlist'
+import { useToast } from '@/context/toast'
 import { useRouter } from 'next/navigation'
 import { useLang, translations } from '@/context/lang'
 import Magnetic from '@/components/magnetic'
@@ -29,6 +30,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
   const { add } = useCart()
   const { triggerFly } = useFlyToCart()
   const { has, toggle } = useWishlist()
+  const { addToast } = useToast()
   const { lang } = useLang()
   const tr = translations
   const isMobile = useIsMobile()
@@ -59,7 +61,8 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
     })
     if (fromEl) triggerFly(fromEl, productImage)
     setAdded(true)
-    setTimeout(() => setAdded(false), 800)
+    addToast('success', tr.addToCartSuccess[lang])
+    setTimeout(() => setAdded(false), 1200)
   }
 
   return (
@@ -147,7 +150,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
                 transition={{ duration: 0.18 }}
                 className="inline-flex items-center"
               >
-                {added ? '✓ Добавлено' : tr.addToCart[lang]}
+                {added ? `✓ ${tr.addToCartSuccess[lang]}` : tr.addToCart[lang]}
               </motion.span>
             </AnimatePresence>
           </motion.button>

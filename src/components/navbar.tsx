@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation'
 import Magnetic from '@/components/magnetic'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from '@/lib/csrf-constants'
+import ThemeButton from '@/components/theme-button'
 
 type Lang = 'az' | 'ru' | 'en'
 
@@ -55,6 +57,8 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
           </button>
         ))}
       </div>
+
+      <ThemeButton />
 
       <Link
         href="/wishlist"
@@ -114,7 +118,19 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
           >
             {userEmail.split('@')[0]}
           </Link>
-          <form action="/auth/signout" method="post">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              const csrfToken = document.cookie
+                .split('; ')
+                .find((c) => c.startsWith(`${CSRF_COOKIE_NAME}=`))
+                ?.split('=')[1] || ''
+              fetch('/auth/signout', {
+                method: 'POST',
+                headers: { [CSRF_HEADER_NAME]: csrfToken },
+              }).then(() => { window.location.href = '/' }).catch(() => { window.location.href = '/' })
+            }}
+          >
             <button
               type="submit"
               className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white/70 transition-all hover:bg-white/10"

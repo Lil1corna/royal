@@ -1,113 +1,30 @@
-'use client'
-import { useEffect, useMemo, useState } from 'react'
-import { getSupabaseClient } from '@/lib/supabase'
+import { createServerSupabase } from '@/lib/supabase-server'
 import CatalogClient from '@/components/catalog-client'
-import ProductCardSkeleton from '@/components/product-card-skeleton'
+import type { Product } from '@/types/product'
 
-type Product = {
-  id: string
-  name_az: string
-  name_ru: string
-  name_en: string
-  category: string
-  price: number
-  discount_pct: number
-  in_stock: boolean
-  image_urls: string[]
-}
+export const dynamic = 'force-dynamic'
 
-export default function Home() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const supabase = useMemo(() => getSupabaseClient(), [])
+export default async function Home() {
+  let products: Product[] = []
+  let fetchError: string | null = null
 
-  useEffect(() => {
-    let cancelled = false
+  try {
+    const supabase = await createServerSupabase()
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-    const fetchProducts = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false })
-
-        if (error) {
-          console.error('Supabase error:', error)
-          if (!cancelled) setLoadError(error.message)
-        } else {
-          if (!cancelled) {
-            setProducts(data || [])
-            setLoadError(null)
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error)
-        if (!cancelled) setLoadError(error instanceof Error ? error.message : 'Failed to load products')
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
+    if (error) {
+      console.error('Supabase products error:', error)
+      fetchError = error.message
+    } else {
+      products = (data || []) as Product[]
     }
-
-    void fetchProducts()
-
-    const channel = supabase
-      .channel('home-products-live')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'products' },
-        () => {
-          void fetchProducts()
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'product_sizes' },
-        () => {
-          void fetchProducts()
-        }
-      )
-      .subscribe((status, err) => {
-        if (err) console.warn('[Realtime] home products:', err.message)
-      })
-
-    return () => {
-      cancelled = true
-      void supabase.removeChannel(channel)
-    }
-  }, [supabase])
-
-  if (loading) {
-    return (
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 py-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, index) => (
-          <ProductCardSkeleton key={index} />
-        ))}
-      </div>
-    )
+  } catch (e) {
+    console.error('Failed to fetch products:', e)
+    fetchError = e instanceof Error ? e.message : 'Failed to load products'
   }
 
-  if (loadError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <p className="text-red-300 font-semibold mb-2">Məhsullar yüklənmədi</p>
-          <p className="text-white/60 text-sm">{loadError}</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (products.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <p className="text-white font-semibold mb-2">Məhsul tapılmadı</p>
-          <p className="text-white/60 text-sm">Kataloq hazırda boşdur.</p>
-        </div>
-      </div>
-    )
-  }
-
-  return <CatalogClient products={products} />
+  return <CatalogClient initialProducts={products} initialError={fetchError} />
 }

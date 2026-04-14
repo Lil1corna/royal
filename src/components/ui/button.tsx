@@ -52,7 +52,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {...props}
     >
       {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-      <span>{loading ? 'Загрузка...' : children}</span>
+      <span>{loading ? '...' : children}</span>
     </motion.button>
   )
 })

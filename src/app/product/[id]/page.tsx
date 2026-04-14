@@ -68,28 +68,16 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
     error: productError,
   } = await supabase
     .from('products')
-    .select('id, name_ru, name_az, name_en, category, price, discount_pct, image_urls, description')
+    .select('id, name_ru, name_az, name_en, category, price, discount_pct, in_stock, image_urls, description')
     .eq('id', params.id)
     .single()
 
-  // If `description` column doesn't exist yet, keep product page working.
-  // We cast because the first query includes `description`, while the fallback query omits it.
-  let resolvedProduct: ProductData | null = (product as ProductData | null) ?? null
-  if (!resolvedProduct && productError && /description/i.test(productError.message)) {
-    const { data: productWithoutDesc } = await supabase
-      .from('products')
-      .select('id, name_ru, name_az, name_en, category, price, discount_pct, image_urls')
-      .eq('id', params.id)
-      .single()
-    resolvedProduct = (productWithoutDesc as ProductData | null) ?? null
-  }
-
-  if (!resolvedProduct) notFound()
+  if (productError || !product) notFound()
 
   const { data: sizes } = await supabase
     .from('product_sizes')
     .select('*')
     .eq('product_id', params.id)
 
-  return <ProductContent product={resolvedProduct} sizes={sizes || []} />
+  return <ProductContent product={product} sizes={sizes || []} />
 }

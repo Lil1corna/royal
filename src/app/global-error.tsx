@@ -24,7 +24,7 @@ export default function GlobalError({
         <button
           type="button"
           onClick={() => reset()}
-          className="ds-btn-primary px-6 py-3"
+          className="ds-btn-primary px-6 py-3 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
         >
           Yenidən cəhd et
         </button>

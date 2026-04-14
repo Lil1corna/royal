@@ -8,7 +8,7 @@ import { useLang, translations } from '@/context/lang'
 import { getSupabaseClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import ToastMessage, { type ToastState } from '@/components/toast-message'
+import { useToast } from '@/context/toast'
 import {
   calcShippingFee,
   deliveryModeLabel,
@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { useAsyncAction } from '@/hooks/useAsyncAction'
 
 const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
+// type PaymentMethod = 'cash' | 'online'
 
 function normalizeAzPhone(raw: string): string | null {
   const value = raw.trim()
@@ -49,8 +50,8 @@ export default function CartPage() {
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('courier')
-  const [toast, setToast] = useState<ToastState | null>(null)
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
+  const { addToast } = useToast()
   /** Сохранённый в профиле адрес (если есть) */
   const [profileSaved, setProfileSaved] = useState<{
     line: string
@@ -86,12 +87,6 @@ export default function CartPage() {
     [subtotal, deliveryMode]
   )
   const grandTotal = subtotal + shippingFee
-
-  const showToast = (type: 'success' | 'error', message: string) => {
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
-    setToast({ type, message })
-    toastTimerRef.current = setTimeout(() => setToast(null), 2600)
-  }
 
   const refreshCartProducts = async () => {
     if (items.length === 0) return
@@ -154,6 +149,14 @@ export default function CartPage() {
           ? ` | Delivery: ${deliveryMode}, shipping ${shippingFee} AZN, items ${subtotal} AZN`
           : ` | Catdirilma: ${deliveryMode}, catdirilma ${shippingFee} AZN, mehsul ${subtotal} AZN`
 
+    /* PAYMENT_META_HIDDEN_START
+    const paymentMeta =
+      lang === 'ru'
+        ? ` | Оплата: ${paymentMethod === 'online' ? 'онлайн' : 'наличными'}`
+        : lang === 'en'
+          ? ` | Payment: ${paymentMethod}`
+          : ` | Odenis: ${paymentMethod === 'online' ? 'online' : 'nagdb'}`
+    PAYMENT_META_HIDDEN_END */
     const notesFull = notesBase + deliveryMeta
 
     const { data: orderId, error: rpcError } = await supabase.rpc('create_order_with_items', {
@@ -180,7 +183,7 @@ export default function CartPage() {
 
       if (isPriceChanged) {
         await refreshCartProducts()
-        showToast(
+        addToast(
           'error',
           lang === 'ru'
             ? 'Цены обновились, проверьте корзину'
@@ -189,7 +192,7 @@ export default function CartPage() {
               : 'Qiymətlər yeniləndi, səbəti yoxlayın'
         )
       } else {
-        showToast(
+        addToast(
           'error',
           tr.error[lang] + ': ' + (rpcError?.message || 'create_order_with_items')
         )
@@ -197,27 +200,54 @@ export default function CartPage() {
       return
     }
 
-    showToast('success', tr.orderSuccess[lang])
+    /* ONLINE_PAYMENT_HIDDEN_START
+    if (paymentMethod === 'online') {
+      const payriffLang = lang === 'ru' ? 'RU' : lang === 'en' ? 'EN' : 'AZ'
+      const paymentRes = await fetch('/api/payment/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          amount: grandTotal,
+          currency: 'AZN',
+          lang: payriffLang,
+        }),
+      })
+
+      const paymentPayload = (await paymentRes.json()) as { paymentUrl?: string; error?: string }
+      if (!paymentRes.ok || !paymentPayload.paymentUrl) {
+        addToast(
+          'error',
+          paymentPayload.error ||
+            (lang === 'ru'
+              ? 'Не удалось создать онлайн-платеж'
+              : lang === 'en'
+                ? 'Failed to create online payment'
+                : 'Online odenis yaradilarken xeta bas verdi')
+        )
+        return
+      }
+
+      window.location.href = paymentPayload.paymentUrl
+      return
+    }
+    ONLINE_PAYMENT_HIDDEN_END */
+
+    addToast('success', tr.orderSuccess[lang])
     clear()
     router.push('/order-success')
   })
-
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
-    }
-  }, [])
 
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault()
     if (items.length === 0) return
     if (deliveryMode === 'courier' && !address.trim()) {
-      showToast('error', tr.selectAddress[lang])
+      addToast('error', tr.selectAddress[lang])
       return
     }
     const phoneNormalized = normalizeAzPhone(phone)
     if (!phoneNormalized) {
-      showToast('error', tr.invalidPhone[lang])
+      addToast('error', tr.invalidPhone[lang])
       return
     }
     await executeOrder()
@@ -234,7 +264,7 @@ export default function CartPage() {
           🛒
         </motion.div>
         <h1 className="text-xl sm:text-2xl font-bold mb-2">{tr.cartEmpty[lang]}</h1>
-        <p className="mb-5 text-white/60">Добавьте товары которые вам понравились</p>
+        <p className="mb-5 text-white/60">{tr.cartAddItems[lang]}</p>
         <Link href="/" className="text-[#e8c97a] hover:underline">{tr.backToCatalog[lang]}</Link>
       </main>
     )
@@ -246,7 +276,6 @@ export default function CartPage() {
         <Link href="/" className="text-white/60 hover:text-white min-h-[44px] inline-flex items-center">{tr.back[lang]}</Link>
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">{tr.cart[lang]}</h1>
       </div>
-      <ToastMessage toast={toast} className="mb-5" />
       <div className="grid grid-cols-1 md:grid-cols-[1.3fr_0.9fr] gap-8 md:gap-12">
         <div>
           <div className="flex flex-col gap-3 mb-6">
@@ -370,6 +399,63 @@ export default function CartPage() {
               ))}
             </div>
           </div>
+          {/* PAYMENT_METHOD_HIDDEN_START
+          <div>
+            <span className="ds-label">
+              {lang === 'ru' ? 'Способ оплаты' : lang === 'en' ? 'Payment method' : 'Odenis novu'}
+            </span>
+            <div className="flex flex-col gap-2">
+              <label
+                className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors text-white/80 ${
+                  paymentMethod === 'cash'
+                    ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.08)] ring-1 ring-[#c9a84c]/30'
+                    : 'border-white/10 bg-white/5 hover:border-[#c9a84c]/25'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  className="accent-[#c9a84c]"
+                  checked={paymentMethod === 'cash'}
+                  onChange={() => setPaymentMethod('cash')}
+                />
+                <div>
+                  <div className="font-medium">
+                    {lang === 'ru'
+                      ? 'Наличными при доставке'
+                      : lang === 'en'
+                        ? 'Cash on delivery'
+                        : 'Catdirilmada nagd'}
+                  </div>
+                </div>
+              </label>
+              <label
+                className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition-colors text-white/80 ${
+                  paymentMethod === 'online'
+                    ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.08)] ring-1 ring-[#c9a84c]/30'
+                    : 'border-white/10 bg-white/5 hover:border-[#c9a84c]/25'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  className="accent-[#c9a84c]"
+                  checked={paymentMethod === 'online'}
+                  onChange={() => setPaymentMethod('online')}
+                />
+                <div>
+                  <div className="font-medium">
+                    {lang === 'ru'
+                      ? 'Онлайн оплата'
+                      : lang === 'en'
+                        ? 'Online payment'
+                        : 'Online odenis'}
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+          PAYMENT_METHOD_HIDDEN_END */}
           <div>
             <label className="ds-label" htmlFor="cart-phone">{tr.phone[lang]}</label>
             <input
@@ -495,6 +581,45 @@ export default function CartPage() {
           >
             {`${tr.submitOrder[lang]} — ${grandTotal} AZN`}
           </Button>
+          {/* PAYMENT_COMING_SOON — убрать когда подключат банк */}
+          <div className="mt-2 rounded-xl border border-[#c9a84c]/30 bg-[rgba(201,168,76,0.07)] p-4 text-sm text-white/80">
+            <p className="font-semibold text-[#e8c97a] mb-1">
+              {lang === 'ru'
+                ? '💳 Онлайн оплата скоро появится'
+                : lang === 'en'
+                  ? '💳 Online payment coming soon'
+                  : '💳 Online ödəniş tezliklə əlavə olunacaq'}
+            </p>
+            <p className="text-white/60 mb-3">
+              {lang === 'ru'
+                ? 'Онлайн оплата пока не добавлена, но скоро будет. Чтобы узнать подробности и оформить заказ — свяжитесь с нами:'
+                : lang === 'en'
+                  ? 'Online payment is not yet available but will be added soon. To learn more and place an order — contact us:'
+                  : 'Online ödəniş hələ əlavə edilməyib, lakin tezliklə olacaq. Ətraflı məlumat və sifariş üçün bizimlə əlaqə saxlayın:'}
+            </p>
+            <div className="flex flex-col gap-2">
+              <a
+                href="https://wa.me/994552000986"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#25D366]/15 border border-[#25D366]/30 px-4 py-2.5 font-medium text-[#25D366] hover:bg-[#25D366]/25 transition-colors"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                WhatsApp
+              </a>
+              <a
+                href="tel:+994552000986"
+                className="inline-flex items-center gap-2 rounded-lg bg-white/5 border border-white/15 px-4 py-2.5 font-medium text-white/80 hover:bg-white/10 transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.81 19.79 19.79 0 01.18 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.28-1.52a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+                </svg>
+                055 200 09 86
+              </a>
+            </div>
+          </div>
         </form>
       </div>
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#050d1a]/95 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-md md:hidden">

@@ -3,18 +3,7 @@ import { useLang, translations } from '@/context/lang'
 import Link from 'next/link'
 import ProductGallery from './gallery'
 import SizeSelector from './sizes'
-
-type Product = {
-  id: string
-  name_az: string
-  name_ru: string
-  name_en: string
-  category: string
-  price: number
-  discount_pct: number
-  image_urls: string[] | null
-  description?: string | null
-}
+import type { Product } from '@/types/product'
 
 type Size = {
   id: string

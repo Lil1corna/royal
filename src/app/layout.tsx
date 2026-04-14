@@ -6,6 +6,7 @@ import Footer from '@/components/footer'
 import { PageTransition } from '@/components/page-transition'
 import AuroraBg from '@/components/aurora-bg'
 import { jost, cormorant, dmSans } from '@/lib/fonts'
+import { ensureCsrfToken } from '@/lib/csrf'
 
 export const metadata: Metadata = {
   title: 'RoyalAz — Ortopedik Dosekler',
@@ -23,7 +24,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  await ensureCsrfToken()
+
   return (
     <html
       lang="az"
@@ -41,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             href="#main"
             className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-[#050d1a] focus:p-4 focus:text-white focus:ring-2 focus:ring-white"
           >
-            Перейти к содержимому
+            Skip to content
           </a>
           <AuroraBg />
           <div className="relative z-[1] flex flex-col min-h-screen">

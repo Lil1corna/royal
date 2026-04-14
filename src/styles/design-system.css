@@ -186,3 +186,37 @@ h3 {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(201, 168, 76, 0.1);
 }
 
+.ds-btn-primary:focus-visible,
+.ds-btn-secondary:focus-visible,
+.ds-btn-danger:focus-visible,
+.ds-btn-ghost:focus-visible,
+.ds-btn-icon:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.6), 0 0 0 4px rgba(5, 13, 26, 0.95);
+}
+
+.ds-btn-primary {
+  min-height: 44px;
+}
+
+.ds-btn-secondary {
+  min-height: 44px;
+}
+
+.ds-btn-danger {
+  min-height: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-card-glass,
+  .ds-btn-primary,
+  .ds-btn-secondary,
+  .ds-btn-danger,
+  .ds-btn-icon {
+    transition-duration: 0.01ms !important;
+  }
+  .ds-btn-primary {
+    animation: none !important;
+  }
+}
+

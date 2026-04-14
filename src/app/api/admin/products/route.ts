@@ -1,8 +1,6 @@
-import { createServerClient } from '@supabase/ssr'
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { ensureAuthorized } from '@/lib/ensure-authorized'
 
 const CATEGORY_VALUES = ['ortopedik', 'berk', 'yumshaq', 'topper', 'ushaq', 'yastig'] as const
 
@@ -32,55 +30,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => cookieStore.getAll(),
-          setAll: (cookiesToSet) => {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          },
-        },
-      }
-    )
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!serviceRoleKey) {
+    const auth = await ensureAuthorized('manage_products')
+    if (!auth.ok) {
       return NextResponse.json(
-        { error: 'Missing SUPABASE_SERVICE_ROLE_KEY' },
-        { status: 500 }
+        { error: auth.status === 401 ? 'Unauthorized' : auth.error || 'Forbidden' },
+        { status: auth.status }
       )
     }
 
-    const admin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      serviceRoleKey,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    )
-
     const { sizes, ...productPayload } = payload.data
-    const { data: product, error: insertError } = await admin
+    const { data: product, error: insertError } = await auth.admin
       .from('products')
       .insert([productPayload])
       .select()
@@ -94,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (sizes.length > 0) {
-      const { error: sizeError } = await admin.from('product_sizes').insert(
+      const { error: sizeError } = await auth.admin.from('product_sizes').insert(
         sizes.map((s) => ({
           product_id: product.id,
           size: s.size,

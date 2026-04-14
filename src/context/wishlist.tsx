@@ -31,7 +31,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         const next = prev.includes(productId)
           ? prev.filter((id) => id !== productId)
           : [...prev, productId]
-        localStorage.setItem(STORAGE, JSON.stringify(next))
+        try {
+          localStorage.setItem(STORAGE, JSON.stringify(next))
+        } catch {
+          /* quota exceeded or private mode */
+        }
         return next
       })
     },

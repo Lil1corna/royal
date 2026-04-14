@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   if (!code) {
     console.error('[Auth Callback] No code provided')
     const errUrl = new URL('/auth/error', requestUrl.origin)
-    errUrl.searchParams.set('message', 'No code')
+    errUrl.searchParams.set('code', 'missing_code')
     return NextResponse.redirect(errUrl.toString())
   }
 
@@ -37,9 +37,9 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code)
   
   if (error) {
-    console.error('[Auth Callback] Session exchange failed:', error)
+    console.error('[Auth Callback] Session exchange failed:', error.message)
     const errUrl = new URL('/auth/error', requestUrl.origin)
-    errUrl.searchParams.set('message', error.message)
+    errUrl.searchParams.set('code', 'auth_failed')
     return NextResponse.redirect(errUrl.toString())
   }
 

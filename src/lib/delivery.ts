@@ -1,12 +1,27 @@
 export type DeliveryMode = 'courier' | 'pickup'
 
-/** Бесплатная доставка от суммы корзины (AZN) */
-const FREE_SHIPPING_THRESHOLD = Number(
-  process.env.NEXT_PUBLIC_FREE_SHIPPING_FROM_AZN || '200'
+const DEFAULT_FREE_SHIPPING = 200
+const DEFAULT_COURIER_FEE = 8
+
+function safePositiveNumber(raw: string | undefined, fallback: number): number {
+  if (!raw) return fallback
+  const n = Number(raw)
+  if (Number.isNaN(n) || n < 0) {
+    console.warn(`[delivery] Invalid env value "${raw}", using default ${fallback}`)
+    return fallback
+  }
+  return n
+}
+
+const FREE_SHIPPING_THRESHOLD = safePositiveNumber(
+  process.env.NEXT_PUBLIC_FREE_SHIPPING_FROM_AZN,
+  DEFAULT_FREE_SHIPPING
 )
 
-/** Курьер по умолчанию (AZN), если порог не достигнут */
-const COURIER_FEE = Number(process.env.NEXT_PUBLIC_COURIER_FEE_AZN || '8')
+const COURIER_FEE = safePositiveNumber(
+  process.env.NEXT_PUBLIC_COURIER_FEE_AZN,
+  DEFAULT_COURIER_FEE
+)
 
 export function calcShippingFee(
   subtotal: number,

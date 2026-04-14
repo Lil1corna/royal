@@ -2,27 +2,17 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform, type Variants } from 'framer-motion'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLang, translations } from '@/context/lang'
 import { useWishlist } from '@/context/wishlist'
+import { getSupabaseClient } from '@/lib/supabase'
 import CinematicHero from '@/components/cinematic-hero'
 import AboutSection from '@/components/about-section'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import type { Product } from '@/types/product'
 
 const ITEMS_PER_PAGE = 12
-
-type Product = {
-  id: string
-  name_az: string
-  name_ru: string
-  name_en: string
-  category: string
-  price: number
-  discount_pct: number
-  in_stock: boolean
-  image_urls: string[]
-}
 
 const CATEGORY_KEYS = ['ortopedik', 'berk', 'yumshaq', 'topper', 'ushaq', 'yastig'] as const
 
@@ -82,13 +72,6 @@ const catalogGridItemMobile = {
   },
 }
 
-function getRating(id: string) {
-  const seed = id
-    .split('')
-    .reduce((sum, ch) => sum + ch.charCodeAt(0), 0)
-  return 4 + (seed % 10) / 10
-}
-
 function ParallaxProductCardDesktop({
   p,
   lang,
@@ -123,12 +106,13 @@ function ParallaxProductCardDesktop({
   const { has, toggle } = useWishlist()
   const primaryImage = p.image_urls?.[0]?.trim()
   const showProductImage = Boolean(primaryImage) && !imgFailed
-  const rating = getRating(p.id)
-  const badgeText = p.discount_pct > 0 ? 'Скидка' : Number(p.id.replace(/\D/g, '').slice(-1) || '0') % 2 ? 'Новинка' : 'Хит'
+  const badgeKey = p.discount_pct > 0 ? 'sale' : Number(p.id.replace(/\D/g, '').slice(-1) || '0') % 2 ? 'new' : 'hit'
+  const badgeLabel =
+    badgeKey === 'sale' ? tr.badgeSale[lang] : badgeKey === 'new' ? tr.badgeNew[lang] : tr.badgeHit[lang]
   const badgeClass =
     p.discount_pct > 0
       ? 'bg-red-500/90 text-white'
-      : badgeText === 'Новинка'
+      : badgeKey === 'new'
         ? 'bg-emerald-500/90 text-white'
         : 'bg-amber-500/90 text-neutral-900'
   const inWishlist = has(p.id)
@@ -195,7 +179,7 @@ function ParallaxProductCardDesktop({
           <div className="absolute inset-0 bg-gradient-to-t from-[#061226]/80 via-transparent to-transparent pointer-events-none" />
           <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(245,158,11,0.22),transparent_55%),radial-gradient(circle_at_70%_10%,rgba(255,255,255,0.14),transparent_45%)]" />
           <div className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold ${badgeClass}`}>
-            {badgeText}
+            {badgeLabel}
           </div>
           <motion.button
             type="button"
@@ -219,7 +203,7 @@ function ParallaxProductCardDesktop({
                 className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/75 via-black/40 to-transparent p-4"
               >
                 <span className="inline-flex rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold text-white">
-                  Быстрый просмотр
+                  {tr.quickView[lang]}
                 </span>
               </motion.div>
             )}
@@ -257,7 +241,6 @@ function ParallaxProductCardDesktop({
               <span className="price-text font-serif text-[26px] font-bold text-[#e8c97a]">{p.price} AZN</span>
             )}
           </div>
-          <p className="mt-2 text-xs text-amber-200/80">{'★'.repeat(4)}☆ {rating.toFixed(1)}</p>
         </motion.div>
       </Link>
     </motion.div>
@@ -385,10 +368,60 @@ function ParallaxProductCardMobile({
   )
 }
 
-export default function CatalogClient({ products }: { products: Product[] }) {
+export default function CatalogClient({
+  initialProducts = [],
+  initialError = null,
+}: {
+  initialProducts?: Product[]
+  initialError?: string | null
+}) {
   const { lang } = useLang()
   const tr = translations
   const isMobile = useIsMobile()
+  const [products, setProducts] = useState<Product[]>(initialProducts)
+  const supabase = useMemo(() => getSupabaseClient(), [])
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (data) setProducts(data as Product[])
+    }
+
+    const channel = supabase
+      .channel('home-products-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => { void fetchProducts() })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'product_sizes' }, () => { void fetchProducts() })
+      .subscribe()
+
+    return () => { void supabase.removeChannel(channel) }
+  }, [supabase])
+
+  if (initialError && products.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-red-300 font-semibold mb-2">{tr.error[lang]}</p>
+          <p className="text-white/60 text-sm">{initialError}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-white font-semibold mb-2">{tr.nothingFound[lang]}</p>
+          <p className="text-white/60 text-sm">
+            {lang === 'ru' ? 'Каталог пока пуст.' : lang === 'en' ? 'Catalog is currently empty.' : 'Kataloq hazırda boşdur.'}
+          </p>
+        </div>
+      </div>
+    )
+  }
   const reducedMotion = useReducedMotion()
   const lowPower = useLowPowerMotion() || isMobile || Boolean(reducedMotion)
   const gridContainerVariants = isMobile
@@ -504,10 +537,10 @@ export default function CatalogClient({ products }: { products: Product[] }) {
             <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-12 text-center">
               <div className="mb-3 text-5xl">🔎</div>
               <p className="text-lg font-semibold text-white">
-                Ничего не найдено по запросу «{search}»
+                {tr.nothingFound[lang]} «{search}»
               </p>
               <p className="mt-2 text-sm text-white/60">
-                Попробуйте изменить фильтры или поисковый запрос
+                {tr.tryChangeFilters[lang]}
               </p>
               <button
                 type="button"
@@ -518,7 +551,7 @@ export default function CatalogClient({ products }: { products: Product[] }) {
                 }}
                 className="mt-5 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/20"
               >
-                Сбросить фильтры
+              {tr.resetFilters[lang]}
               </button>
             </div>
           ) : (

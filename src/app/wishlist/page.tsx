@@ -9,17 +9,7 @@ import { useWishlist } from '@/context/wishlist'
 import { useLang, translations } from '@/context/lang'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import ProductCardSkeleton from '@/components/product-card-skeleton'
-
-type Product = {
-  id: string
-  name_az: string
-  name_ru: string
-  name_en: string
-  price: number
-  discount_pct: number
-  image_urls: string[] | null
-  in_stock: boolean
-}
+import type { Product } from '@/types/product'
 
 export default function WishlistPage() {
   const { lang } = useLang()
