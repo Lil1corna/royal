@@ -37,6 +37,7 @@ const nextConfig: NextConfig = {
             value:
               "default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co",
           },
+          { key: "Cache-Control", value: "private, no-store" },
         ],
       },
     ];
