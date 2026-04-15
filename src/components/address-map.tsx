@@ -42,6 +42,7 @@ export default function AddressMap({
     map.setView([lat, lng], 16)
     setSelected(addr)
     setSearch(addr)
+    setFetchError(null)
     onSelectRef.current(addr, lat, lng)
     setSuggestions([])
   }
@@ -49,12 +50,19 @@ export default function AddressMap({
   useEffect(() => {
     if (typeof window === 'undefined') return
     let cancelled = false
+    let resizeHandler: (() => void) | null = null
+    let sizeTimerId: number | null = null
     import('leaflet').then((L) => {
       if (cancelled || mapRef.current || !mapDivRef.current) return
       const centerLat = initialLat != null && Number.isFinite(initialLat) ? initialLat : 40.4093
       const centerLng = initialLng != null && Number.isFinite(initialLng) ? initialLng : 49.8671
       const startZoom = initialLat != null && initialLng != null ? 16 : 12
-      const map = L.map(mapDivRef.current!, { center: [centerLat, centerLng], zoom: startZoom })
+      const map = L.map(mapDivRef.current!, {
+        center: [centerLat, centerLng],
+        zoom: startZoom,
+        // @ts-expect-error Leaflet supports tap; older @types/leaflet omit it.
+        tap: false,
+      })
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: 'OpenStreetMap',
       }).addTo(map)
@@ -67,26 +75,41 @@ export default function AddressMap({
       })
       map.on('click', async (e: LeafletMouseEvent) => {
         const { lat, lng } = e.latlng
+        const coordLabel = `${lat.toFixed(5)}, ${lng.toFixed(5)}`
         try {
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=az`
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=az`,
+            { headers: { Accept: 'application/json' } }
           )
           if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const data = await res.json()
-          const addr = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+          const data = (await res.json()) as { display_name?: string }
+          const addr = data.display_name?.trim() || coordLabel
           placeMarker(lat, lng, addr, map, L, icon)
         } catch {
           if (cancelled) return
+          placeMarker(lat, lng, coordLabel, map, L, icon)
           setFetchError(
             lang === 'ru'
-              ? 'Не удалось получить адрес по клику на карте'
+              ? 'Точка выбрана; текст адреса по координатам не загрузился (проверьте сеть).'
               : lang === 'en'
-                ? 'Failed to get address from map click'
-                : 'Xəritədə klikdən ünvan alınmadı'
+                ? 'Location saved; address text could not be loaded (check your connection).'
+                : 'Nöqtə seçildi; ünvan mətni yüklənmədi (şəbəkəni yoxlayın).'
           )
         }
       })
       mapRef.current = { map, L, icon }
+
+      const fixSize = () => {
+        try {
+          map.invalidateSize({ animate: false })
+        } catch {
+          /* ignore */
+        }
+      }
+      resizeHandler = fixSize
+      requestAnimationFrame(fixSize)
+      sizeTimerId = window.setTimeout(fixSize, 200)
+      window.addEventListener('resize', fixSize)
 
       if (
         initialLat != null &&
@@ -102,6 +125,8 @@ export default function AddressMap({
     })
     return () => {
       cancelled = true
+      if (sizeTimerId != null) window.clearTimeout(sizeTimerId)
+      if (resizeHandler != null) window.removeEventListener('resize', resizeHandler)
       if (mapRef.current?.map) {
         mapRef.current.map.remove()
         mapRef.current = null
