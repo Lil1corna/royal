@@ -17,6 +17,8 @@ type CartContext = {
   replaceItems: (nextItems: CartItem[]) => void
   total: number
   count: number
+  /** false until client has read localStorage — avoids hydration badge mismatch. */
+  isHydrated: boolean
 }
 
 const CartCtx = createContext<CartContext>({
@@ -28,18 +30,25 @@ const CartCtx = createContext<CartContext>({
   replaceItems: () => {},
   total: 0,
   count: 0,
+  isHydrated: false,
 })
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === 'undefined') return []
-    const saved = localStorage.getItem(CART_STORAGE_KEY)
-    return safeParseCart(saved)
-  })
+  const [items, setItems] = useState<CartItem[]>([])
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
+    const saved = localStorage.getItem(CART_STORAGE_KEY)
+    // One-time hydration from localStorage after mount (matches server empty state).
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional post-mount sync
+    setItems(safeParseCart(saved))
+    setIsHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isHydrated) return
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
-  }, [items])
+  }, [items, isHydrated])
 
   const add = (item: CartItem) => {
     setItems((prev) => {
@@ -78,7 +87,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const count = items.reduce((s, i) => s + i.quantity, 0)
 
   return (
-    <CartCtx.Provider value={{ items, add, decrease, remove, clear, replaceItems, total, count }}>
+    <CartCtx.Provider
+      value={{ items, add, decrease, remove, clear, replaceItems, total, count, isHydrated }}
+    >
       {children}
     </CartCtx.Provider>
   )

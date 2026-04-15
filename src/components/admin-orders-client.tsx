@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { fetchWithCsrf } from '@/lib/fetch-with-csrf'
 import { getSupabaseClient } from '@/lib/supabase'
 import { deliveryModeLabel, type DeliveryMode } from '@/lib/delivery'
 
@@ -104,7 +105,7 @@ function OrderActions({
     setUpdating(targetStatus)
     setErrorMsg(null)
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}`, {
+      const res = await fetchWithCsrf(`/api/admin/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: targetStatus }),

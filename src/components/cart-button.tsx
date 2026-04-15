@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function CartButton() {
-  const { count } = useCart()
+  const { count, isHydrated } = useCart()
   const { lang } = useLang()
   const tr = translations
   const router = useRouter()
@@ -22,7 +22,7 @@ export default function CartButton() {
     >
       🛒
       <AnimatePresence>
-        {count > 0 && (
+        {isHydrated && count > 0 && (
           <motion.span
             key={count}
             initial={{ scale: 1.6, opacity: 0 }}

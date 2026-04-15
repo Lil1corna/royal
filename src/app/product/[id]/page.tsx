@@ -4,18 +4,6 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import ProductContent from './product-content'
 
-type ProductData = {
-  id: string
-  name_ru: string
-  name_az: string
-  name_en: string
-  category: string
-  price: number
-  discount_pct: number
-  image_urls: string[] | null
-  description?: string | null
-}
-
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const params = await props.params
   const cookieStore = await cookies()

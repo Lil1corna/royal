@@ -1,5 +1,10 @@
+import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from './csrf-constants'
+
+export function csrfForbiddenResponse(): NextResponse {
+  return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 })
+}
 
 const CSRF_TOKEN_LENGTH = 32
 

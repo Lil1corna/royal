@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { csrfForbiddenResponse, verifyCsrf } from '@/lib/csrf'
 import { ensureAuthorized } from '@/lib/ensure-authorized'
+import { rateLimitFromRequest } from '@/lib/rate-limit'
 
 const CATEGORY_VALUES = ['ortopedik', 'berk', 'yumshaq', 'topper', 'ushaq', 'yastig'] as const
 
@@ -16,15 +18,20 @@ const productUpdateSchema = z.object({
   image_urls: z.array(z.string().url()).optional().default([]),
 })
 
+const idSchema = z.string().uuid()
+
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await context.params
-    const payload = productUpdateSchema.safeParse(await request.json())
-    if (!payload.success) {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    const allowed = await rateLimitFromRequest(request, 'admin-products-patch')
+    if (!allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
+    if (!(await verifyCsrf(request))) {
+      return csrfForbiddenResponse()
     }
 
     const auth = await ensureAuthorized('manage_products')
@@ -35,10 +42,21 @@ export async function PATCH(
       )
     }
 
+    const { id } = await context.params
+    const idParsed = idSchema.safeParse(id)
+    if (!idParsed.success) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
+    }
+
+    const payload = productUpdateSchema.safeParse(await request.json())
+    if (!payload.success) {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    }
+
     const { error } = await auth.admin
       .from('products')
       .update(payload.data)
-      .eq('id', id)
+      .eq('id', idParsed.data)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
@@ -54,11 +72,19 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await context.params
+    const allowed = await rateLimitFromRequest(request, 'admin-products-delete')
+    if (!allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
+    if (!(await verifyCsrf(request))) {
+      return csrfForbiddenResponse()
+    }
+
     const auth = await ensureAuthorized('delete_anything')
     if (!auth.ok) {
       return NextResponse.json(
@@ -67,13 +93,23 @@ export async function DELETE(
       )
     }
 
-    const { error } = await auth.admin
+    const { id } = await context.params
+    const idParsed = idSchema.safeParse(id)
+    if (!idParsed.success) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
+    }
+
+    const { error, count } = await auth.admin
       .from('products')
-      .delete()
-      .eq('id', id)
+      .delete({ count: 'exact' })
+      .eq('id', idParsed.data)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    if (count === 0) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
     return NextResponse.json({ ok: true })

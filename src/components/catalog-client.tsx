@@ -399,29 +399,6 @@ export default function CatalogClient({
     return () => { void supabase.removeChannel(channel) }
   }, [supabase])
 
-  if (initialError && products.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <p className="text-red-300 font-semibold mb-2">{tr.error[lang]}</p>
-          <p className="text-white/60 text-sm">{initialError}</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (products.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <p className="text-white font-semibold mb-2">{tr.nothingFound[lang]}</p>
-          <p className="text-white/60 text-sm">
-            {lang === 'ru' ? 'Каталог пока пуст.' : lang === 'en' ? 'Catalog is currently empty.' : 'Kataloq hazırda boşdur.'}
-          </p>
-        </div>
-      </div>
-    )
-  }
   const reducedMotion = useReducedMotion()
   const lowPower = useLowPowerMotion() || isMobile || Boolean(reducedMotion)
   const gridContainerVariants = isMobile
@@ -455,6 +432,30 @@ export default function CatalogClient({
   const paginatedProducts = useMemo(() => {
     return filteredProducts.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
   }, [filteredProducts, page])
+
+  if (initialError && products.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-red-300 font-semibold mb-2">{tr.error[lang]}</p>
+          <p className="text-white/60 text-sm">{initialError}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-white font-semibold mb-2">{tr.nothingFound[lang]}</p>
+          <p className="text-white/60 text-sm">
+            {lang === 'ru' ? 'Каталог пока пуст.' : lang === 'en' ? 'Catalog is currently empty.' : 'Kataloq hazırda boşdur.'}
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <main className="w-full">

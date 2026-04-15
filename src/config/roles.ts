@@ -17,6 +17,37 @@ export type RoleKey =
   | 'VIEWER'
   | 'USER'
 
+/** Single source of truth for API authorization (used by `ensureAuthorized`). */
+export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[]> = {
+  SUPER_ADMIN: [
+    'manage_admins',
+    'manage_products',
+    'manage_orders',
+    'manage_users',
+    'manage_settings',
+    'view_analytics',
+    'assign_roles',
+    'delete_anything',
+  ],
+  ADMIN: [
+    'manage_products',
+    'manage_orders',
+    'manage_users',
+    'view_analytics',
+    'assign_roles',
+    'delete_anything',
+  ],
+  MODERATOR: ['manage_products', 'manage_orders'],
+  EDITOR: ['manage_products'],
+  SUPPORT: ['manage_orders', 'manage_users'],
+  VIEWER: ['view_analytics'],
+  USER: [],
+}
+
+export function hasPermission(roleKey: RoleKey, permission: PermissionKey): boolean {
+  return ROLE_PERMISSIONS[roleKey]?.includes(permission) ?? false
+}
+
 export const permissionLabels: Record<
   PermissionKey,
   { az: string; ru: string; en: string }

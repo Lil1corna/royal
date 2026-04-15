@@ -1,14 +1,35 @@
 'use client'
 import { createContext, useContext, useState } from 'react'
+import { NEXT_LOCALE_COOKIE, setLocaleCookieClient, type AppLocale } from '@/lib/locale-cookie'
 
-type Lang = 'az' | 'ru' | 'en'
-type LangContext = { lang: Lang, setLang: (l: Lang) => void }
+type Lang = AppLocale
+type LangContext = { lang: Lang; setLang: (l: Lang) => void }
 
 const LangCtx = createContext<LangContext>({ lang: 'az', setLang: () => {} })
 
-export function LangProvider({ children }: { children: React.ReactNode }) {
+function readCookieLocale(): Lang | null {
+  if (typeof document === 'undefined') return null
+  const entry = document.cookie.split('; ').find((c) => c.startsWith(`${NEXT_LOCALE_COOKIE}=`))
+  if (!entry) return null
+  const v = decodeURIComponent(entry.slice(NEXT_LOCALE_COOKIE.length + 1))
+  return v === 'az' || v === 'ru' || v === 'en' ? v : null
+}
+
+export function LangProvider({
+  children,
+  initialLang,
+}: {
+  children: React.ReactNode
+  /** From server `cookies().get(NEXT_LOCALE)` — matches first client paint. */
+  initialLang?: Lang
+}) {
   const [lang, setLangState] = useState<Lang>(() => {
+    if (initialLang === 'az' || initialLang === 'ru' || initialLang === 'en') {
+      return initialLang
+    }
     if (typeof window === 'undefined') return 'az'
+    const fromCookie = readCookieLocale()
+    if (fromCookie) return fromCookie
     const saved = localStorage.getItem('royalaz_lang')
     return saved === 'az' || saved === 'ru' || saved === 'en' ? saved : 'az'
   })
@@ -16,6 +37,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
   const setLang = (l: Lang) => {
     setLangState(l)
     localStorage.setItem('royalaz_lang', l)
+    setLocaleCookieClient(l)
   }
 
   return <LangCtx.Provider value={{ lang, setLang }}>{children}</LangCtx.Provider>
@@ -147,9 +169,9 @@ export const translations = {
     'Choose a different address on the map'
   ),
   addressProfileHint: t(
-    'Ünvanı xəritədə seçin — koordinatlar saxlanılır, sifarişdə istifadə edə bilərsiniz.',
-    'Выберите адрес на карте — координаты сохранятся для заказов.',
-    'Pick your address on the map — coordinates are saved for checkout.',
+    'Çatdırılma ünvanını mətnlə daxil edin (küçə, bina, şəhər).',
+    'Введите адрес доставки текстом (улица, дом, город).',
+    'Enter your delivery address as text (street, building, city).',
   ),
   addressDetailHint: t(
     'Mərtəbə, mənzil (istəyə görə)',

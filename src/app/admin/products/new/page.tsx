@@ -1,10 +1,12 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
+import { fetchWithCsrf } from '@/lib/fetch-with-csrf'
 import { getSupabaseClient } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/context/lang'
+import { useToast } from '@/context/toast'
 import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 type ProductSizeDraft = {
   size: string
@@ -19,6 +21,7 @@ export default function NewProduct() {
   const router = useRouter()
   const supabase = useMemo(() => getSupabaseClient(), [])
   const { lang } = useLang()
+  const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [canCreate, setCanCreate] = useState(false)
   const [form, setForm] = useState({
@@ -85,7 +88,7 @@ export default function NewProduct() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!canCreate) {
-      alert('Forbidden')
+      addToast('error', 'Forbidden')
       return
     }
     setLoading(true)
@@ -119,14 +122,14 @@ export default function NewProduct() {
       sizes: validSizes,
     }
 
-    const res = await fetch('/api/admin/products', {
+    const res = await fetchWithCsrf('/api/admin/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
     const data = (await res.json()) as { ok?: boolean; error?: string }
     if (!res.ok || !data.ok) {
-      alert('Xeta: ' + (data.error || 'Create failed'))
+      addToast('error', 'Xeta: ' + (data.error || 'Create failed'))
       setLoading(false)
       return
     }

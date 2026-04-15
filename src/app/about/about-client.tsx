@@ -582,10 +582,10 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
 
             <p className="mt-5 text-white/75 text-[16.5px] leading-[1.8]">
               {lang === 'az'
-                ? 'Bakı üzrə pulsuz çatdırılma · 30 gün sınaq · 2 il zəmanət'
+                ? '30 gün sınaq · 2 il zəmanət'
                 : lang === 'ru'
-                  ? 'Бесплатная доставка по Баку · 30 дней тест · 2 года гарантии'
-                  : 'Free delivery across Baku · 30-day trial · 2-year warranty'}
+                  ? '30 дней тест · 2 года гарантии'
+                  : '30-day trial · 2-year warranty'}
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-4 items-center justify-center">

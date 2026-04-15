@@ -8,10 +8,16 @@ import { ToastProvider } from '@/context/toast'
 import PagePreloader from '@/components/page-preloader'
 import SupabaseRealtimeBridge from '@/components/supabase-realtime-bridge'
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  initialLang,
+}: {
+  children: React.ReactNode
+  initialLang?: 'az' | 'ru' | 'en'
+}) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-      <LangProvider>
+      <LangProvider initialLang={initialLang}>
         <PagePreloader />
         <SupabaseRealtimeBridge />
         <CartProvider>

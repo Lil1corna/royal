@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import './globals.css'
+import { ensureCsrfToken } from '@/lib/csrf'
 import { Providers } from '@/components/providers'
+import { isAppLocale, NEXT_LOCALE_COOKIE } from '@/lib/locale-cookie'
 import NavbarWrapper from '@/components/navbar-wrapper'
 import Footer from '@/components/footer'
 import { PageTransition } from '@/components/page-transition'
@@ -24,10 +27,14 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  await ensureCsrfToken()
+  const cookieStore = await cookies()
+  const localeRaw = cookieStore.get(NEXT_LOCALE_COOKIE)?.value
+  const htmlLang = isAppLocale(localeRaw) ? localeRaw : 'az'
 
   return (
     <html
-      lang="az"
+      lang={htmlLang}
       className={`${jost.variable} ${cormorant.variable} ${dmSans.variable} overflow-x-hidden scroll-smooth`}
     >
       <head>
@@ -37,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="min-h-screen flex flex-col bg-transparent antialiased overflow-x-hidden isolate">
-        <Providers>
+        <Providers initialLang={isAppLocale(localeRaw) ? localeRaw : undefined}>
           <a
             href="#main"
             className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-[#050d1a] focus:p-4 focus:text-white focus:ring-2 focus:ring-white"

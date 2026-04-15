@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
+import { fetchWithCsrf } from '@/lib/fetch-with-csrf'
 import { getSupabaseClient } from '@/lib/supabase'
 import { useLang } from '@/context/lang'
 import { ROLES, getRoleKeyFromRoleDbKey, permissionLabels, type RoleKey } from '@/config/roles'
@@ -54,7 +55,7 @@ export default function InviteUser() {
       return
     }
     setLoading(true)
-    const res = await fetch('/api/admin/users/invite', {
+    const res = await fetchWithCsrf('/api/admin/users/invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, role: roleDbKey }),

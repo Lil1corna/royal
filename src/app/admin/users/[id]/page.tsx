@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { fetchWithCsrf } from '@/lib/fetch-with-csrf'
 import { getSupabaseClient } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
@@ -129,7 +130,7 @@ export default function EditUser() {
     }
     setLoading(true)
     const userId = String(params.id)
-    const res = await fetch(`/api/admin/users/${userId}/role`, {
+    const res = await fetchWithCsrf(`/api/admin/users/${userId}/role`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role: roleDbKey }),

@@ -9,14 +9,14 @@ import { useRouter } from 'next/navigation'
 import Magnetic from '@/components/magnetic'
 import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 import { useIsMobile } from '@/hooks/useIsMobile'
-import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from '@/lib/csrf-constants'
+import { fetchWithCsrf } from '@/lib/fetch-with-csrf'
 import ThemeButton from '@/components/theme-button'
 
 type Lang = 'az' | 'ru' | 'en'
 
 function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?: () => void }) {
   const { lang, setLang } = useLang()
-  const { count } = useCart()
+  const { count, isHydrated: cartHydrated } = useCart()
   const { count: wishCount } = useWishlist()
   const router = useRouter()
   const tr = translations
@@ -96,7 +96,7 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
         aria-label={tr.cart[lang]}
       >
         <span className="drop-shadow-sm">🛒</span>
-        {count > 0 && (
+        {cartHydrated && count > 0 && (
           <motion.span
             key={count}
             initial={{ scale: 1.6, opacity: 0 }}
@@ -121,14 +121,13 @@ function NavLinks({ userEmail, onClose }: { userEmail?: string | null; onClose?:
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              const csrfToken = document.cookie
-                .split('; ')
-                .find((c) => c.startsWith(`${CSRF_COOKIE_NAME}=`))
-                ?.split('=')[1] || ''
-              fetch('/auth/signout', {
-                method: 'POST',
-                headers: { [CSRF_HEADER_NAME]: csrfToken },
-              }).then(() => { window.location.href = '/' }).catch(() => { window.location.href = '/' })
+              void fetchWithCsrf('/auth/signout', { method: 'POST' })
+                .then(() => {
+                  window.location.href = '/'
+                })
+                .catch(() => {
+                  window.location.href = '/'
+                })
             }}
           >
             <button

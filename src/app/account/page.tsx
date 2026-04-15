@@ -35,19 +35,9 @@ export default async function AccountPage() {
     phone?: string
     shipping_address?: string
     shipping_address_extra?: string
-    shipping_lat?: number
-    shipping_lng?: number
     avatar_url?: string
   }
   const avatarUrl = meta.avatar_url || ''
-  const shippingLat =
-    meta.shipping_lat != null && Number.isFinite(Number(meta.shipping_lat))
-      ? Number(meta.shipping_lat)
-      : null
-  const shippingLng =
-    meta.shipping_lng != null && Number.isFinite(Number(meta.shipping_lng))
-      ? Number(meta.shipping_lng)
-      : null
   const displayName = profile?.name || user.email
 
   return (
@@ -97,8 +87,6 @@ export default async function AccountPage() {
         initialPhone={meta.phone || ''}
         initialAddress={meta.shipping_address || ''}
         initialAddressExtra={meta.shipping_address_extra || ''}
-        initialShippingLat={shippingLat}
-        initialShippingLng={shippingLng}
         initialAvatarUrl={meta.avatar_url || ''}
       />
 

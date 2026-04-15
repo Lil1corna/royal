@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { csrfForbiddenResponse, verifyCsrf } from '@/lib/csrf'
 import { ensureAuthorized } from '@/lib/ensure-authorized'
+import { rateLimitFromRequest } from '@/lib/rate-limit'
 
 const CATEGORY_VALUES = ['ortopedik', 'berk', 'yumshaq', 'topper', 'ushaq', 'yastig'] as const
 
@@ -25,9 +27,13 @@ const productCreateSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = productCreateSchema.safeParse(await request.json())
-    if (!payload.success) {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    const allowed = await rateLimitFromRequest(request, 'admin-products-post')
+    if (!allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
+    if (!(await verifyCsrf(request))) {
+      return csrfForbiddenResponse()
     }
 
     const auth = await ensureAuthorized('manage_products')
@@ -36,6 +42,11 @@ export async function POST(request: NextRequest) {
         { error: auth.status === 401 ? 'Unauthorized' : auth.error || 'Forbidden' },
         { status: auth.status }
       )
+    }
+
+    const payload = productCreateSchema.safeParse(await request.json())
+    if (!payload.success) {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
     const { sizes, ...productPayload } = payload.data

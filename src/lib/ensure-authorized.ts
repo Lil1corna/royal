@@ -1,21 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-import { normalizeDbRoleToRoleKey, type RoleKey, type PermissionKey } from '@/config/roles'
-
-const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[]> = {
-  SUPER_ADMIN: ['manage_admins', 'manage_products', 'manage_orders', 'manage_users', 'manage_settings', 'view_analytics', 'assign_roles', 'delete_anything'],
-  ADMIN: ['manage_products', 'manage_orders', 'manage_users', 'view_analytics', 'assign_roles', 'delete_anything'],
-  MODERATOR: ['manage_products', 'manage_orders'],
-  EDITOR: ['manage_products'],
-  SUPPORT: ['manage_orders', 'manage_users'],
-  VIEWER: ['view_analytics'],
-  USER: [],
-}
-
-export function hasPermission(roleKey: RoleKey, permission: PermissionKey): boolean {
-  return ROLE_PERMISSIONS[roleKey]?.includes(permission) ?? false
-}
+import {
+  hasPermission,
+  normalizeDbRoleToRoleKey,
+  type RoleKey,
+  type PermissionKey,
+} from '@/config/roles'
 
 type AuthorizedResult =
   | { ok: true; admin: SupabaseClient; userId: string; roleKey: RoleKey }

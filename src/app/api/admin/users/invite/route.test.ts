@@ -11,9 +11,15 @@ const mocks = vi.hoisted(() => ({
   createServerClient: vi.fn(),
 }))
 
+vi.mock('@/lib/csrf', () => ({
+  verifyCsrf: vi.fn(async () => true),
+  csrfForbiddenResponse: vi.fn(),
+}))
+
 vi.mock('next/headers', () => ({
   cookies: vi.fn(async () => ({
     getAll: () => [],
+    get: vi.fn(),
     set: vi.fn(),
     setAll: vi.fn(),
   })),

@@ -78,11 +78,14 @@ export default function AddressMap({
         const coordLabel = `${lat.toFixed(5)}, ${lng.toFixed(5)}`
         try {
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=az`,
+            `/api/geocode?mode=reverse&lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(String(lng))}&lang=${encodeURIComponent(lang)}`,
             { headers: { Accept: 'application/json' } }
           )
           if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const data = (await res.json()) as { display_name?: string }
+          const data = (await res.json()) as { display_name?: string; error?: string }
+          if (data && typeof data === 'object' && 'error' in data && !('display_name' in data)) {
+            throw new Error(data.error || 'geocode error')
+          }
           const addr = data.display_name?.trim() || coordLabel
           placeMarker(lat, lng, addr, map, L, icon)
         } catch {
@@ -143,11 +146,15 @@ export default function AddressMap({
 
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(search + ' Baku Azerbaijan')}&format=json&limit=5&accept-language=az`
+        `/api/geocode?mode=search&q=${encodeURIComponent(search)}&lang=${encodeURIComponent(lang)}`
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = (await res.json()) as SuggestionItem[]
-      setSuggestions(data)
+      const data = (await res.json()) as SuggestionItem[] | { error?: string }
+      if (data && typeof data === 'object' && !Array.isArray(data) && 'error' in data) {
+        throw new Error((data as { error: string }).error)
+      }
+      const list = Array.isArray(data) ? data : []
+      setSuggestions(list)
     } catch {
       setFetchError(
         lang === 'ru'

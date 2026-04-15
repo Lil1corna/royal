@@ -1,10 +1,12 @@
 'use client'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { fetchWithCsrf } from '@/lib/fetch-with-csrf'
 import { getSupabaseClient } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import { useLang } from '@/context/lang'
+import { useToast } from '@/context/toast'
 import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
 
 export default function EditProduct() {
@@ -13,6 +15,7 @@ export default function EditProduct() {
   const supabase = useMemo(() => getSupabaseClient(), [])
   const productId = params.id as string
   const { lang } = useLang()
+  const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [canEdit, setCanEdit] = useState(false)
   const [canDelete, setCanDelete] = useState(false)
@@ -138,7 +141,7 @@ export default function EditProduct() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!canEdit) {
-      alert('Forbidden')
+      addToast('error', 'Forbidden')
       return
     }
     setLoading(true)
@@ -153,7 +156,7 @@ export default function EditProduct() {
         image_urls,
       }
 
-      const res = await fetch(`/api/admin/products/${productId}`, {
+      const res = await fetchWithCsrf(`/api/admin/products/${productId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -163,7 +166,7 @@ export default function EditProduct() {
       newPreviews.forEach((url) => URL.revokeObjectURL(url))
 
       if (!res.ok || !data.ok) {
-        alert('Xeta: ' + (data.error || 'Update failed'))
+        addToast('error', 'Xeta: ' + (data.error || 'Update failed'))
       } else {
         router.push('/admin')
       }
@@ -174,16 +177,16 @@ export default function EditProduct() {
 
   const handleDelete = async () => {
     if (!canDelete) {
-      alert('Forbidden')
+      addToast('error', 'Forbidden')
       return
     }
     if (!confirm('Silmek isteyirsiniz?')) return
-    const res = await fetch(`/api/admin/products/${productId}`, {
+    const res = await fetchWithCsrf(`/api/admin/products/${productId}`, {
       method: 'DELETE',
     })
     const data = (await res.json()) as { ok?: boolean; error?: string }
     if (!res.ok || !data.ok) {
-      alert('Xeta: ' + (data.error || 'Delete failed'))
+      addToast('error', 'Xeta: ' + (data.error || 'Delete failed'))
     } else {
       router.push('/admin')
     }

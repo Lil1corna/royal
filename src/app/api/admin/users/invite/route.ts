@@ -1,26 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { csrfForbiddenResponse, verifyCsrf } from '@/lib/csrf'
 import { getBaseUrl } from '@/lib/url'
 import { sanitizeNext } from '@/lib/sanitize-next'
 import { normalizeDbRoleToRoleKey, ROLES } from '@/config/roles'
 import { INVITE_ALLOWED_ROLE_INPUTS } from '@/lib/constants/roles'
 import { ensureAuthorized } from '@/lib/ensure-authorized'
+import { rateLimitFromRequest } from '@/lib/rate-limit'
 
 export { INVITE_ALLOWED_ROLE_INPUTS } from '@/lib/constants/roles'
 
 const ALLOWED_ROLES = new Set(INVITE_ALLOWED_ROLE_INPUTS)
 
+const inviteSchema = z.object({
+  email: z.string().trim().email(),
+  role: z.string().trim(),
+})
+
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { email?: string; role?: string }
-    const email = (body.email || '').trim().toLowerCase()
-    const role = (body.role || '').trim()
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !ALLOWED_ROLES.has(role)) {
-      return NextResponse.json({ error: 'Invalid email or role' }, { status: 400 })
+    const allowed = await rateLimitFromRequest(request, 'admin-invite')
+    if (!allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
 
-    const roleKey = normalizeDbRoleToRoleKey(role)
-    const normalizedRoleDbKey = ROLES[roleKey].key
+    if (!(await verifyCsrf(request))) {
+      return csrfForbiddenResponse()
+    }
 
     const auth = await ensureAuthorized('manage_admins')
     if (!auth.ok) {
@@ -29,6 +35,21 @@ export async function POST(request: NextRequest) {
         { status: auth.status }
       )
     }
+
+    const parsed = inviteSchema.safeParse(await request.json())
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid email or role' }, { status: 400 })
+    }
+
+    const email = parsed.data.email.toLowerCase()
+    const role = parsed.data.role
+
+    if (!ALLOWED_ROLES.has(role)) {
+      return NextResponse.json({ error: 'Invalid email or role' }, { status: 400 })
+    }
+
+    const roleKey = normalizeDbRoleToRoleKey(role)
+    const normalizedRoleDbKey = ROLES[roleKey].key
 
     const { data: existingUserRows, error: existingUsersError } = await auth.admin
       .from('users')

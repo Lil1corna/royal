@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { csrfForbiddenResponse, verifyCsrf } from '@/lib/csrf'
 import { ensureAuthorized } from '@/lib/ensure-authorized'
 import { ORDER_STATUSES, type OrderStatus } from '@/lib/order-status'
 import { parseMapsLinkFromNotes, parsePhoneFromNotes, notifyDeliveryWebhook } from '@/lib/notify-delivery'
@@ -21,10 +22,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
 
-    const { id } = await context.params
-    const body = orderUpdateSchema.safeParse(await request.json())
-    if (!body.success) {
-      return NextResponse.json({ error: 'Invalid payload', details: body.error.flatten() }, { status: 400 })
+    if (!(await verifyCsrf(request))) {
+      return csrfForbiddenResponse()
     }
 
     const auth = await ensureAuthorized('manage_orders')
@@ -33,6 +32,12 @@ export async function PATCH(
         { error: auth.status === 401 ? 'Unauthorized' : auth.error || 'Forbidden' },
         { status: auth.status }
       )
+    }
+
+    const { id } = await context.params
+    const body = orderUpdateSchema.safeParse(await request.json())
+    if (!body.success) {
+      return NextResponse.json({ error: 'Invalid payload', details: body.error.flatten() }, { status: 400 })
     }
 
     const { data: existingOrder, error: fetchError } = await auth.admin

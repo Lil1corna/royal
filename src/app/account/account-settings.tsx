@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase'
@@ -8,8 +7,6 @@ import { useLang, translations } from '@/context/lang'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
 import { Button } from '@/components/ui/button'
 import { useAsyncAction } from '@/hooks/useAsyncAction'
-
-const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
 
 function formatAzPhone(raw: string): string {
   const digits = raw.replace(/\D/g, '').replace(/^994/, '')
@@ -41,8 +38,6 @@ export default function AccountSettings({
   initialPhone,
   initialAddress,
   initialAddressExtra,
-  initialShippingLat,
-  initialShippingLng,
   initialAvatarUrl,
 }: {
   userId: string
@@ -51,8 +46,6 @@ export default function AccountSettings({
   initialPhone: string
   initialAddress: string
   initialAddressExtra: string
-  initialShippingLat: number | null
-  initialShippingLng: number | null
   initialAvatarUrl: string
 }) {
   const { lang } = useLang()
@@ -62,8 +55,6 @@ export default function AccountSettings({
   const [name, setName] = useState(initialName)
   const [phone, setPhone] = useState(formatAzPhone(initialPhone || ''))
   const [address, setAddress] = useState(initialAddress)
-  const [shippingLat, setShippingLat] = useState<number | null>(initialShippingLat)
-  const [shippingLng, setShippingLng] = useState<number | null>(initialShippingLng)
   const [addressExtra, setAddressExtra] = useState(initialAddressExtra)
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl)
   const [saved, setSaved] = useState(false)
@@ -90,10 +81,10 @@ export default function AccountSettings({
       showToast(
         'error',
         lang === 'ru'
-          ? 'Выберите адрес на карте (клик или поиск)'
+          ? 'Укажите адрес доставки'
           : lang === 'en'
-            ? 'Pick your address on the map'
-            : 'Xəritədə ünvan seçin'
+            ? 'Enter your delivery address'
+            : 'Çatdırılma ünvanını daxil edin'
       )
       return
     }
@@ -113,8 +104,8 @@ export default function AccountSettings({
         phone: phoneNormalized,
         shipping_address: address.trim(),
         shipping_address_extra: addressExtra.trim() || null,
-        shipping_lat: shippingLat,
-        shipping_lng: shippingLng,
+        shipping_lat: null,
+        shipping_lng: null,
         avatar_url: avatarUrl.trim() || null,
       },
     })
@@ -188,21 +179,19 @@ export default function AccountSettings({
           maxLength={20}
         />
 
-        <label className="ds-label">{tr.shippingAddress[lang]}</label>
+        <label className="ds-label" htmlFor="account-address-main">{tr.shippingAddress[lang]}</label>
         <p className="text-xs text-white/60 mb-3">{tr.addressProfileHint[lang]}</p>
-
-        <AddressMap
-          initialLat={initialShippingLat}
-          initialLng={initialShippingLng}
-          initialAddress={initialAddress}
-          onSelect={(addr, la, ln) => {
-            setAddress(addr)
-            setShippingLat(la)
-            setShippingLng(ln)
-          }}
+        <textarea
+          id="account-address-main"
+          className="ds-input mb-4 min-h-[100px] resize-y"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          maxLength={500}
+          rows={4}
+          placeholder={tr.shippingAddress[lang]}
         />
 
-        <label className="ds-label mt-4" htmlFor="account-address-extra">{tr.addressDetailHint[lang]}</label>
+        <label className="ds-label" htmlFor="account-address-extra">{tr.addressDetailHint[lang]}</label>
         <input
           id="account-address-extra"
           className="ds-input mb-4"
@@ -218,11 +207,6 @@ export default function AccountSettings({
               {lang === 'ru' ? 'Сохранится:' : lang === 'en' ? 'Will save:' : 'Yadda saxlanacaq:'}
             </span>
             {fullAddressLine}
-            {shippingLat != null && shippingLng != null && (
-              <span className="block text-xs text-emerald-300 mt-1">
-                GPS: {shippingLat.toFixed(5)}, {shippingLng.toFixed(5)}
-              </span>
-            )}
           </div>
         )}
 

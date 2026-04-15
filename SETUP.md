@@ -55,6 +55,18 @@ For production (Netlify/Vercel):
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
+### 5. Rate limiting (Upstash Redis)
+
+Admin and payment-related routes use `rateLimitFromRequest()` ([`src/lib/rate-limit.ts`](src/lib/rate-limit.ts)).
+
+- **Without** `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`, the app falls back to an **in-memory** counter inside each Node/serverless instance. That works on a single local process but is **wrong under horizontal scaling**: each Vercel function instance has its own memory, so a client can exceed the global limit by hitting different instances.
+- **With Upstash** (free tier available at [upstash.com](https://upstash.com)): create a Redis database, copy **REST URL** and **REST TOKEN** into `.env.local` / hosting env. All instances then share the same counters.
+
+```env
+UPSTASH_REDIS_REST_URL=https://xxxx.upstash.io
+UPSTASH_REDIS_REST_TOKEN=AXXX...
+```
+
 ## Deployment to Netlify
 
 ### Environment Variables in Netlify
