@@ -171,7 +171,7 @@ export default function SizeSelector({ sizes, basePrice, discountPct, productId,
         </Magnetic>
       </motion.div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#050d1a]/95 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-md md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#050d1a]/95 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:hidden">
         <Button
           className="w-full"
           size="lg"

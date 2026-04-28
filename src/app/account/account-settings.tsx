@@ -149,7 +149,7 @@ export default function AccountSettings({
   }
 
   return (
-    <div className="card-soft p-5 mb-8">
+    <div className="card-soft p-4 sm:p-5 mb-8">
       <ToastMessage toast={toast} className="mb-4" />
       <h2 className="text-lg font-semibold mb-4">{tr.accountSettings[lang]}</h2>
       <p className="text-sm text-white/60 mb-4">
@@ -159,7 +159,7 @@ export default function AccountSettings({
             ? `Email: ${currentEmail} (email change is disabled)`
             : `Email: ${currentEmail} (email dəyişmə söndürülüb)`}
       </p>
-      <form onSubmit={save}>
+      <form onSubmit={save} className="pb-20 md:pb-0">
         <label className="ds-label" htmlFor="account-display-name">{tr.displayName[lang]}</label>
         <input
           id="account-display-name"
@@ -259,7 +259,7 @@ export default function AccountSettings({
           )}
           <button
             type="button"
-            className="btn-secondary mt-2"
+          className="btn-secondary mt-2 min-h-[44px] active:scale-95 transition-transform"
             onClick={() => setAvatarUrl('')}
           >
             {tr.removeAvatar[lang]}

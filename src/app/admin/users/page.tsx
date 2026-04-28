@@ -28,8 +28,8 @@ export default async function UsersPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+    <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto pb-24 md:pb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center mb-8">
         <div className="flex items-center gap-4">
           <Link href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
           <h1 className="text-3xl font-bold text-white">Staff</h1>
@@ -42,8 +42,8 @@ export default async function UsersPage() {
           <span className="text-neutral-500/60 text-sm">—</span>
         )}
       </div>
-      <div className="ds-card-glass rounded-2xl overflow-hidden">
-        <table className="w-full">
+      <div className="ds-card-glass rounded-2xl overflow-x-auto">
+        <table className="w-full min-w-[760px]">
           <thead>
             <tr className="border-b border-white/10">
               <th className="text-left p-4 text-sm font-semibold text-neutral-300">Email</th>

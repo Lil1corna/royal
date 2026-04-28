@@ -17,11 +17,7 @@ export default function CartPage() {
   if (count === 0) {
     return (
       <main className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto text-center overflow-x-hidden">
-        <motion.div
-          animate={{ rotate: [-5, 5, -5] }}
-          transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}
-          className="mb-4 text-6xl"
-        >
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24 }} className="mb-4 text-6xl">
           🛒
         </motion.div>
         <h1 className="text-xl sm:text-2xl font-bold mb-2">{tr.cartEmpty[lang]}</h1>
@@ -46,7 +42,7 @@ export default function CartPage() {
         : 'Online ödəniş hələ mövcud deyil, lakin tezliklə əlavə olunacaq. Sifariş üçün WhatsApp və ya telefonla bizimlə əlaqə saxlayın:'
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto overflow-x-hidden pb-10">
+    <main className="p-5 sm:p-6 md:p-8 max-w-5xl mx-auto overflow-x-hidden pb-24 md:pb-10">
       <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Link href="/" className="text-white/60 hover:text-white min-h-[44px] inline-flex items-center">{tr.back[lang]}</Link>
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">{tr.cart[lang]}</h1>
@@ -54,7 +50,7 @@ export default function CartPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-[1.3fr_0.9fr] gap-8 md:gap-12 items-start">
         <div>
-          <div className="flex flex-col gap-3 mb-6">
+          <div className="flex flex-col gap-3.5 mb-6">
             {items.map((item, i) => (
               <motion.div
                 key={`${item.id}-${item.size ?? 'default'}`}
@@ -65,7 +61,7 @@ export default function CartPage() {
                     ? { duration: 0.15, ease: 'easeOut', delay: 0 }
                     : { duration: 0.16, delay: i * 0.03 }
                 }
-                className="flex gap-4 border rounded-xl p-4 card-soft items-center"
+                className="flex gap-3 sm:gap-4 border rounded-xl p-3.5 sm:p-4 card-soft items-center"
               >
                 {item.image && (
                   <Image
@@ -87,7 +83,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => decrease(item.id, item.size)}
-                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 bg-white/5 text-white"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 bg-white/5 text-white active:scale-95 transition-transform"
                     >
                       -
                     </button>
@@ -97,7 +93,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => add(item)}
-                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 bg-white/5 text-white"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 bg-white/5 text-white active:scale-95 transition-transform"
                     >
                       +
                     </button>
@@ -105,7 +101,7 @@ export default function CartPage() {
                 </div>
                 <button
                   onClick={() => remove(item.id, item.size)}
-                  className="text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b] min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
+                  className="text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b] min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0 active:scale-95 transition-transform"
                   aria-label={lang === 'ru' ? 'Удалить' : lang === 'en' ? 'Remove' : 'Sil'}
                 >
                   X

@@ -22,7 +22,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ toast?
   if (!profile || !canAccessOrdersAdmin) redirect('/admin')
 
   return (
-    <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto">
+    <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto pb-24 md:pb-8">
       <div className="flex items-center gap-4 mb-8 flex-wrap">
         <a href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">
           Geri

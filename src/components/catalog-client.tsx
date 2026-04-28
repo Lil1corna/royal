@@ -155,7 +155,7 @@ function ParallaxProductCardDesktop({
                   lowPower ? '' : 'group-hover:scale-[1.18]'
                 }`}
                 style={{
-                  filter: 'brightness(0.95) contrast(1.05)',
+                  filter: lowPower ? 'none' : 'brightness(0.95) contrast(1.05)',
                 }}
                 priority={priority}
                 onError={() => setImgFailed(true)}
@@ -187,7 +187,7 @@ function ParallaxProductCardDesktop({
               e.preventDefault()
               toggle(p.id)
             }}
-            className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/40 text-sm text-white/90 backdrop-blur"
+            className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-sm text-white/90"
             animate={inWishlist ? { scale: [1, 1.3, 1], color: '#fb7185' } : { scale: 1, color: '#ffffff' }}
             transition={{ duration: 0.25 }}
             aria-label={`Toggle wishlist for ${name}`}
@@ -220,7 +220,7 @@ function ParallaxProductCardDesktop({
           )}
         </motion.div>
         <motion.div
-          className="border-t border-[rgba(255,255,255,0.08)] bg-[rgba(5,13,26,0.6)] backdrop-blur-sm p-5"
+          className="border-t border-[rgba(255,255,255,0.08)] bg-[rgba(5,13,26,0.78)] p-5"
           style={{ y: textY }}
         >
           <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)] mb-2">
@@ -306,7 +306,7 @@ function ParallaxProductCardMobile({
                   lowPower ? '' : 'group-hover:scale-[1.18]'
                 }`}
                 style={{
-                  filter: 'brightness(0.95) contrast(1.05)',
+                  filter: lowPower ? 'none' : 'brightness(0.95) contrast(1.05)',
                 }}
                 priority={priority}
                 onError={() => setImgFailed(true)}
@@ -341,7 +341,7 @@ function ParallaxProductCardMobile({
         </motion.div>
 
         <motion.div
-          className="border-t border-[rgba(255,255,255,0.08)] bg-[rgba(5,13,26,0.6)] backdrop-blur-sm p-5"
+          className="border-t border-[rgba(255,255,255,0.08)] bg-[rgba(5,13,26,0.78)] p-5"
           style={{ y: 0 }}
         >
           <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)] mb-2">

@@ -8,6 +8,7 @@ import NavbarWrapper from '@/components/navbar-wrapper'
 import Footer from '@/components/footer'
 import { PageTransition } from '@/components/page-transition'
 import AuroraBg from '@/components/aurora-bg'
+import MobileBottomNav from '@/components/mobile-bottom-nav'
 import { jost, cormorant, dmSans } from '@/lib/fonts'
 
 export const metadata: Metadata = {
@@ -54,11 +55,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <AuroraBg />
           <div className="relative z-[1] flex flex-col min-h-screen">
             <NavbarWrapper />
-            <PageTransition className="flex-1">
+            <PageTransition className="flex-1 pb-24 md:pb-0">
               <div id="main" className="min-w-0">
                 {children}
               </div>
             </PageTransition>
+            <MobileBottomNav />
             <Footer />
           </div>
         </Providers>

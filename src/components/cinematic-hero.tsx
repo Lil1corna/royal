@@ -11,9 +11,11 @@ export default function CinematicHero() {
       {/* Animated Aurora Blobs Behind Image */}
       <div className="absolute inset-0 overflow-hidden" aria-hidden>
         <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full blur-[100px] opacity-25"
+          className={`absolute rounded-full opacity-25 ${isMobile ? 'w-[360px] h-[360px]' : 'w-[600px] h-[600px] blur-[100px]'}`}
           style={{
-            background: 'radial-gradient(circle, rgba(45,155,181,0.4) 0%, transparent 70%)',
+            background: isMobile
+              ? 'radial-gradient(circle, rgba(45,155,181,0.22) 0%, rgba(45,155,181,0.04) 65%, transparent 100%)'
+              : 'radial-gradient(circle, rgba(45,155,181,0.4) 0%, transparent 70%)',
             left: '15%',
             top: '20%',
           }}
@@ -25,9 +27,11 @@ export default function CinematicHero() {
           }
         />
         <motion.div
-          className="absolute w-[500px] h-[500px] rounded-full blur-[80px] opacity-15"
+          className={`absolute rounded-full opacity-15 ${isMobile ? 'w-[300px] h-[300px]' : 'w-[500px] h-[500px] blur-[80px]'}`}
           style={{
-            background: 'radial-gradient(circle, rgba(201,168,76,0.3) 0%, transparent 70%)',
+            background: isMobile
+              ? 'radial-gradient(circle, rgba(201,168,76,0.2) 0%, rgba(201,168,76,0.05) 65%, transparent 100%)'
+              : 'radial-gradient(circle, rgba(201,168,76,0.3) 0%, transparent 70%)',
             right: '10%',
             top: '30%',
           }}
@@ -39,9 +43,11 @@ export default function CinematicHero() {
           }
         />
         <motion.div
-          className="absolute w-[700px] h-[700px] rounded-full blur-[120px] opacity-40"
+          className={`absolute rounded-full opacity-40 ${isMobile ? 'w-[420px] h-[420px]' : 'w-[700px] h-[700px] blur-[120px]'}`}
           style={{
-            background: 'radial-gradient(circle, rgba(13,59,110,0.5) 0%, transparent 70%)',
+            background: isMobile
+              ? 'radial-gradient(circle, rgba(13,59,110,0.3) 0%, rgba(13,59,110,0.08) 68%, transparent 100%)'
+              : 'radial-gradient(circle, rgba(13,59,110,0.5) 0%, transparent 70%)',
             left: '50%',
             bottom: '10%',
             transform: 'translateX(-50%)',

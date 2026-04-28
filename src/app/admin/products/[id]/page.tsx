@@ -193,14 +193,14 @@ export default function EditProduct() {
   }
 
   return (
-    <main className="p-4 md:p-6 lg:p-8 max-w-2xl mx-auto">
+    <main className="p-4 md:p-6 lg:p-8 max-w-2xl mx-auto pb-24 md:pb-8">
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Mehsulu Redakte Et</h1>
       </div>
       <form
         onSubmit={handleSave}
-        className="flex flex-col gap-4 ds-card-glass p-6 rounded-2xl"
+        className="flex flex-col gap-4 ds-card-glass p-4 sm:p-6 rounded-2xl"
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
@@ -256,7 +256,7 @@ export default function EditProduct() {
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="ds-label">Qiymet (AZN)</label>
             <input type="number" className="ds-input" value={form.price}
@@ -351,7 +351,7 @@ export default function EditProduct() {
           )}
         </div>
 
-        <div className="flex gap-4 mt-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4">
           <button type="submit" disabled={loading || !canEdit}
             className="flex-1 ds-btn-primary">
             {loading ? 'Saxlanilir...' : 'Saxla'}

@@ -130,7 +130,7 @@ export default function InviteUser() {
 
   if (done) {
     return (
-      <main className="p-4 md:p-6 lg:p-8 max-w-md mx-auto text-center">
+      <main className="p-4 md:p-6 lg:p-8 max-w-md mx-auto text-center pb-24 md:pb-8">
         <div className="text-5xl mb-4">✓</div>
         <h2 className="text-2xl font-bold mb-2 text-white">
           {updatedExisting ? 'Rol yeniləndi!' : 'Davet gonderildi!'}
@@ -153,13 +153,13 @@ export default function InviteUser() {
   }
 
   return (
-    <main className="p-4 md:p-6 lg:p-8 max-w-md mx-auto">
+    <main className="p-4 md:p-6 lg:p-8 max-w-md mx-auto pb-24 md:pb-8">
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin/users" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Yeni Admin</h1>
       </div>
       <ToastMessage toast={toast} className="mb-4" />
-      <form onSubmit={handleInvite} className="ds-card-glass rounded-2xl p-6 flex flex-col gap-4">
+      <form onSubmit={handleInvite} className="ds-card-glass rounded-2xl p-4 sm:p-6 flex flex-col gap-4">
         <div>
           <label className="ds-label">Gmail</label>
           <input

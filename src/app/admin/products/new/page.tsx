@@ -139,12 +139,12 @@ export default function NewProduct() {
   }
 
   return (
-    <main className="p-4 md:p-6 lg:p-8 max-w-2xl mx-auto">
+    <main className="p-4 md:p-6 lg:p-8 max-w-2xl mx-auto pb-24 md:pb-8">
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin" className="text-neutral-400 hover:text-amber-400 transition-colors">Geri</Link>
         <h1 className="text-3xl font-bold text-white">Yeni Mehsul</h1>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 ds-card-glass p-6 rounded-2xl">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5 ds-card-glass p-4 sm:p-6 rounded-2xl">
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
@@ -200,7 +200,7 @@ export default function NewProduct() {
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="ds-label">Esas qiymet (AZN)</label>
             <input type="number" className="ds-input" value={form.price}
@@ -229,8 +229,8 @@ export default function NewProduct() {
           </div>
           <div className="flex flex-col gap-2">
             {sizes.map((s, i) => (
-              <div key={i} className="flex gap-2 items-center">
-                <input className="ds-input w-32" placeholder="80x200"
+              <div key={i} className="grid grid-cols-1 sm:grid-cols-[8rem_1fr_auto_auto] gap-2 items-center">
+                <input className="ds-input w-full" placeholder="80x200"
                   value={s.size} onChange={e => updateSize(i, 'size', e.target.value)} />
                 <input type="number" className="ds-input flex-1"
                   placeholder="Qiymet AZN" value={s.price}

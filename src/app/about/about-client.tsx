@@ -144,11 +144,12 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
   )
 
   useEffect(() => {
+    if (isMobile) return
     const id = window.setInterval(() => {
       setTagIndex((i) => (i + 1) % taglines.length)
     }, 3000)
     return () => window.clearInterval(id)
-  }, [taglines.length])
+  }, [isMobile, taglines.length])
 
   const sectionVariants = {
     hidden: { opacity: 0, y: 60 },
@@ -265,14 +266,14 @@ export default function AboutClient({ stats }: { stats: Stat[] }) {
     <div className={styles.page}>
       {/* Вся страница живет на aurora фоне */}
       <div className={styles.aurora} aria-hidden>
-        <div className="blob1" />
-        <div className="blob2" />
-        <div className="blob3" />
-        <div className="blob4" />
-        <div className="blob5" />
+        {!isMobile && <div className="blob1" />}
+        {!isMobile && <div className="blob2" />}
+        {!isMobile && <div className="blob3" />}
+        {!isMobile && <div className="blob4" />}
+        {!isMobile && <div className="blob5" />}
       </div>
-      <div className={styles.grain} aria-hidden />
-      <div className={styles.scanlines} aria-hidden />
+      {!isMobile && <div className={styles.grain} aria-hidden />}
+      {!isMobile && <div className={styles.scanlines} aria-hidden />}
       <div className={styles.vignette} aria-hidden />
 
       <motion.div

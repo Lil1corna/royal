@@ -40,10 +40,10 @@ export default async function AdminPage() {
     .eq('status', 'new')
 
   return (
-    <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+    <main className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto pb-24 md:pb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Panel</h1>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           {canSeeOrdersAdmin ? (
             <Link href="/admin/orders"
               className="relative btn-admin btn-icon-arrow px-6 py-2">
@@ -75,7 +75,8 @@ export default async function AdminPage() {
           )}
         </div>
       </div>
-      <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-white/10 bg-transparent">
+      <div className="overflow-x-auto rounded-xl border border-white/10">
+      <table className="w-full min-w-[720px] border-separate border-spacing-0 overflow-hidden bg-transparent">
         <thead>
           <tr className="bg-[rgba(201,168,76,0.06)]">
             <th className="text-left p-3 border-b border-white/10 text-[10px] font-bold tracking-[0.15em] uppercase text-[rgba(201,168,76,0.7)]">Mehsul</th>
@@ -114,6 +115,7 @@ export default async function AdminPage() {
           ))}
         </tbody>
       </table>
+      </div>
     </main>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useReducedMotion } from 'framer-motion'
 import { useSyncExternalStore } from 'react'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 /**
  * Телефоны / планшеты с основным тач-вводом + системный reduced motion.
@@ -29,5 +30,6 @@ export function useCoarsePointer() {
 export function useLowPowerMotion() {
   const reduce = useReducedMotion()
   const coarse = useCoarsePointer()
-  return Boolean(reduce || coarse)
+  const isMobile = useIsMobile(820)
+  return Boolean(reduce || coarse || isMobile)
 }

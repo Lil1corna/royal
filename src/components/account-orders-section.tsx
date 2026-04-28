@@ -118,9 +118,9 @@ export default function AccountOrdersSection({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 pb-20 md:pb-0">
       {orders.map((order) => (
-        <div key={order.id || 'unknown'} className="ds-card-glass rounded-2xl p-6">
+        <div key={order.id || 'unknown'} className="ds-card-glass rounded-2xl p-4 sm:p-6">
           <div className="flex justify-between items-start mb-2">
             <div>
               <div className="flex items-center gap-3 mb-1 flex-wrap">
@@ -154,7 +154,7 @@ export default function AccountOrdersSection({
 
           <div className="flex flex-wrap gap-3 mb-3 mt-4">
             {order.order_items?.map((item) => (
-              <div key={item.id} className="flex items-center gap-2 bg-white/10 rounded-lg p-2 border border-white/20">
+              <div key={item.id} className="flex items-center gap-2 bg-white/10 rounded-lg p-2 border border-white/20 min-h-[44px]">
                 {item.products?.image_urls?.[0] && (
                   <Image
                     src={item.products.image_urls[0]}

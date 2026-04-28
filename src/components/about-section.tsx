@@ -31,7 +31,7 @@ export default function AboutSection() {
   ]
 
   return (
-    <section className="relative w-full py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 bg-[#050d1a] overflow-hidden">
+    <section className="relative w-full py-10 sm:py-14 md:py-20 px-4 sm:px-6 md:px-8 bg-[#050d1a] overflow-hidden">
       {/* Subtle Aurora Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
         <div
@@ -56,7 +56,7 @@ export default function AboutSection() {
         <div className="grid grid-cols-1 gap-12 lg:gap-16">
           {/* Content */}
           <motion.div
-            className="about-content flex flex-col justify-center gap-6 lg:gap-7 order-1 max-w-3xl mx-auto"
+            className="about-content flex flex-col justify-center gap-5 lg:gap-7 order-1 max-w-3xl mx-auto"
             initial={isMobile ? 'visible' : 'hidden'}
             whileInView={isMobile ? undefined : 'visible'}
             viewport={isMobile ? undefined : { once: true, margin: '-80px' }}
@@ -77,7 +77,7 @@ export default function AboutSection() {
 
             {/* Main Title */}
             <motion.h2
-              className="font-serif text-white text-2xl sm:text-3xl md:text-[36px] lg:text-[44px] leading-[1.1]"
+              className="font-serif text-white text-[28px] sm:text-3xl md:text-[36px] lg:text-[44px] leading-[1.15]"
               variants={{
                 hidden: { y: 30, opacity: 0 },
                 visible: { y: 0, opacity: 1 },
@@ -104,7 +104,7 @@ export default function AboutSection() {
             {storyParagraphs.map((p, idx) => (
               <motion.p
                 key={idx}
-                className="text-white/72 text-[15px] leading-[1.9]"
+                className="text-white/72 text-[15px] sm:text-base leading-[1.75]"
                 variants={{
                   hidden: { y: 30, opacity: 0 },
                   visible: { y: 0, opacity: 1 },

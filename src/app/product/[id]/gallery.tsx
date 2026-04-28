@@ -84,7 +84,7 @@ export default function ProductGallery({
     <div>
       <div
         ref={mainRef}
-        className="aspect-square rounded-2xl mb-3 bg-white/5 border border-white/10 overflow-hidden"
+        className="aspect-square rounded-2xl mb-3 bg-white/5 border border-white/10 overflow-hidden touch-pan-y"
         style={{ perspective: lowPower ? undefined : 1100 }}
         onMouseMove={lowPower ? undefined : onMove}
         onMouseLeave={lowPower ? undefined : onLeave}
@@ -124,7 +124,7 @@ export default function ProductGallery({
               key={i}
               type="button"
               onClick={() => setActive(i)}
-              className={`aspect-square min-h-[44px] rounded-xl overflow-hidden cursor-pointer border transition-all duration-200 ${
+              className={`aspect-square min-h-[44px] rounded-xl overflow-hidden cursor-pointer border transition-all duration-200 active:scale-[0.98] ${
                 active === i
                   ? 'border-[#c9a84c] ring-2 ring-[rgba(201,168,76,0.25)] scale-[1.02]'
                   : 'border-transparent bg-white/5 hover:border-white/20 opacity-90 hover:opacity-100'

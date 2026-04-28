@@ -110,11 +110,7 @@ export default function WishlistPage() {
   if (ids.length === 0 || products.length === 0) {
     return (
       <main className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto text-center">
-        <motion.div
-          animate={{ rotate: [-4, 4, -4] }}
-          transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-          className="mb-4 text-6xl text-rose-300"
-        >
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24 }} className="mb-4 text-6xl text-rose-300">
           ♡
         </motion.div>
         <h1 className="text-xl sm:text-2xl font-bold mb-2">{tr.wishlistEmpty[lang]}</h1>
@@ -126,14 +122,14 @@ export default function WishlistPage() {
   }
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto overflow-x-hidden">
+    <main className="p-5 sm:p-6 md:p-8 max-w-4xl mx-auto overflow-x-hidden pb-24 md:pb-8">
       <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Link href="/" className="text-white/60 hover:text-white min-h-[44px] inline-flex items-center">
           {tr.back[lang]}
         </Link>
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{tr.wishlist[lang]}</h1>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4.5">
         {products.map((p, i) => {
           const name =
             lang === 'az' ? p.name_az : lang === 'ru' ? p.name_ru : p.name_en
@@ -150,7 +146,7 @@ export default function WishlistPage() {
               transition={
                 isMobile ? { duration: 0.15, ease: 'easeOut', delay: 0 } : { delay: i * 0.04 }
               }
-              className="flex flex-col sm:flex-row gap-4 border rounded-xl p-4 card-soft items-stretch sm:items-center"
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 border rounded-xl p-3.5 sm:p-4 card-soft items-stretch sm:items-center"
             >
               <Link
                 href={`/product/${p.id}`}
@@ -184,7 +180,7 @@ export default function WishlistPage() {
               <button
                 type="button"
                 onClick={() => toggle(p.id)}
-                className="text-sm text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b] shrink-0 min-h-[44px] min-w-[44px] p-3 flex items-center justify-center self-end sm:self-center"
+                className="text-sm text-[rgba(255,100,100,0.85)] hover:text-[#ff6b6b] shrink-0 min-h-[44px] min-w-[44px] p-3 flex items-center justify-center self-end sm:self-center active:scale-95 transition-transform"
                 aria-label={lang === 'ru' ? 'Удалить из избранного' : lang === 'en' ? 'Remove from wishlist' : 'Seçilmişlərdən çıxar'}
               >
                 ✕
