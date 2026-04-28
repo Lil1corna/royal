@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react'
 import { ThemeProvider } from 'next-themes'
 import { CartProvider } from '@/context/cart'
 import { FlyToCartProvider } from '@/context/fly-to-cart'
@@ -15,6 +16,10 @@ export function Providers({
   children: React.ReactNode
   initialLang?: 'az' | 'ru' | 'en'
 }) {
+  useEffect(() => {
+    void fetch('/api/csrf', { credentials: 'same-origin' })
+  }, [])
+
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
       <LangProvider initialLang={initialLang}>

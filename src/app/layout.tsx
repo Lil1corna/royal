@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import './globals.css'
-import { ensureCsrfToken } from '@/lib/csrf'
 import { Providers } from '@/components/providers'
 import { isAppLocale, NEXT_LOCALE_COOKIE } from '@/lib/locale-cookie'
 import NavbarWrapper from '@/components/navbar-wrapper'
@@ -28,7 +27,6 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  await ensureCsrfToken()
   const cookieStore = await cookies()
   const localeRaw = cookieStore.get(NEXT_LOCALE_COOKIE)?.value
   const htmlLang = isAppLocale(localeRaw) ? localeRaw : 'az'
