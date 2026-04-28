@@ -12,6 +12,7 @@ import ProductCardSkeleton from '@/components/product-card-skeleton'
 import type { Product } from '@/types/product'
 
 export default function WishlistPage() {
+  // Keep this page intentionally lightweight for mobile rendering.
   const { lang } = useLang()
   const tr = translations
   const { ids, toggle } = useWishlist()
