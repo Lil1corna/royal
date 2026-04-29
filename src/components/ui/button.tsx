@@ -3,6 +3,7 @@
 import { forwardRef } from 'react'
 import { motion, type HTMLMotionProps } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
+import { useLowPowerMotion } from '@/hooks/use-low-power-motion'
 
 type ButtonVariant = 'primary' | 'outline' | 'ghost'
 type ButtonSize = 'md' | 'lg'
@@ -18,12 +19,11 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ')
 }
 
-const variantClass: Record<ButtonVariant, string> = {
-  primary:
-    'bg-neutral-900 text-white border border-neutral-800 hover:bg-neutral-700 hover:border-neutral-700',
-  outline:
-    'bg-transparent text-white border border-white/25 hover:bg-white hover:text-neutral-900 hover:border-white',
-  ghost: 'bg-transparent text-white border border-transparent hover:bg-white/10',
+// Styles from src/styles/design-system.css — no Tailwind color classes here
+const dsClass: Record<ButtonVariant, string> = {
+  primary: 'ds-btn-primary',
+  outline: 'ds-btn-secondary',
+  ghost: 'ds-btn-ghost',
 }
 
 const sizeClass: Record<ButtonSize, string> = {
@@ -35,23 +35,35 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   { variant = 'primary', size = 'md', loading = false, disabled, className, children, ...props },
   ref
 ) {
+  const lowPower = useLowPowerMotion()
+  const motionProps = lowPower
+    ? {}
+    : variant === 'primary'
+      ? { whileHover: { y: -2 }, whileTap: { scale: 0.97 } }
+      : { whileHover: { scale: 1.02 }, whileTap: { scale: 0.97 } }
+
+  const loaderClass =
+    variant === 'primary'
+      ? 'h-4 w-4 animate-spin text-[#050d1a]'
+      : 'h-4 w-4 animate-spin text-amber-300'
+
   return (
     <motion.button
       ref={ref}
-      whileTap={{ scale: 0.97 }}
+      {...motionProps}
       type={props.type ?? 'button'}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-semibold',
-        sizeClass[size],
-        'motion-safe:transition-transform motion-safe:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050d1a]',
+        'inline-flex items-center justify-center gap-2',
+        'focus-visible:outline-none',
         'disabled:cursor-not-allowed disabled:opacity-60',
-        variantClass[variant],
+        dsClass[variant],
+        sizeClass[size],
         className
       )}
       {...props}
     >
-      {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+      {loading && <Loader2 className={loaderClass} />}
       <span>{loading ? '...' : children}</span>
     </motion.button>
   )

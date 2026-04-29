@@ -1,91 +1,41 @@
-import { NextResponse } from 'next/server'
+// Defensive handler if Kapital Bank (or a proxy) POSTs payment notifications.
+// Exact Hosted Payment Page (HPP) webhook body must be confirmed when merchant
+// certificates and bank documentation are available — extend parsing then.
 
-export async function POST() {
-  return NextResponse.json({ error: 'Online payment is not yet available' }, { status: 503 })
-}
-
-/* HIDDEN UNTIL BANK IS CONNECTED
-import { createClient } from '@supabase/supabase-js'
-import { NextRequest, NextResponse } from 'next/server'
-
-type CallbackPayload = {
-  orderId?: string
-  order_id?: string
-  sessionId?: string
-  session_id?: string
-  status?: string
-  paymentStatus?: string
-  payment_status?: string
-}
-
-function mapPayriffStatus(rawStatus: string): 'paid' | 'failed' | 'pending' {
-  const status = rawStatus.toLowerCase()
-  if (status === 'approved' || status === 'paid' || status === 'success') return 'paid'
-  if (status === 'declined' || status === 'failed') return 'failed'
-  if (status === 'cancelled' || status === 'canceled') return 'pending'
-  return 'pending'
-}
-
-function getSecretFromHeaders(request: NextRequest): string {
-  return (
-    request.headers.get('secretkey') ||
-    request.headers.get('x-payriff-secret') ||
-    request.headers.get('x-secret-key') ||
-    ''
-  )
-}
-
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const expectedSecret = process.env.PAYRIFF_SECRET_KEY
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    const body = (await request.json().catch(() => null)) as Record<string, unknown> | null
 
-    if (!expectedSecret || !supabaseUrl || !serviceRoleKey) {
-      return NextResponse.json({ error: 'Missing server environment variables' }, { status: 500 })
+    const orderObj = body?.order
+    const nestedId =
+      orderObj && typeof orderObj === 'object' && orderObj !== null && 'id' in orderObj
+        ? (orderObj as { id?: unknown }).id
+        : undefined
+
+    const kbOrderId =
+      (typeof nestedId === 'string' || typeof nestedId === 'number' ? String(nestedId) : null) ??
+      (typeof body?.orderId === 'string' ? body.orderId : null) ??
+      (typeof body?.ORDERID === 'string' ? body.ORDERID : null)
+
+    const secret = process.env.CRON_SECRET?.trim()
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
+
+    if (kbOrderId && secret && siteUrl) {
+      void fetch(`${siteUrl}/api/payment/verify-internal`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Cron-Secret': secret,
+        },
+        body: JSON.stringify({ kbOrderId: String(kbOrderId) }),
+      }).catch((err: unknown) => console.error('[callback] verify-internal error:', err))
     }
-
-    const incomingSecret = getSecretFromHeaders(request)
-    if (incomingSecret !== expectedSecret) {
-      return NextResponse.json({ error: 'Invalid callback signature' }, { status: 401 })
-    }
-
-    const payload = (await request.json()) as CallbackPayload
-    const rawStatus = payload.status || payload.paymentStatus || payload.payment_status || 'pending'
-    const paymentStatus = mapPayriffStatus(rawStatus)
-
-    const payriffOrderId = payload.orderId || payload.order_id || null
-    const payriffSessionId = payload.sessionId || payload.session_id || null
-
-    if (!payriffOrderId && !payriffSessionId) {
-      return NextResponse.json({ error: 'Missing payriff identifiers in callback' }, { status: 400 })
-    }
-
-    const admin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    })
-
-    let query = admin
-      .from('orders')
-      .update({ payment_status: paymentStatus })
-
-    if (payriffOrderId) {
-      query = query.eq('payriff_order_id', payriffOrderId)
-    } else if (payriffSessionId) {
-      query = query.eq('payriff_session_id', payriffSessionId)
-    }
-
-    const { error } = await query
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ ok: true }, { status: 200 })
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unexpected server error' },
-      { status: 500 }
-    )
+  } catch (err) {
+    console.error('[callback] unexpected error:', err)
   }
+
+  return new Response(JSON.stringify({ received: true }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  })
 }
-HIDDEN UNTIL BANK IS CONNECTED */
