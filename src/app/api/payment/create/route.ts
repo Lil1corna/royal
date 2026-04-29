@@ -57,12 +57,19 @@ export async function POST(request: NextRequest) {
 
     const { data: order, error: orderError } = await admin
       .from('orders')
-      .select('id, total_price, user_id, payment_status, payment_method')
+      .select('id, total_price, user_id, payment_status, payment_method, notes')
       .eq('id', parsed.data.orderId)
       .single()
 
     if (orderError || !order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+
+    const meta = user.user_metadata as Record<string, unknown> | undefined
+    const userPhone = typeof meta?.phone === 'string' ? meta.phone.trim() : ''
+    const orderNotes = typeof order.notes === 'string' ? order.notes : ''
+    if (!userPhone && !orderNotes.includes('Tel:')) {
+      return NextResponse.json({ error: 'Phone number required' }, { status: 400 })
     }
 
     if (order.user_id && order.user_id !== user.id) {

@@ -68,3 +68,6 @@ supabase/.temp/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local Playwright MCP / scratch screenshots (keep out of git)
+.playwright-mcp/

@@ -82,6 +82,18 @@ export async function POST(request: NextRequest) {
 
     const { items, total, address, notes, paymentMethod } = parsed.data
 
+    if (paymentMethod === 'online') {
+      const meta = user.user_metadata as Record<string, unknown> | undefined
+      const userPhone = typeof meta?.phone === 'string' ? meta.phone.trim() : ''
+      const notesHasTel = Boolean(notes?.includes('Tel:'))
+      if (!userPhone && !notesHasTel) {
+        return NextResponse.json(
+          { error: 'Phone number required to place an order' },
+          { status: 400 }
+        )
+      }
+    }
+
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     if (!serviceKey) {
       return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })

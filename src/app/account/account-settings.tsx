@@ -7,29 +7,7 @@ import { useLang, translations } from '@/context/lang'
 import ToastMessage, { type ToastState } from '@/components/toast-message'
 import { Button } from '@/components/ui/button'
 import { useAsyncAction } from '@/hooks/useAsyncAction'
-
-function formatAzPhone(raw: string): string {
-  const digits = raw.replace(/\D/g, '').replace(/^994/, '')
-  const d = digits.slice(0, 9)
-  const p1 = d.slice(0, 2)
-  const p2 = d.slice(2, 5)
-  const p3 = d.slice(5, 7)
-  const p4 = d.slice(7, 9)
-  let result = '+994'
-  if (p1) result += ` ${p1}`
-  if (p2) result += ` ${p2}`
-  if (p3) result += ` ${p3}`
-  if (p4) result += ` ${p4}`
-  return result
-}
-
-function normalizeAzPhone(raw: string): string | null {
-  const digits = raw.replace(/\D/g, '')
-  if (/^994\d{9}$/.test(digits)) return `+${digits}`
-  if (/^0\d{9}$/.test(digits)) return `+994${digits.slice(1)}`
-  if (/^\d{9}$/.test(digits)) return `+994${digits}`
-  return null
-}
+import { formatAzPhone, normalizeAzPhone } from '@/lib/az-phone'
 
 export default function AccountSettings({
   userId,

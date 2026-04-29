@@ -26,6 +26,13 @@ export function parsePhoneFromNotes(notes: string | null): string | null {
   return m ? m[1].replace(/[\s\-]/g, '') : null
 }
 
+/** Extra delivery line written as `Əlavə: ...` from cart checkout. */
+export function parseExtraFromNotes(notes: string | null): string | null {
+  if (!notes) return null
+  const m = notes.match(/Əlavə:\s*(.+)/m)
+  return m ? m[1].trim() : null
+}
+
 export async function notifyDeliveryWebhook(payload: OrderDeliveryPayload) {
   const url = process.env.DELIVERY_WEBHOOK_URL?.trim()
   if (!url) return

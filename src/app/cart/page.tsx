@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -7,22 +7,101 @@ import { Loader2 } from 'lucide-react'
 import { useCart } from '@/context/cart'
 import { useLang, translations } from '@/context/lang'
 import { useIsMobile } from '@/hooks/useIsMobile'
-import { fetchWithCsrf } from '@/lib/fetch-with-csrf'
+import { ensureClientCsrfToken, fetchWithCsrf } from '@/lib/fetch-with-csrf'
+import { formatAzPhone } from '@/lib/az-phone'
 import { CONTACTS } from '@/config/contacts'
 
+type DeliveryProfileLoggedOut = { loggedIn: false }
+
+type DeliveryProfileLoggedIn = {
+  loggedIn: true
+  phone: string
+  savedAddress: string
+  savedAddressExtra: string
+  name: string
+}
+
+type DeliveryProfile = DeliveryProfileLoggedOut | DeliveryProfileLoggedIn
+
+function isLoggedInProfile(p: DeliveryProfile | null): p is DeliveryProfileLoggedIn {
+  return p !== null && p.loggedIn === true
+}
+
 export default function CartPage() {
-  const { items, add, decrease, remove, count, total } = useCart()
+  const { items, add, decrease, remove, count, total, isHydrated } = useCart()
   const { lang } = useLang()
   const tr = translations
   const isMobile = useIsMobile()
   const subtotal = total
   const [paymentLoading, setPaymentLoading] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const paymentInProgress = useRef(false)
+
+  const [profile, setProfile] = useState<DeliveryProfile | null>(null)
+  const [useSavedAddress, setUseSavedAddress] = useState(true)
+  const [customAddress, setCustomAddress] = useState('')
+  const [customPhone, setCustomPhone] = useState('')
+  const [addressExtra, setAddressExtra] = useState('')
+
+  useEffect(() => {
+    void ensureClientCsrfToken()
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/user/delivery-profile', { credentials: 'same-origin' })
+      .then(async (r) => {
+        if (!r.ok) {
+          setProfile({ loggedIn: false })
+          return
+        }
+        const data = (await r.json()) as DeliveryProfile & { error?: string }
+        if ('error' in data && data.error) {
+          setProfile({ loggedIn: false })
+          return
+        }
+        setProfile(data)
+        if (isLoggedInProfile(data)) {
+          if (data.phone) setCustomPhone(formatAzPhone(data.phone))
+          if (data.savedAddressExtra) setAddressExtra(data.savedAddressExtra)
+        }
+      })
+      .catch(() => setProfile({ loggedIn: false }))
+  }, [])
 
   const handleOnlinePayment = async () => {
+    if (paymentInProgress.current) return
+    paymentInProgress.current = true
     setPaymentLoading(true)
     setPaymentError(null)
     try {
+      const p = profile
+      if (!p || !isLoggedInProfile(p)) {
+        throw new Error(lang === 'az' ? 'Daxil olun' : lang === 'ru' ? 'Войдите' : 'Please sign in')
+      }
+      if (!customPhone.trim()) {
+        throw new Error(
+          lang === 'az'
+            ? 'Telefon nömrəsi tələb olunur'
+            : lang === 'ru'
+              ? 'Нужен номер телефона'
+              : 'Phone number required'
+        )
+      }
+
+      const hasSaved = Boolean(p.savedAddress?.trim())
+      const finalAddress =
+        hasSaved && useSavedAddress ? p.savedAddress.trim() : customAddress.trim()
+      const finalAddressExtra =
+        hasSaved && useSavedAddress
+          ? (p.savedAddressExtra || addressExtra).trim()
+          : addressExtra.trim()
+      const finalPhone = customPhone.trim()
+
+      const noteLines: string[] = []
+      if (finalPhone) noteLines.push(`Tel: ${finalPhone}`)
+      if (finalAddressExtra) noteLines.push(`Əlavə: ${finalAddressExtra}`)
+      const notesPayload = noteLines.length > 0 ? noteLines.join('\n') : undefined
+
       const createRes = await fetchWithCsrf('/api/order/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,6 +114,8 @@ export default function CartPage() {
           total,
           paymentMethod: 'online',
           lang,
+          address: finalAddress || undefined,
+          notes: notesPayload,
         }),
       })
       if (!createRes.ok) {
@@ -62,8 +143,19 @@ export default function CartPage() {
       )
     } finally {
       setPaymentLoading(false)
+      paymentInProgress.current = false
     }
   }
+
+  const phoneMissingLoggedIn =
+    isLoggedInProfile(profile) && !profile.phone && !customPhone.trim()
+
+  const payButtonDisabled =
+    paymentLoading ||
+    count === 0 ||
+    !isHydrated ||
+    profile === null ||
+    (isLoggedInProfile(profile) && !customPhone.trim())
 
   if (count === 0) {
     return (
@@ -163,29 +255,149 @@ export default function CartPage() {
             </p>
           </div>
 
+          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-3">
+            <p className="text-xs font-semibold text-white/50 tracking-widest uppercase mb-3">
+              {lang === 'az' ? '📍 Çatdırılma' : lang === 'ru' ? '📍 Доставка' : '📍 Delivery'}
+            </p>
+
+            <div className="mb-3">
+              <label className="ds-label" htmlFor="cart-phone">
+                {lang === 'az' ? 'Telefon nömrəsi' : lang === 'ru' ? 'Номер телефона' : 'Phone number'}
+              </label>
+              <input
+                id="cart-phone"
+                className="ds-input w-full min-h-[44px]"
+                value={customPhone}
+                onChange={(e) => setCustomPhone(formatAzPhone(e.target.value))}
+                placeholder="+994 XX XXX XX XX"
+              />
+            </div>
+
+            {isLoggedInProfile(profile) && profile.savedAddress?.trim() && (
+              <div className="flex gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setUseSavedAddress(true)}
+                  className={`flex-1 text-xs py-2 px-3 rounded-lg border min-h-[44px] transition-all ${
+                    useSavedAddress
+                      ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.1)] text-[#e8c97a]'
+                      : 'border-white/10 text-white/50'
+                  }`}
+                >
+                  {lang === 'az' ? '💾 Saxlanılmış ünvan' : lang === 'ru' ? '💾 Сохранённый адрес' : '💾 Saved address'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUseSavedAddress(false)}
+                  className={`flex-1 text-xs py-2 px-3 rounded-lg border min-h-[44px] transition-all ${
+                    !useSavedAddress
+                      ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.1)] text-[#e8c97a]'
+                      : 'border-white/10 text-white/50'
+                  }`}
+                >
+                  {lang === 'az' ? '✏️ Yeni ünvan' : lang === 'ru' ? '✏️ Новый адрес' : '✏️ New address'}
+                </button>
+              </div>
+            )}
+
+            {isLoggedInProfile(profile) && profile.savedAddress?.trim() && useSavedAddress ? (
+              <p className="text-sm text-white/70 bg-white/5 rounded-lg px-3 py-2 min-h-[44px]">
+                📍 {profile.savedAddress}
+                {profile.savedAddressExtra && (
+                  <span className="block text-white/40 text-xs mt-1">{profile.savedAddressExtra}</span>
+                )}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <input
+                  className="ds-input w-full min-h-[44px]"
+                  value={customAddress}
+                  onChange={(e) => setCustomAddress(e.target.value)}
+                  placeholder={
+                    lang === 'az'
+                      ? 'Ünvan (küçə, ev nömrəsi...)'
+                      : lang === 'ru'
+                        ? 'Адрес (улица, дом...)'
+                        : 'Address (street, house...)'
+                  }
+                />
+                <input
+                  className="ds-input w-full min-h-[44px]"
+                  value={addressExtra}
+                  onChange={(e) => setAddressExtra(e.target.value)}
+                  placeholder={
+                    lang === 'az'
+                      ? 'Əlavə məlumat (mənzil, giriş...)'
+                      : lang === 'ru'
+                        ? 'Доп. инфо (квартира, подъезд...)'
+                        : 'Extra info (apt, entrance...)'
+                  }
+                />
+              </div>
+            )}
+
+            {phoneMissingLoggedIn && (
+              <p className="text-xs text-amber-400 mt-2 flex items-center gap-1">
+                ⚠️{' '}
+                {lang === 'az'
+                  ? 'Sifariş üçün telefon nömrəsi tələb olunur'
+                  : lang === 'ru'
+                    ? 'Для заказа необходим номер телефона'
+                    : 'Phone number required to order'}
+              </p>
+            )}
+          </div>
+
           <div className="rounded-xl border border-[#c9a84c]/25 bg-[rgba(201,168,76,0.04)] p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#e8c97a]">
               {lang === 'az' ? '💳 Onlayn ödə' : lang === 'ru' ? '💳 Оплата онлайн' : '💳 Pay Online'}
             </p>
-            <button
-              type="button"
-              onClick={() => void handleOnlinePayment()}
-              disabled={paymentLoading || count === 0}
-              className="ds-btn-primary mb-2 flex w-full min-h-[44px] items-center justify-center gap-2"
-            >
-              {paymentLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {lang === 'az' ? 'Yüklənir...' : lang === 'ru' ? 'Загрузка...' : 'Loading...'}
-                </>
-              ) : lang === 'az' ? (
-                'Onlayn ödə'
-              ) : lang === 'ru' ? (
-                'Оплатить онлайн'
-              ) : (
-                'Pay online'
-              )}
-            </button>
+            {profile === null ? (
+              <button
+                type="button"
+                disabled
+                className="ds-btn-primary mb-2 flex w-full min-h-[44px] items-center justify-center gap-2 opacity-60"
+              >
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {lang === 'az' ? 'Yüklənir...' : lang === 'ru' ? 'Загрузка...' : 'Loading...'}
+              </button>
+            ) : !isLoggedInProfile(profile) ? (
+              <div className="text-center py-3">
+                <p className="text-white/50 text-xs mb-2">
+                  {lang === 'az'
+                    ? 'Onlayn ödəniş üçün daxil olun'
+                    : lang === 'ru'
+                      ? 'Войдите для онлайн оплаты'
+                      : 'Sign in to pay online'}
+                </p>
+                <Link
+                  href="/auth/signin"
+                  className="ds-btn-primary inline-flex min-h-[44px] px-6 py-2 text-sm items-center justify-center"
+                >
+                  {lang === 'az' ? 'Daxil ol' : lang === 'ru' ? 'Войти' : 'Sign in'}
+                </Link>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void handleOnlinePayment()}
+                disabled={payButtonDisabled}
+                className="ds-btn-primary mb-2 flex w-full min-h-[44px] items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {paymentLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {lang === 'az' ? 'Yüklənir...' : lang === 'ru' ? 'Загрузка...' : 'Loading...'}
+                  </>
+                ) : lang === 'az' ? (
+                  'Onlayn ödə'
+                ) : lang === 'ru' ? (
+                  'Оплатить онлайн'
+                ) : (
+                  'Pay online'
+                )}
+              </button>
+            )}
             <p className="flex items-center justify-center gap-1 text-center text-xs text-white/35">
               🔒{' '}
               {lang === 'az'
