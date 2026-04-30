@@ -7,11 +7,12 @@ import { type NextRequest } from 'next/server'
  * `prefix` is the second argument to `rateLimitFromRequest`.
  */
 const TIERS = {
-  'payment-create': { requests: 5, window: '1 m' },
+  /** Per IP; checkout calls create after order-create — avoid 429 on a few retries. */
+  'payment-create': { requests: 20, window: '1 m' },
   'payment-verify': { requests: 10, window: '1 m' },
   'payment-verify-internal': { requests: 30, window: '1 m' },
   'payment-callback': { requests: 20, window: '1 m' },
-  'order-create': { requests: 10, window: '1 m' },
+  'order-create': { requests: 30, window: '1 m' },
   auth: { requests: 10, window: '1 m' },
   csrf: { requests: 30, window: '1 m' },
   admin: { requests: 60, window: '1 m' },

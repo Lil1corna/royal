@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
 
+/**
+ * Match mobile viewport. Initial state is always `false` so the first client render
+ * matches SSR (avoid React hydration #418). Real value is applied after mount in `useEffect`.
+ */
 export function useIsMobile(breakpoint = 768) {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia(`(max-width: ${breakpoint}px)`).matches
-  })
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const mq = window.matchMedia(`(max-width: ${breakpoint}px)`)
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    mq.addEventListener('change', handler)
-    return () => {
-      mq.removeEventListener('change', handler)
-    }
+    const sync = () => setIsMobile(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
   }, [breakpoint])
 
   return isMobile
