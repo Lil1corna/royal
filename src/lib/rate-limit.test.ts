@@ -48,11 +48,25 @@ describe('rateLimitFromRequest', () => {
     await expect(rateLimitFromRequest(req(), 'payment-create')).resolves.toBe(false)
   })
 
-  it('blocks csrf when Redis is missing in production (fail-closed)', async () => {
+  it('allows csrf when Redis is missing in production (fail-open)', async () => {
     vi.stubEnv('NODE_ENV', 'production')
     vi.resetModules()
     const { rateLimitFromRequest } = await import('./rate-limit')
-    await expect(rateLimitFromRequest(req(), 'csrf')).resolves.toBe(false)
+    await expect(rateLimitFromRequest(req(), 'csrf')).resolves.toBe(true)
+  })
+
+  it('isUpstashRedisConfigured is false without env', async () => {
+    vi.resetModules()
+    const { isUpstashRedisConfigured } = await import('./rate-limit')
+    expect(isUpstashRedisConfigured()).toBe(false)
+  })
+
+  it('isUpstashRedisConfigured is true when both env vars set', async () => {
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://example.upstash.io')
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'token')
+    vi.resetModules()
+    const { isUpstashRedisConfigured } = await import('./rate-limit')
+    expect(isUpstashRedisConfigured()).toBe(true)
   })
 
   it('allows payment-create when Redis is missing outside production', async () => {

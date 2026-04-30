@@ -4,7 +4,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { verifyCsrf, csrfForbiddenResponse } from '@/lib/csrf'
-import { rateLimitFromRequest } from '@/lib/rate-limit'
+import { isUpstashRedisConfigured, rateLimitFromRequest } from '@/lib/rate-limit'
 
 const itemSchema = z.object({
   productId: z.string().uuid(),
@@ -67,6 +67,16 @@ export async function POST(request: NextRequest) {
   try {
     const allowed = await rateLimitFromRequest(request, 'order-create')
     if (!allowed) {
+      if (!isUpstashRedisConfigured()) {
+        return NextResponse.json(
+          {
+            error:
+              'Checkout rate limiting is unavailable. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.',
+            code: 'RATE_LIMIT_BACKEND',
+          },
+          { status: 503 }
+        )
+      }
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     }
 

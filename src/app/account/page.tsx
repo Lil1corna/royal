@@ -5,6 +5,7 @@ import { createServerSupabase } from '@/lib/supabase-server'
 import AccountSettings from './account-settings'
 import AccountOrdersSection from '@/components/account-orders-section'
 import { ROLES, normalizeDbRoleToRoleKey } from '@/config/roles'
+import { avatarUrlUsesNextImageOptimization } from '@/lib/avatar-url'
 
 export default async function AccountPage() {
   const supabase = await createServerSupabase()
@@ -31,12 +32,22 @@ export default async function AccountPage() {
     perms.includes('manage_orders') ||
     perms.includes('manage_users') ||
     perms.includes('view_analytics')
+  function metaNumber(v: unknown): number | null {
+    if (typeof v === 'number' && Number.isFinite(v)) return v
+    if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v)
+    return null
+  }
+
   const meta = (user.user_metadata || {}) as {
     phone?: string
     shipping_address?: string
     shipping_address_extra?: string
     avatar_url?: string
+    shipping_lat?: unknown
+    shipping_lng?: unknown
   }
+  const initialShippingLat = metaNumber(meta.shipping_lat)
+  const initialShippingLng = metaNumber(meta.shipping_lng)
   const avatarUrl = meta.avatar_url || ''
   const displayName = profile?.name || user.email
 
@@ -51,15 +62,27 @@ export default async function AccountPage() {
 
       <div className="card-soft p-6 mb-8 flex items-center gap-4 border border-white/10">
         {avatarUrl ? (
-          <Image
-            src={avatarUrl}
-            alt="avatar"
-            width={56}
-            height={56}
-            sizes="56px"
-            priority
-            className="w-14 h-14 rounded-full object-cover border border-white/10"
-          />
+          avatarUrlUsesNextImageOptimization(avatarUrl) ? (
+            <Image
+              src={avatarUrl}
+              alt="avatar"
+              width={56}
+              height={56}
+              sizes="56px"
+              priority
+              className="w-14 h-14 rounded-full object-cover border border-white/10"
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- external hosts not in remotePatterns
+            <img
+              src={avatarUrl}
+              alt="avatar"
+              width={56}
+              height={56}
+              className="w-14 h-14 rounded-full object-cover border border-white/10"
+              referrerPolicy="no-referrer"
+            />
+          )
         ) : (
           <div className="w-14 h-14 bg-[#050d1a] text-white rounded-full flex items-center justify-center text-xl font-bold border border-white/10">
             {user.email?.[0].toUpperCase()}
@@ -88,6 +111,8 @@ export default async function AccountPage() {
         initialAddress={meta.shipping_address || ''}
         initialAddressExtra={meta.shipping_address_extra || ''}
         initialAvatarUrl={meta.avatar_url || ''}
+        initialShippingLat={initialShippingLat}
+        initialShippingLng={initialShippingLng}
       />
 
       <h2 className="text-xl font-bold mb-4">Sifarislerim</h2>

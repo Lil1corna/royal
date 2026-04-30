@@ -51,6 +51,13 @@ function isCriticalPrefix(prefix: string): boolean {
   return prefix === 'payment-create' || prefix === 'order-create'
 }
 
+/** True when Upstash env vars are present (does not guarantee Redis connectivity). */
+export function isUpstashRedisConfigured(): boolean {
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim()
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim()
+  return Boolean(url && token)
+}
+
 function logRateLimit(payload: Record<string, unknown>) {
   console.log(JSON.stringify({ tag: '[RATE_LIMIT]', ...payload }))
 }

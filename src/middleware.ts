@@ -66,8 +66,9 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith('/admin')) {
       if (!user) {
         console.warn(
-          '[SECURITY] admin_unauthenticated',
+          '[SECURITY] admin_access_denied',
           JSON.stringify({
+            reason: 'unauthenticated',
             pathname,
             timestamp: new Date().toISOString(),
           })
@@ -85,8 +86,9 @@ export async function middleware(request: NextRequest) {
 
       if (!ADMIN_DB_ROLES.has(dbRole)) {
         console.warn(
-          '[SECURITY] admin_route_denied_non_staff',
+          '[SECURITY] admin_access_denied',
           JSON.stringify({
+            reason: 'non_staff_role',
             pathname,
             timestamp: new Date().toISOString(),
             userIdPrefix: partialUserId(user.id),

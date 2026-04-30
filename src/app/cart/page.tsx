@@ -22,6 +22,8 @@ type DeliveryProfileLoggedIn = {
   savedAddress: string
   savedAddressExtra: string
   name: string
+  shipping_lat?: number | null
+  shipping_lng?: number | null
 }
 
 type DeliveryProfile = DeliveryProfileLoggedOut | DeliveryProfileLoggedIn
@@ -368,8 +370,22 @@ export default function CartPage() {
                 </button>
                 {showMap && (
                   <AddressMap
-                    initialLat={selectedLat ?? undefined}
-                    initialLng={selectedLng ?? undefined}
+                    initialLat={
+                      selectedLat ??
+                      (isLoggedInProfile(profile) &&
+                      profile.shipping_lat != null &&
+                      Number.isFinite(profile.shipping_lat)
+                        ? profile.shipping_lat
+                        : undefined)
+                    }
+                    initialLng={
+                      selectedLng ??
+                      (isLoggedInProfile(profile) &&
+                      profile.shipping_lng != null &&
+                      Number.isFinite(profile.shipping_lng)
+                        ? profile.shipping_lng
+                        : undefined)
+                    }
                     initialAddress={selectedAddress || undefined}
                     onSelect={(addr, lat, lng, url) => {
                       setSelectedAddress(addr)

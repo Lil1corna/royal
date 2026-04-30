@@ -11,6 +11,8 @@ type LoggedIn = {
   savedAddress: string
   savedAddressExtra: string
   name: string
+  shipping_lat: number | null
+  shipping_lng: number | null
 }
 
 export async function GET(request: NextRequest) {
@@ -48,6 +50,14 @@ export async function GET(request: NextRequest) {
       shipping_address?: unknown
       shipping_address_extra?: unknown
       full_name?: unknown
+      shipping_lat?: unknown
+      shipping_lng?: unknown
+    }
+
+    function metaNumber(v: unknown): number | null {
+      if (typeof v === 'number' && Number.isFinite(v)) return v
+      if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v)
+      return null
     }
 
     const { data: profile } = await supabase.from('users').select('name').eq('id', user.id).maybeSingle()
@@ -67,6 +77,8 @@ export async function GET(request: NextRequest) {
       savedAddressExtra:
         typeof meta.shipping_address_extra === 'string' ? meta.shipping_address_extra : '',
       name: displayName,
+      shipping_lat: metaNumber(meta.shipping_lat),
+      shipping_lng: metaNumber(meta.shipping_lng),
     }
 
     return NextResponse.json(body)

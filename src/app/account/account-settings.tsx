@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase'
@@ -8,6 +9,10 @@ import ToastMessage, { type ToastState } from '@/components/toast-message'
 import { Button } from '@/components/ui/button'
 import { useAsyncAction } from '@/hooks/useAsyncAction'
 import { formatAzPhone, normalizeAzPhone } from '@/lib/az-phone'
+import { avatarUrlUsesNextImageOptimization } from '@/lib/avatar-url'
+import { buildGoogleMapsUrl } from '@/components/address-map'
+
+const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
 
 export default function AccountSettings({
   userId,
@@ -17,6 +22,8 @@ export default function AccountSettings({
   initialAddress,
   initialAddressExtra,
   initialAvatarUrl,
+  initialShippingLat = null,
+  initialShippingLng = null,
 }: {
   userId: string
   currentEmail: string
@@ -25,6 +32,8 @@ export default function AccountSettings({
   initialAddress: string
   initialAddressExtra: string
   initialAvatarUrl: string
+  initialShippingLat?: number | null
+  initialShippingLng?: number | null
 }) {
   const { lang } = useLang()
   const tr = translations
@@ -35,6 +44,11 @@ export default function AccountSettings({
   const [address, setAddress] = useState(initialAddress)
   const [addressExtra, setAddressExtra] = useState(initialAddressExtra)
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl)
+  const [shippingLat, setShippingLat] = useState<number | null>(initialShippingLat)
+  const [shippingLng, setShippingLng] = useState<number | null>(initialShippingLng)
+  const [mapsUrl, setMapsUrl] = useState('')
+  const [showAddressMap, setShowAddressMap] = useState(false)
+  const [addressCopyDone, setAddressCopyDone] = useState(false)
   const [saved, setSaved] = useState(false)
   const [toast, setToast] = useState<ToastState | null>(null)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -82,8 +96,14 @@ export default function AccountSettings({
         phone: phoneNormalized,
         shipping_address: address.trim(),
         shipping_address_extra: addressExtra.trim() || null,
-        shipping_lat: null,
-        shipping_lng: null,
+        shipping_lat:
+          shippingLat !== null && shippingLng !== null && Number.isFinite(shippingLat) && Number.isFinite(shippingLng)
+            ? shippingLat
+            : null,
+        shipping_lng:
+          shippingLat !== null && shippingLng !== null && Number.isFinite(shippingLat) && Number.isFinite(shippingLng)
+            ? shippingLng
+            : null,
         avatar_url: avatarUrl.trim() || null,
       },
     })
@@ -179,6 +199,109 @@ export default function AccountSettings({
           placeholder={tr.addressDetailHint[lang]}
         />
 
+        <div className="mb-4 space-y-2">
+          <button
+            type="button"
+            onClick={() => setShowAddressMap((o) => !o)}
+            className="w-full min-h-[44px] rounded-lg border border-[#c9a84c]/35 bg-[rgba(201,168,76,0.06)] px-3 py-2 text-sm font-medium text-[#e8c97a] transition-colors hover:bg-[rgba(201,168,76,0.1)]"
+          >
+            {showAddressMap
+              ? lang === 'ru'
+                ? '✕ Скрыть карту'
+                : lang === 'en'
+                  ? '✕ Hide map'
+                  : '✕ Xəritəni gizlət'
+              : lang === 'ru'
+                ? '📍 Выбрать на карте'
+                : lang === 'en'
+                  ? '📍 Pick from map'
+                  : '📍 Xəritədən seç'}
+          </button>
+          {showAddressMap && (
+            <AddressMap
+              initialLat={shippingLat ?? undefined}
+              initialLng={shippingLng ?? undefined}
+              initialAddress={address || undefined}
+              onSelect={(addr, lat, lng, url) => {
+                setAddress(addr)
+                setShippingLat(lat)
+                setShippingLng(lng)
+                setMapsUrl(url)
+                setShowAddressMap(false)
+              }}
+            />
+          )}
+        </div>
+
+        {shippingLat !== null &&
+          shippingLng !== null &&
+          Number.isFinite(shippingLat) &&
+          Number.isFinite(shippingLng) &&
+          address.trim() && (
+            <div className="mb-4 rounded-xl border border-[#c9a84c]/25 bg-[rgba(201,168,76,0.06)] p-3 space-y-3">
+              <p className="text-sm text-white/90 leading-snug">📍 {address.trim()}</p>
+              <div className="flex flex-wrap gap-2">
+                {mapsUrl ? (
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-secondary min-h-[44px] inline-flex items-center justify-center px-4 py-2 text-xs"
+                  >
+                    {lang === 'ru' ? 'Карта' : lang === 'en' ? 'Open map' : 'Xəritə'}
+                  </a>
+                ) : (
+                  <a
+                    href={buildGoogleMapsUrl(shippingLat, shippingLng)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-secondary min-h-[44px] inline-flex items-center justify-center px-4 py-2 text-xs"
+                  >
+                    {lang === 'ru' ? 'Карта' : lang === 'en' ? 'Open map' : 'Xəritə'}
+                  </a>
+                )}
+                <button
+                  type="button"
+                  className="btn-secondary min-h-[44px] px-4 py-2 text-xs"
+                  onClick={() => {
+                    void (async () => {
+                      try {
+                        await navigator.clipboard.writeText(address.trim())
+                        setAddressCopyDone(true)
+                        window.setTimeout(() => setAddressCopyDone(false), 2000)
+                      } catch {
+                        /* ignore */
+                      }
+                    })()
+                  }}
+                >
+                  {addressCopyDone
+                    ? lang === 'ru'
+                      ? '✓ Скопировано'
+                      : lang === 'en'
+                        ? '✓ Copied'
+                        : '✓ Kopyalandı'
+                    : lang === 'ru'
+                      ? 'Копировать'
+                      : lang === 'en'
+                        ? 'Copy'
+                        : 'Kopyala'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary min-h-[44px] px-4 py-2 text-xs"
+                  onClick={() => {
+                    setShippingLat(null)
+                    setShippingLng(null)
+                    setMapsUrl('')
+                  }}
+                >
+                  {lang === 'ru' ? 'Сброс координат' : lang === 'en' ? 'Clear map pin' : 'Koordinatları sil'}
+                </button>
+              </div>
+            </div>
+          )}
+
         {fullAddressLine && (
           <div className="mb-4 p-3 bg-white/5 rounded-lg text-sm text-white/70 border border-white/10">
             <span className="text-xs text-white/60 block mb-1">
@@ -205,16 +328,28 @@ export default function AccountSettings({
         />
         <div className="mb-4">
           {avatarValid ? (
-            <Image
-              src={previewAvatar}
-              alt="avatar preview"
-              width={64}
-              height={64}
-              sizes="64px"
-              priority
-              className="w-16 h-16 rounded-full object-cover border"
-              referrerPolicy="no-referrer"
-            />
+            avatarUrlUsesNextImageOptimization(previewAvatar) ? (
+              <Image
+                src={previewAvatar}
+                alt="avatar preview"
+                width={64}
+                height={64}
+                sizes="64px"
+                priority
+                className="w-16 h-16 rounded-full object-cover border"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element -- external hosts not in remotePatterns
+              <img
+                src={previewAvatar}
+                alt="avatar preview"
+                width={64}
+                height={64}
+                className="w-16 h-16 rounded-full object-cover border border-white/10"
+                referrerPolicy="no-referrer"
+              />
+            )
           ) : (
             <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 text-xs">
               preview

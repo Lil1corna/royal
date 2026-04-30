@@ -46,13 +46,35 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    const { error } = await auth.admin
-      .from('users')
-      .update({ role: body.data.role })
-      .eq('id', idParsed.data)
+    const targetUserId = idParsed.data
+    const newRole = body.data.role
+
+    const { error } = await auth.admin.from('users').update({ role: newRole }).eq('id', targetUserId)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    // Keep JWT user_metadata.role in sync so Edge middleware (no DB) matches public.users.role.
+    // Existing staff promoted only in SQL must run a one-time metadata backfill in Supabase Dashboard.
+    try {
+      const { data: authUser, error: getAuthErr } = await auth.admin.auth.admin.getUserById(targetUserId)
+      if (getAuthErr || !authUser?.user) {
+        console.error('[admin/users/role] getUserById after DB update:', getAuthErr?.message ?? 'no user')
+      } else {
+        const prevMeta =
+          authUser.user.user_metadata && typeof authUser.user.user_metadata === 'object'
+            ? { ...authUser.user.user_metadata }
+            : {}
+        const { error: updAuthErr } = await auth.admin.auth.admin.updateUserById(targetUserId, {
+          user_metadata: { ...prevMeta, role: newRole },
+        })
+        if (updAuthErr) {
+          console.error('[admin/users/role] updateUserById user_metadata.role:', updAuthErr.message)
+        }
+      }
+    } catch (syncErr) {
+      console.error('[admin/users/role] JWT metadata sync:', syncErr)
     }
 
     return NextResponse.json({ ok: true })
