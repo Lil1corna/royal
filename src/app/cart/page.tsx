@@ -393,6 +393,7 @@ export default function CartPage() {
                 </button>
                 {showMap && (
                   <AddressMap
+                    suppressInitialSelect={mapSelectionLocked}
                     initialLat={
                       selectedLat ??
                       (isLoggedInProfile(profile) &&

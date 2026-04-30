@@ -219,6 +219,13 @@ export default function AccountSettings({
           </button>
           {showAddressMap && (
             <AddressMap
+              suppressInitialSelect={
+                shippingLat != null &&
+                shippingLng != null &&
+                Number.isFinite(shippingLat) &&
+                Number.isFinite(shippingLng) &&
+                Boolean(address.trim())
+              }
               initialLat={shippingLat ?? undefined}
               initialLng={shippingLng ?? undefined}
               initialAddress={address || undefined}

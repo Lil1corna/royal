@@ -14,6 +14,11 @@ export type AddressMapProps = {
   initialLat?: number | null
   initialLng?: number | null
   initialAddress?: string
+  /**
+   * When true, initial pin from `initialLat`/`initialLng` does not call `onSelect`.
+   * Use while reopening the map to change an already locked delivery pin (parent would otherwise close the map immediately).
+   */
+  suppressInitialSelect?: boolean
   /** Optional className for the map tile container */
   mapContainerClassName?: string
 }
@@ -23,6 +28,7 @@ export default function AddressMap({
   initialLat,
   initialLng,
   initialAddress,
+  suppressInitialSelect = false,
   mapContainerClassName,
 }: AddressMapProps) {
   const { lang } = useLang()
@@ -44,15 +50,26 @@ export default function AddressMap({
   const onSelectRef = useRef(onSelect)
   onSelectRef.current = onSelect
 
-  const placeMarker = (lat: number, lng: number, addr: string, map: LeafletMap, L: typeof import('leaflet'), icon: Icon) => {
+  /** Move marker + local UI. Only pass `notify: true` on real user actions so parents can close the map without remount re-firing `onSelect`. */
+  const putMarker = (
+    lat: number,
+    lng: number,
+    addr: string,
+    map: LeafletMap,
+    L: typeof import('leaflet'),
+    icon: Icon,
+    notify: boolean
+  ) => {
     if (markerRef.current) markerRef.current.remove()
     markerRef.current = L.marker([lat, lng], { icon }).addTo(map)
     map.setView([lat, lng], 16)
     setSelected(addr)
     setSearch(addr)
     setFetchError(null)
-    onSelectRef.current(addr, lat, lng, buildGoogleMapsUrl(lat, lng))
     setSuggestions([])
+    if (notify) {
+      onSelectRef.current(addr, lat, lng, buildGoogleMapsUrl(lat, lng))
+    }
   }
 
   useEffect(() => {
@@ -95,10 +112,10 @@ export default function AddressMap({
             throw new Error(data.error || 'geocode error')
           }
           const addr = data.display_name?.trim() || coordLabel
-          placeMarker(lat, lng, addr, map, L, icon)
+          putMarker(lat, lng, addr, map, L, icon, true)
         } catch {
           if (cancelled) return
-          placeMarker(lat, lng, coordLabel, map, L, icon)
+          putMarker(lat, lng, coordLabel, map, L, icon, true)
           setFetchError(
             lang === 'ru'
               ? 'Точка выбрана; текст адреса по координатам не загрузился (проверьте сеть).'
@@ -131,7 +148,7 @@ export default function AddressMap({
         const addr =
           initialAddress?.trim() ||
           `${initialLat.toFixed(5)}, ${initialLng.toFixed(5)}`
-        placeMarker(initialLat, initialLng, addr, map, L, icon)
+        putMarker(initialLat, initialLng, addr, map, L, icon, !suppressInitialSelect)
       }
     })
     return () => {
@@ -144,8 +161,8 @@ export default function AddressMap({
       }
       markerRef.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- init once; initial* captured at first paint
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Leaflet init once per mount; initial* from first paint
+  }, [suppressInitialSelect])
 
   const handleSearch = async () => {
     if (!search.trim()) return
@@ -183,7 +200,7 @@ export default function AddressMap({
     const r = mapRef.current
     if (!r) return
     const { map, L, icon } = r
-    placeMarker(lat, lng, item.display_name, map, L, icon)
+    putMarker(lat, lng, item.display_name, map, L, icon, true)
   }
 
   return (
