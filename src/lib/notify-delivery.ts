@@ -20,6 +20,15 @@ export function parseMapsLinkFromNotes(notes: string | null): string | null {
   return `https://www.google.com/maps?q=${m[1]},${m[2]}`
 }
 
+/** Maps URL from order notes coords, else search by address text (for admin / courier links). */
+export function mapsLinkForDelivery(address: string | null | undefined, notes: string | null): string | null {
+  const fromNotes = parseMapsLinkFromNotes(notes)
+  if (fromNotes) return fromNotes
+  const a = address?.trim()
+  if (!a) return null
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a)}`
+}
+
 export function parsePhoneFromNotes(notes: string | null): string | null {
   if (!notes) return null
   const m = notes.match(/Tel:\s*([+\d][\d\s\-]{8,22})/)

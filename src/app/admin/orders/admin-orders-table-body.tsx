@@ -3,6 +3,7 @@
 import { Fragment, useState } from 'react'
 import {
   parseExtraFromNotes,
+  mapsLinkForDelivery,
   parseMapsLinkFromNotes,
   parsePhoneFromNotes,
 } from '@/lib/notify-delivery'
@@ -154,6 +155,7 @@ export function AdminOrdersTableBody({
             const phone = parsePhoneFromNotes(o.notes)
             const extra = parseExtraFromNotes(o.notes)
             const maps = parseMapsLinkFromNotes(o.notes)
+            const addressMapsHref = mapsLinkForDelivery(o.address, o.notes)
             const expanded = expandedId === o.id
             return (
               <Fragment key={o.id}>
@@ -178,10 +180,17 @@ export function AdminOrdersTableBody({
                   </td>
                   <td className="border-b border-white/10 p-3 align-top">
                     <div className="space-y-0.5 max-w-[220px]">
-                      {o.address && (
-                        <p className="text-xs text-white/70 truncate" title={o.address}>
+                      {o.address?.trim() && addressMapsHref && (
+                        <a
+                          href={addressMapsHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs text-[#e8c97a] hover:underline truncate block"
+                          title={o.address}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           📍 {o.address}
-                        </p>
+                        </a>
                       )}
                       {phone && (
                         <a
@@ -256,7 +265,19 @@ export function AdminOrdersTableBody({
                           <span className="text-white/50">
                             {lang === 'az' ? 'Ünvan: ' : lang === 'ru' ? 'Адрес: ' : 'Address: '}
                           </span>
-                          {o.address || '—'}
+                          {o.address?.trim() && addressMapsHref ? (
+                            <a
+                              href={addressMapsHref}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[#e8c97a] hover:underline break-words"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {o.address}
+                            </a>
+                          ) : (
+                            <span>{o.address || '—'}</span>
+                          )}
                         </p>
                         {phone && (
                           <p>

@@ -107,14 +107,25 @@ export default function CartPage() {
         selectedLng !== null &&
         selectedAddress.trim().length > 0
 
+      /** Ручной ввод после «Ввести вручную»: если текст отличается от подписи с карты — без координат. */
+      const pinText = mapLocked ? selectedAddress.trim() : ''
+      const useManualAddressLine =
+        manualAddressOpen &&
+        customAddress.trim().length > 0 &&
+        (!mapLocked || customAddress.trim() !== pinText)
+
       let finalAddress = ''
-      if (mapLocked) {
-        finalAddress = selectedAddress.trim()
+      if (useManualAddressLine) {
+        finalAddress = customAddress.trim()
+      } else if (mapLocked) {
+        finalAddress = pinText
       } else if (hasSaved && useSavedAddress) {
         finalAddress = p.savedAddress.trim()
       } else {
         finalAddress = customAddress.trim()
       }
+
+      const sendCoords = mapLocked && !useManualAddressLine
 
       const finalAddressExtra =
         hasSaved && useSavedAddress
@@ -140,8 +151,8 @@ export default function CartPage() {
           paymentMethod: 'online',
           lang,
           address: finalAddress || undefined,
-          lat: mapLocked ? selectedLat : undefined,
-          lng: mapLocked ? selectedLng : undefined,
+          lat: sendCoords ? selectedLat : undefined,
+          lng: sendCoords ? selectedLng : undefined,
           notes: notesPayload,
         }),
       })
@@ -337,7 +348,19 @@ export default function CartPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setUseSavedAddress(false)}
+                  onClick={() => {
+                    setUseSavedAddress(false)
+                    setSelectedLat(null)
+                    setSelectedLng(null)
+                    setSelectedAddress('')
+                    setMapsUrl('')
+                    setShowMap(false)
+                    setManualAddressOpen(false)
+                    setCustomAddress(profile.savedAddress.trim())
+                    if (profile.savedAddressExtra?.trim()) {
+                      setAddressExtra(profile.savedAddressExtra.trim())
+                    }
+                  }}
                   className={`flex-1 text-xs py-2 px-3 rounded-lg border min-h-[44px] transition-all ${
                     !useSavedAddress
                       ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.1)] text-[#e8c97a]'
@@ -405,18 +428,27 @@ export default function CartPage() {
               <div className="mb-3 rounded-xl border border-[#c9a84c]/25 bg-[rgba(201,168,76,0.06)] p-3 space-y-3">
                 <p className="text-sm text-white/90 leading-snug">📍 {selectedAddress}</p>
                 <div className="flex flex-wrap gap-2">
-                  <a
-                    href={mapsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ds-btn-secondary min-h-[44px] inline-flex items-center justify-center px-4 py-2 text-xs"
-                  >
-                    {lang === 'az'
-                      ? 'Xəritədə aç'
-                      : lang === 'ru'
-                        ? 'Открыть на карте'
-                        : 'Open in Maps'}
-                  </a>
+                  {(() => {
+                    const mapHref =
+                      mapsUrl.trim() ||
+                      (selectedLat != null && selectedLng != null
+                        ? `https://maps.google.com/maps?q=${encodeURIComponent(`${selectedLat},${selectedLng}`)}`
+                        : '')
+                    return mapHref ? (
+                      <a
+                        href={mapHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="ds-btn-secondary min-h-[44px] inline-flex items-center justify-center px-4 py-2 text-xs"
+                      >
+                        {lang === 'az'
+                          ? 'Xəritədə aç'
+                          : lang === 'ru'
+                            ? 'Открыть на карте'
+                            : 'Open in Maps'}
+                      </a>
+                    ) : null
+                  })()}
                   <button
                     type="button"
                     className="ds-btn-secondary min-h-[44px] px-4 py-2 text-xs"
@@ -455,7 +487,10 @@ export default function CartPage() {
                 <button
                   type="button"
                   className="text-xs text-[#e8c97a]/90 underline min-h-[44px] text-left w-full"
-                  onClick={() => setManualAddressOpen(true)}
+                  onClick={() => {
+                    setManualAddressOpen(true)
+                    setCustomAddress((prev) => (prev.trim() ? prev : selectedAddress))
+                  }}
                 >
                   {lang === 'az'
                     ? 'Əl ilə daxil et'
