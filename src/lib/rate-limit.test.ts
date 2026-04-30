@@ -1,33 +1,65 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { NextRequest } from 'next/server'
 
-describe('rateLimitAllow in-memory', () => {
+describe('rateLimitAllow', () => {
   beforeEach(() => {
     vi.unstubAllEnvs()
     delete process.env.UPSTASH_REDIS_REST_URL
     delete process.env.UPSTASH_REDIS_REST_TOKEN
+    vi.resetModules()
   })
 
-  it('allows 25 requests then blocks the 26th on the same key', async () => {
-    vi.resetModules()
+  it('sync call always allows (legacy compat)', async () => {
     const { rateLimitAllow } = await import('./rate-limit')
-    const key = `rl-${Date.now()}-${Math.random()}`
-    for (let i = 0; i < 25; i++) {
-      expect(rateLimitAllow(key)).toBe(true)
-    }
-    expect(rateLimitAllow(key)).toBe(false)
+    expect(rateLimitAllow('any-key')).toBe(true)
   })
 
-  it('allows again after the sliding window elapses', async () => {
-    vi.useFakeTimers()
-    vi.resetModules()
+  it('async without Redis in non-production allows', async () => {
     const { rateLimitAllow } = await import('./rate-limit')
-    const key = `rl-win-${Date.now()}`
-    for (let i = 0; i < 25; i++) {
-      expect(rateLimitAllow(key)).toBe(true)
-    }
-    expect(rateLimitAllow(key)).toBe(false)
-    vi.advanceTimersByTime(61_000)
-    expect(rateLimitAllow(key)).toBe(true)
-    vi.useRealTimers()
+    await expect(rateLimitAllow('payment-create', true)).resolves.toBe(true)
   })
 })
+
+describe('rateLimitFromRequest', () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs()
+    delete process.env.UPSTASH_REDIS_REST_URL
+    delete process.env.UPSTASH_REDIS_REST_TOKEN
+    vi.resetModules()
+  })
+
+  function req(): NextRequest {
+    return new NextRequest('https://example.com/api/test', {
+      headers: { 'x-forwarded-for': '203.0.113.1' },
+    })
+  }
+
+  it('allows geocode when Redis is missing in production (fail-open)', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.resetModules()
+    const { rateLimitFromRequest } = await import('./rate-limit')
+    await expect(rateLimitFromRequest(req(), 'geocode')).resolves.toBe(true)
+  })
+
+  it('blocks payment-create when Redis is missing in production (fail-closed)', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.resetModules()
+    const { rateLimitFromRequest } = await import('./rate-limit')
+    await expect(rateLimitFromRequest(req(), 'payment-create')).resolves.toBe(false)
+  })
+
+  it('blocks csrf when Redis is missing in production (fail-closed)', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.resetModules()
+    const { rateLimitFromRequest } = await import('./rate-limit')
+    await expect(rateLimitFromRequest(req(), 'csrf')).resolves.toBe(false)
+  })
+
+  it('allows payment-create when Redis is missing outside production', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.resetModules()
+    const { rateLimitFromRequest } = await import('./rate-limit')
+    await expect(rateLimitFromRequest(req(), 'payment-create')).resolves.toBe(true)
+  })
+})
+

@@ -17,9 +17,31 @@ const bodySchema = z.object({
   total: z.number().positive(),
   address: z.string().max(500).optional(),
   notes: z.string().max(1000).optional(),
+  lat: z.number().min(-90).max(90).optional(),
+  lng: z.number().min(-180).max(180).optional(),
   paymentMethod: z.enum(['cash', 'online']).default('cash'),
   lang: z.enum(['az', 'ru', 'en']).default('az'),
 })
+
+function mergeNotesWithCoords(
+  notes: string | undefined,
+  lat: number | undefined,
+  lng: number | undefined
+): string {
+  const trimmed = notes?.trim() ?? ''
+  const lines = trimmed.length > 0 ? trimmed.split('\n').filter((l) => l.length > 0) : []
+  const hasCoordLine = lines.some((l) => /^Koordinat:\s*[\d.-]+,\s*[\d.-]+/.test(l))
+  if (
+    lat != null &&
+    lng != null &&
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    !hasCoordLine
+  ) {
+    lines.push(`Koordinat: ${lat},${lng}`)
+  }
+  return lines.join('\n')
+}
 
 type ProductRow = {
   id: string
@@ -80,12 +102,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const { items, total, address, notes, paymentMethod } = parsed.data
+    const { items, total, address, notes, lat, lng, paymentMethod } = parsed.data
+    const notesForDb = mergeNotesWithCoords(notes, lat, lng)
 
     if (paymentMethod === 'online') {
       const meta = user.user_metadata as Record<string, unknown> | undefined
       const userPhone = typeof meta?.phone === 'string' ? meta.phone.trim() : ''
-      const notesHasTel = Boolean(notes?.includes('Tel:'))
+      const notesHasTel = Boolean(notesForDb?.includes('Tel:'))
       if (!userPhone && !notesHasTel) {
         return NextResponse.json(
           { error: 'Phone number required to place an order' },
@@ -196,7 +219,7 @@ export async function POST(request: NextRequest) {
         payment_method: paymentMethod,
         payment_status: 'pending',
         address: address?.trim() ?? '',
-        notes: notes?.trim() ?? '',
+        notes: notesForDb,
       })
       .select('id')
       .single()

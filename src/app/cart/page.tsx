@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -10,6 +11,8 @@ import { useIsMobile } from '@/hooks/useIsMobile'
 import { ensureClientCsrfToken, fetchWithCsrf } from '@/lib/fetch-with-csrf'
 import { formatAzPhone } from '@/lib/az-phone'
 import { CONTACTS } from '@/config/contacts'
+
+const AddressMap = dynamic(() => import('@/components/address-map'), { ssr: false })
 
 type DeliveryProfileLoggedOut = { loggedIn: false }
 
@@ -42,6 +45,14 @@ export default function CartPage() {
   const [customAddress, setCustomAddress] = useState('')
   const [customPhone, setCustomPhone] = useState('')
   const [addressExtra, setAddressExtra] = useState('')
+
+  const [selectedAddress, setSelectedAddress] = useState('')
+  const [selectedLat, setSelectedLat] = useState<number | null>(null)
+  const [selectedLng, setSelectedLng] = useState<number | null>(null)
+  const [mapsUrl, setMapsUrl] = useState('')
+  const [showMap, setShowMap] = useState(false)
+  const [copyDone, setCopyDone] = useState(false)
+  const [manualAddressOpen, setManualAddressOpen] = useState(false)
 
   useEffect(() => {
     void ensureClientCsrfToken()
@@ -89,8 +100,20 @@ export default function CartPage() {
       }
 
       const hasSaved = Boolean(p.savedAddress?.trim())
-      const finalAddress =
-        hasSaved && useSavedAddress ? p.savedAddress.trim() : customAddress.trim()
+      const mapLocked =
+        selectedLat !== null &&
+        selectedLng !== null &&
+        selectedAddress.trim().length > 0
+
+      let finalAddress = ''
+      if (mapLocked) {
+        finalAddress = selectedAddress.trim()
+      } else if (hasSaved && useSavedAddress) {
+        finalAddress = p.savedAddress.trim()
+      } else {
+        finalAddress = customAddress.trim()
+      }
+
       const finalAddressExtra =
         hasSaved && useSavedAddress
           ? (p.savedAddressExtra || addressExtra).trim()
@@ -115,6 +138,8 @@ export default function CartPage() {
           paymentMethod: 'online',
           lang,
           address: finalAddress || undefined,
+          lat: mapLocked ? selectedLat : undefined,
+          lng: mapLocked ? selectedLng : undefined,
           notes: notesPayload,
         }),
       })
@@ -156,6 +181,20 @@ export default function CartPage() {
     !isHydrated ||
     profile === null ||
     (isLoggedInProfile(profile) && !customPhone.trim())
+
+  const mapSelectionLocked =
+    isLoggedInProfile(profile) &&
+    selectedLat !== null &&
+    selectedLng !== null &&
+    selectedAddress.trim().length > 0
+
+  const savedModeWithoutMap =
+    isLoggedInProfile(profile) &&
+    Boolean(profile.savedAddress?.trim()) &&
+    useSavedAddress &&
+    !mapSelectionLocked
+
+  const showStreetInputs = !savedModeWithoutMap && (!mapSelectionLocked || manualAddressOpen)
 
   if (count === 0) {
     return (
@@ -277,7 +316,15 @@ export default function CartPage() {
               <div className="flex gap-2 mb-3">
                 <button
                   type="button"
-                  onClick={() => setUseSavedAddress(true)}
+                  onClick={() => {
+                    setUseSavedAddress(true)
+                    setSelectedLat(null)
+                    setSelectedLng(null)
+                    setSelectedAddress('')
+                    setMapsUrl('')
+                    setShowMap(false)
+                    setManualAddressOpen(false)
+                  }}
                   className={`flex-1 text-xs py-2 px-3 rounded-lg border min-h-[44px] transition-all ${
                     useSavedAddress
                       ? 'border-[#c9a84c]/50 bg-[rgba(201,168,76,0.1)] text-[#e8c97a]'
@@ -300,14 +347,145 @@ export default function CartPage() {
               </div>
             )}
 
-            {isLoggedInProfile(profile) && profile.savedAddress?.trim() && useSavedAddress ? (
+            {isLoggedInProfile(profile) && (
+              <div className="mb-3 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setShowMap((open) => !open)}
+                  className="w-full min-h-[44px] rounded-lg border border-[#c9a84c]/35 bg-[rgba(201,168,76,0.06)] px-3 py-2 text-sm font-medium text-[#e8c97a] transition-colors hover:bg-[rgba(201,168,76,0.1)]"
+                >
+                  {showMap
+                    ? lang === 'az'
+                      ? '✕ Xəritəni gizlət'
+                      : lang === 'ru'
+                        ? '✕ Скрыть карту'
+                        : '✕ Hide map'
+                    : lang === 'az'
+                      ? '📍 Xəritədən seç'
+                      : lang === 'ru'
+                        ? '📍 Выбрать на карте'
+                        : '📍 Pick from map'}
+                </button>
+                {showMap && (
+                  <AddressMap
+                    initialLat={selectedLat ?? undefined}
+                    initialLng={selectedLng ?? undefined}
+                    initialAddress={selectedAddress || undefined}
+                    onSelect={(addr, lat, lng, url) => {
+                      setSelectedAddress(addr)
+                      setSelectedLat(lat)
+                      setSelectedLng(lng)
+                      setMapsUrl(url)
+                      setShowMap(false)
+                      setUseSavedAddress(false)
+                      setManualAddressOpen(false)
+                    }}
+                  />
+                )}
+              </div>
+            )}
+
+            {mapSelectionLocked && (
+              <div className="mb-3 rounded-xl border border-[#c9a84c]/25 bg-[rgba(201,168,76,0.06)] p-3 space-y-3">
+                <p className="text-sm text-white/90 leading-snug">📍 {selectedAddress}</p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ds-btn-secondary min-h-[44px] inline-flex items-center justify-center px-4 py-2 text-xs"
+                  >
+                    {lang === 'az'
+                      ? 'Xəritədə aç'
+                      : lang === 'ru'
+                        ? 'Открыть на карте'
+                        : 'Open in Maps'}
+                  </a>
+                  <button
+                    type="button"
+                    className="ds-btn-secondary min-h-[44px] px-4 py-2 text-xs"
+                    onClick={() => {
+                      void (async () => {
+                        try {
+                          await navigator.clipboard.writeText(selectedAddress)
+                          setCopyDone(true)
+                          window.setTimeout(() => setCopyDone(false), 2000)
+                        } catch {
+                          /* ignore */
+                        }
+                      })()
+                    }}
+                  >
+                    {copyDone
+                      ? lang === 'az'
+                        ? '✓ Kopyalandı'
+                        : lang === 'ru'
+                          ? '✓ Скопировано'
+                          : '✓ Copied'
+                      : lang === 'az'
+                        ? 'Kopyala'
+                        : lang === 'ru'
+                          ? 'Копировать'
+                          : 'Copy'}
+                  </button>
+                  <button
+                    type="button"
+                    className="ds-btn-secondary min-h-[44px] px-4 py-2 text-xs"
+                    onClick={() => setShowMap(true)}
+                  >
+                    {lang === 'az' ? 'Dəyiş' : lang === 'ru' ? 'Изменить' : 'Change'}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="text-xs text-[#e8c97a]/90 underline min-h-[44px] text-left w-full"
+                  onClick={() => setManualAddressOpen(true)}
+                >
+                  {lang === 'az'
+                    ? 'Əl ilə daxil et'
+                    : lang === 'ru'
+                      ? 'Ввести вручную'
+                      : 'Enter manually'}
+                </button>
+                {manualAddressOpen && (
+                  <div className="space-y-2 pt-2 border-t border-white/10">
+                    <input
+                      className="ds-input w-full min-h-[44px]"
+                      value={customAddress}
+                      onChange={(e) => setCustomAddress(e.target.value)}
+                      placeholder={
+                        lang === 'az'
+                          ? 'Ünvan (küçə, ev nömrəsi...)'
+                          : lang === 'ru'
+                            ? 'Адрес (улица, дом...)'
+                            : 'Address (street, house...)'
+                      }
+                    />
+                    <input
+                      className="ds-input w-full min-h-[44px]"
+                      value={addressExtra}
+                      onChange={(e) => setAddressExtra(e.target.value)}
+                      placeholder={
+                        lang === 'az'
+                          ? 'Əlavə məlumat (mənzil, giriş...)'
+                          : lang === 'ru'
+                            ? 'Доп. инфо (квартира, подъезд...)'
+                            : 'Extra info (apt, entrance...)'
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {savedModeWithoutMap ? (
               <p className="text-sm text-white/70 bg-white/5 rounded-lg px-3 py-2 min-h-[44px]">
                 📍 {profile.savedAddress}
                 {profile.savedAddressExtra && (
                   <span className="block text-white/40 text-xs mt-1">{profile.savedAddressExtra}</span>
                 )}
               </p>
-            ) : (
+            ) : showStreetInputs ? (
               <div className="space-y-2">
                 <input
                   className="ds-input w-full min-h-[44px]"
@@ -334,7 +512,7 @@ export default function CartPage() {
                   }
                 />
               </div>
-            )}
+            ) : null}
 
             {phoneMissingLoggedIn && (
               <p className="text-xs text-amber-400 mt-2 flex items-center gap-1">

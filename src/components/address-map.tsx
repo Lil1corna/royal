@@ -3,12 +3,19 @@ import { useEffect, useRef, useState } from 'react'
 import type { Icon, LeafletMouseEvent, Map as LeafletMap, Marker } from 'leaflet'
 import { useLang, translations } from '@/context/lang'
 
+export function buildGoogleMapsUrl(lat: number, lng: number): string {
+  return `https://maps.google.com/maps?q=${encodeURIComponent(`${lat},${lng}`)}`
+}
+
 export type AddressMapProps = {
-  onSelect: (address: string, lat: number, lng: number) => void
+  /** Human-readable address, coordinates, and deep link for opening in Maps apps */
+  onSelect: (address: string, lat: number, lng: number, mapsUrl: string) => void
   /** Начальная точка (профиль / сохранённый адрес) */
   initialLat?: number | null
   initialLng?: number | null
   initialAddress?: string
+  /** Optional className for the map tile container */
+  mapContainerClassName?: string
 }
 
 export default function AddressMap({
@@ -16,6 +23,7 @@ export default function AddressMap({
   initialLat,
   initialLng,
   initialAddress,
+  mapContainerClassName,
 }: AddressMapProps) {
   const { lang } = useLang()
   const tr = translations
@@ -43,7 +51,7 @@ export default function AddressMap({
     setSelected(addr)
     setSearch(addr)
     setFetchError(null)
-    onSelectRef.current(addr, lat, lng)
+    onSelectRef.current(addr, lat, lng, buildGoogleMapsUrl(lat, lng))
     setSuggestions([])
   }
 
@@ -216,12 +224,10 @@ export default function AddressMap({
       )}
       <div
         ref={mapDivRef}
-        style={{
-          height: '360px',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          border: '1px solid rgba(255,255,255,0.08)',
-        }}
+        className={
+          mapContainerClassName ??
+          'h-[280px] md:h-[320px] w-full rounded-xl overflow-hidden border border-white/[0.08]'
+        }
       />
       {selected ? (
         <div className="flex items-start gap-2 p-3 bg-[rgba(45,198,83,0.12)] border border-[rgba(45,198,83,0.25)] rounded-lg text-sm text-[rgba(45,198,83,0.95)]">
