@@ -1,5 +1,5 @@
 'use client'
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { NEXT_LOCALE_COOKIE, setLocaleCookieClient, type AppLocale } from '@/lib/locale-cookie'
 
 type Lang = AppLocale
@@ -20,19 +20,29 @@ export function LangProvider({
   initialLang,
 }: {
   children: React.ReactNode
-  /** From server `cookies().get(NEXT_LOCALE)` — matches first client paint. */
-  initialLang?: Lang
+  /** From server `cookies().get(NEXT_LOCALE)` — must be the only source for the first paint (hydration). */
+  initialLang: Lang
 }) {
-  const [lang, setLangState] = useState<Lang>(() => {
-    if (initialLang === 'az' || initialLang === 'ru' || initialLang === 'en') {
-      return initialLang
-    }
-    if (typeof window === 'undefined') return 'az'
+  const [lang, setLangState] = useState<Lang>(() =>
+    initialLang === 'az' || initialLang === 'ru' || initialLang === 'en' ? initialLang : 'az'
+  )
+
+  // After hydration, align with client-only preferences (cookie may lag; localStorage has no SSR).
+  useEffect(() => {
     const fromCookie = readCookieLocale()
-    if (fromCookie) return fromCookie
-    const saved = localStorage.getItem('royalaz_lang')
-    return saved === 'az' || saved === 'ru' || saved === 'en' ? saved : 'az'
-  })
+    if (fromCookie) {
+      setLangState((prev) => (fromCookie !== prev ? fromCookie : prev))
+      return
+    }
+    try {
+      const saved = localStorage.getItem('royalaz_lang')
+      if (saved === 'az' || saved === 'ru' || saved === 'en') {
+        setLangState((prev) => (saved !== prev ? saved : prev))
+      }
+    } catch {
+      /* private mode */
+    }
+  }, [])
 
   const setLang = (l: Lang) => {
     setLangState(l)

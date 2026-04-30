@@ -14,7 +14,8 @@ export function Providers({
   initialLang,
 }: {
   children: React.ReactNode
-  initialLang?: 'az' | 'ru' | 'en'
+  /** Always set from root layout (cookie or default) so LangProvider matches SSR. */
+  initialLang: 'az' | 'ru' | 'en'
 }) {
   useEffect(() => {
     void fetch('/api/csrf', { credentials: 'same-origin' })

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import './globals.css'
+import '@/styles/design-system.css'
 import { Providers } from '@/components/providers'
 import { isAppLocale, NEXT_LOCALE_COOKIE } from '@/lib/locale-cookie'
 import NavbarWrapper from '@/components/navbar-wrapper'
@@ -34,6 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang={htmlLang}
+      suppressHydrationWarning
       className={`${jost.variable} ${cormorant.variable} ${dmSans.variable} overflow-x-hidden scroll-smooth`}
     >
       <head>
@@ -43,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="min-h-screen flex flex-col bg-transparent antialiased overflow-x-hidden isolate">
-        <Providers initialLang={isAppLocale(localeRaw) ? localeRaw : undefined}>
+        <Providers initialLang={htmlLang}>
           <a
             href="#main"
             className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-[#050d1a] focus:p-4 focus:text-white focus:ring-2 focus:ring-white"
