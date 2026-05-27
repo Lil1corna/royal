@@ -1,20 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createMiddlewareSupabase } from '@/lib/supabase-middleware'
 
-/**
- * Hardcoded for Edge Runtime — cannot import from `src/config/roles.ts`.
- * Keep in sync with `DB_ROLE_ALIASES` / `ROLE_PERMISSIONS` in `src/config/roles.ts`.
- * Admin = any role except end-user (`user`, `customer`).
- */
 const ADMIN_DB_ROLES = new Set([
-  'super_admin',
-  'admin',
-  'manager',
-  'moderator',
-  'editor',
-  'content_manager',
-  'support',
-  'viewer',
+  'super_admin', 'admin', 'moderator', 'editor', 'content_manager', 'support', 'viewer',
 ])
 
 function partialUserId(userId: string): string {
@@ -28,28 +16,36 @@ function logMiddleware(payload: Record<string, unknown>) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // 1. Игнорируем роуты авторизации, чтобы избежать петель и лишних запросов
+  if (pathname.startsWith('/auth')) {
+    return NextResponse.next()
+  }
+
   try {
     const { supabase, response } = createMiddlewareSupabase(request)
+    let user = null
 
-    let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null
     try {
-      const { data, error } = await supabase.auth.getUser()
+      // 2. Таймаут для getUser — самая частая причина 504 на Vercel
+      const getUserPromise = supabase.auth.getUser()
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Auth timeout')), 5000)
+      )
+
+      const { data, error } = await Promise.race([getUserPromise, timeoutPromise]) as any
+      
       if (error) {
-        logMiddleware({
-          level: 'warn',
-          event: 'auth_get_user_error',
-          message: error.message,
-          path: pathname,
-        })
+        logMiddleware({ level: 'warn', event: 'auth_get_user_error', message: error.message, path: pathname })
       }
-      user = data.user ?? null
+      user = data?.user ?? null
     } catch (err) {
-      logMiddleware({
-        level: 'error',
-        event: 'auth_get_user_throw',
-        path: pathname,
-        error: err instanceof Error ? err.message : 'unknown',
+      logMiddleware({ 
+        level: 'error', 
+        event: 'auth_get_user_timeout_or_throw', 
+        path: pathname, 
+        error: err instanceof Error ? err.message : 'unknown' 
       })
+      // При таймауте просто пропускаем, чтобы сайт не лежал
       return response
     }
 
@@ -65,14 +61,7 @@ export async function middleware(request: NextRequest) {
 
     if (pathname.startsWith('/admin')) {
       if (!user) {
-        console.warn(
-          '[SECURITY] admin_access_denied',
-          JSON.stringify({
-            reason: 'unauthenticated',
-            pathname,
-            timestamp: new Date().toISOString(),
-          })
-        )
+        console.warn('[SECURITY] admin_access_denied', JSON.stringify({ reason: 'unauthenticated', pathname }))
         const redirectUrl = request.nextUrl.clone()
         redirectUrl.pathname = '/auth/signin'
         redirectUrl.searchParams.set('next', pathname)
@@ -85,54 +74,35 @@ export async function middleware(request: NextRequest) {
       const dbRole = typeof raw === 'string' ? raw.trim().toLowerCase() : ''
 
       if (!ADMIN_DB_ROLES.has(dbRole)) {
-        console.warn(
-          '[SECURITY] admin_access_denied',
-          JSON.stringify({
-            reason: 'non_staff_role',
-            pathname,
-            timestamp: new Date().toISOString(),
-            userIdPrefix: partialUserId(user.id),
-            role: dbRole || null,
-          })
-        )
+        console.warn('[SECURITY] admin_access_denied', JSON.stringify({ 
+          reason: 'non_staff_role', 
+          userIdPrefix: partialUserId(user.id), 
+          role: dbRole 
+        }))
         const homeUrl = request.nextUrl.clone()
         homeUrl.pathname = '/'
-        homeUrl.search = ''
         return NextResponse.redirect(homeUrl)
       }
-
       return response
     }
 
     return response
   } catch (err) {
-    logMiddleware({
-      level: 'error',
-      event: 'middleware_fatal',
-      path: pathname,
-      error: err instanceof Error ? err.message : 'unknown',
-    })
+    logMiddleware({ level: 'error', event: 'middleware_fatal', path: pathname, error: err instanceof Error ? err.message : 'unknown' })
     return NextResponse.next()
   }
 }
 
-/**
- * Run on all pages except API routes, Next internals, favicon, and common static asset extensions
- * so Supabase session cookies refresh on normal navigations. `/admin` and `/account` additionally
- * enforce redirects inside `middleware`.
- */
 export const config = {
   matcher: [
-    '/',
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - Все файлы с расширениями (static assets)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)',
   ],
 }
-
-/*
- * IMPORTANT — JWT role lag:
- * This middleware reads role from the JWT (`user_metadata` / `app_metadata`).
- * When an admin changes a user's role in the database, the JWT `user_metadata` does not
- * auto-update. The user must sign in again for the new role to apply in middleware.
- * Middleware is a UX guard only; `ensureAuthorized()` in API routes is the true security
- * boundary and reads from the database.
- */
